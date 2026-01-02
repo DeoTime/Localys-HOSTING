@@ -2,8 +2,27 @@ import { supabase } from './client';
 
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || 'videos';
 export const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
-const BYTES_TO_MB = 1024 * 1024;
+export const BYTES_TO_MB = 1024 * 1024; // Conversion constant for bytes to megabytes
 const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'];
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  username: string;
+  bio?: string;
+  profile_picture_url?: string;
+}
+
+export interface Business {
+  id: string;
+  owner_id: string;
+  business_name: string;
+  latitude: number;
+  longitude: number;
+  category?: string;
+  profile_picture_url?: string;
+}
 
 export interface ProfileUpdateData {
   full_name?: string;

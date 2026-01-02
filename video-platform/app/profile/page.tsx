@@ -12,12 +12,13 @@ import {
   updateProfile, 
   getUserBusiness, 
   updateBusinessInfo,
+  Profile,
+  Business,
   ProfileUpdateData,
   BusinessUpdateData,
-  MAX_PROFILE_PICTURE_SIZE
+  MAX_PROFILE_PICTURE_SIZE,
+  BYTES_TO_MB
 } from '@/lib/supabase/profiles';
-
-const BYTES_TO_MB = 1024 * 1024;
 
 export default function ProfilePage() {
   return (
@@ -31,8 +32,8 @@ function ProfileContent() {
   const { user, signOut: contextSignOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [profile, setProfile] = useState<any>(null);
-  const [business, setBusiness] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -127,8 +128,8 @@ function ProfileContent() {
 }
 
 interface ProfileViewProps {
-  profile: any;
-  business: any;
+  profile: Profile | null;
+  business: Business | null;
   onEditClick: () => void;
   onSignOut: () => void;
   pathname: string;
@@ -221,8 +222,8 @@ function ProfileView({ profile, business, onEditClick, onSignOut, pathname }: Pr
 }
 
 interface ProfileEditFormProps {
-  profile: any;
-  business: any;
+  profile: Profile | null;
+  business: Business | null;
   user: any;
   onSave: () => void;
   onCancel: () => void;
@@ -242,6 +243,15 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
   const [success, setSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Cleanup object URL on unmount or when new file is selected
+  useEffect(() => {
+    return () => {
+      if (profilePicturePreview && profilePicturePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(profilePicturePreview);
+      }
+    };
+  }, [profilePicturePreview]);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -255,6 +265,10 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
         const maxSizeMB = MAX_PROFILE_PICTURE_SIZE / BYTES_TO_MB;
         setError(`Image size must be less than ${maxSizeMB}MB`);
         return;
+      }
+      // Revoke previous object URL before creating new one
+      if (profilePicturePreview && profilePicturePreview.startsWith('blob:')) {
+        URL.revokeObjectURL(profilePicturePreview);
       }
       setProfilePicture(file);
       setProfilePicturePreview(URL.createObjectURL(file));
@@ -307,8 +321,12 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
         };
         const { error: businessError } = await updateBusinessInfo(business.id, businessUpdates);
         if (businessError) {
-          console.warn('Failed to update business:', businessError);
-          // Don't throw - business update is optional
+          // Business update failed but profile succeeded - inform user
+          setSuccess('Profile updated successfully! Note: Business name update failed.');
+          setTimeout(() => {
+            onSave();
+          }, 1500);
+          return;
         }
       }
 
@@ -318,7 +336,7 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
       }, 1000);
     } catch (err: any) {
       setError(err.message || 'Failed to update profile');
-      console.error('Error updating profile:', err);
+      // Error is already displayed to user via setError
     } finally {
       setLoading(false);
     }
