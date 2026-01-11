@@ -68,7 +68,7 @@ function HomeContent() {
         setVideos(data as Video[]);
       }
     } catch (error) {
-      console.error('Error loading videos:', error);
+      console.error(`Error loading videos: ${error instanceof Error ? error.message : String(error)}`);
       // Fallback to empty array if Supabase is not configured
     } finally {
       setLoading(false);
