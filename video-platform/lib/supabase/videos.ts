@@ -26,6 +26,7 @@ export async function uploadVideoMetadata(metadata: VideoMetadata) {
   return { data, error };
 }
 
+// eslint-disable no-console
 export async function getVideosFeed(limit = 20, offset = 0) {
   const { data: videosRaw, error: videosError } = await supabase
     .from('videos')
@@ -35,23 +36,46 @@ export async function getVideosFeed(limit = 20, offset = 0) {
       video_url,
       caption,
       created_at,
-      business_id,
-      profiles:user_id (
-        id,
-        username,
-        full_name,
-        profile_picture_url
-      )
+      business_id
     `)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
 
   if (videosError) {
-    console.error('getVideosFeed videos error:', videosError);
+    // Log full error with detailed information
+    const errorMsg = `Supabase error - Message: ${videosError?.message || 'unknown'}, Code: ${videosError?.code || 'unknown'}, Details: ${videosError?.details || 'none'}, Hint: ${videosError?.hint || 'none'}`;
+    console.error(errorMsg);
+
+    // Log Supabase client config (without revealing secrets)
+    const configMsg = `Supabase config - hasUrl: ${!!process.env.NEXT_PUBLIC_SUPABASE_URL}, hasKey: ${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`;
+    console.error(configMsg);
+
     return { data: null, error: videosError };
   }
 
   const videosList: any[] = videosRaw || [];
+
+  // Fetch user profiles for all videos
+  const userIds = Array.from(
+    new Set(videosList.map(v => v.user_id).filter(Boolean))
+  );
+
+  let profilesMap: Record<string, any> = {};
+  if (userIds.length > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        full_name,
+        profile_picture_url
+      `)
+      .in('id', userIds);
+
+    if (!profilesError && profiles) {
+      profilesMap = Object.fromEntries(profiles.map((p: any) => [p.id, p]));
+    }
+  }
 
   const businessIds = Array.from(
     new Set(videosList.map(v => v.business_id).filter(Boolean))
@@ -124,12 +148,14 @@ export async function getVideosFeed(limit = 20, offset = 0) {
     return {
       ...v,
       video_url: url,
+      profiles: v.user_id ? profilesMap[v.user_id] ?? null : null,
       businesses: v.business_id ? businessesMap[v.business_id] ?? null : null,
     };
   }));
 
   return { data: videos, error: null };
 }
+// eslint-enable no-console
 
 export async function getVideoById(videoId: string) {
   const { data: video, error } = await supabase

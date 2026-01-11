@@ -39,7 +39,7 @@ function SearchContent() {
     try {
       const filters: SearchFilters = {
         query: query.trim() || undefined,
-        category: category || undefined,
+        category: (category as 'food' | 'retail' | 'services' | undefined) || undefined,
         minRating: minRating,
         priceMin: priceRange[0] > 0 ? priceRange[0] : undefined,
         priceMax: priceRange[1] < 1000 ? priceRange[1] : undefined,
