@@ -40,7 +40,8 @@ export async function sharePost(data: ShareData): Promise<ShareResult> {
       await navigator.clipboard.writeText(data.url);
       return { success: true, usedWebShare: false };
     } else {
-      // Older fallback for browsers without clipboard API
+      // Legacy fallback for browsers without clipboard API
+      // Note: execCommand is deprecated but provides compatibility for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = data.url;
       textArea.style.position = 'fixed';

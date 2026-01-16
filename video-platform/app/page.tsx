@@ -391,7 +391,7 @@ function HomeContent() {
             <img
               src={currentBusiness?.profile_picture_url || currentVideo.profiles?.profile_picture_url || 'https://via.placeholder.com/60'}
               alt={currentBusiness?.business_name || 'Business'}
-              className="w-14 h-14 rounded-full border-2 border-white object-cover cursor-pointer hover:scale-110 transition-transform duration-200 active:scale-95"
+              className="w-14 h-14 rounded-full border-2 border-white object-cover hover:scale-110 transition-transform duration-200 active:scale-95"
             />
           </button>
         </div>
