@@ -144,16 +144,6 @@ export async function uploadProfilePicture(file: File, userId: string) {
  */
 export async function updateProfile(userId: string, updates: ProfileUpdateData) {
   try {
-    // Check authentication
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { data: null, error: new Error('User not authenticated') };
-    }
-
-    if (user.id !== userId) {
-      return { data: null, error: new Error('Cannot update another user\'s profile') };
-    }
-
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
