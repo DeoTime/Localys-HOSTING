@@ -31,11 +31,11 @@ function MessagingContent() {
     if (!user || !selectedConversationId) return;
     
     try {
-      // If there are attachments, upload them first
+      // If there are attachments, upload them first (concurrently)
       let uploadedAttachments = [];
       
       if (attachments && attachments.length > 0) {
-        for (const file of attachments) {
+        const uploadPromises = attachments.map(async (file) => {
           const path = `${selectedConversationId}/${user.id}/${Date.now()}-${file.name}`;
           
           const { data: uploadData, error: uploadError } = await supabase.storage
@@ -44,7 +44,7 @@ function MessagingContent() {
           
           if (uploadError) {
             console.error('Error uploading file:', uploadError);
-            continue;
+            return null;
           }
           
           // Get signed URL
@@ -52,14 +52,17 @@ function MessagingContent() {
             .from('message-attachments')
             .createSignedUrl(uploadData.path, 3600); // 1 hour expiry
           
-          uploadedAttachments.push({
+          return {
             id: uploadData.path,
             name: file.name,
             url: urlData?.signedUrl || '',
             type: file.type,
             size: file.size,
-          });
-        }
+          };
+        });
+
+        const results = await Promise.all(uploadPromises);
+        uploadedAttachments = results.filter(Boolean); // Filter out failed uploads
       }
       
       // Send the message

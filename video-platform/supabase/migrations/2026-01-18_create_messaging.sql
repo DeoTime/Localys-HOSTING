@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS conversations (
 CREATE TABLE IF NOT EXISTS conversation_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id uuid REFERENCES conversations(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL,
+  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   joined_at timestamptz DEFAULT now(),
   is_admin boolean DEFAULT false,
   UNIQUE(conversation_id, user_id)
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS conversation_members (
 CREATE TABLE IF NOT EXISTS messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id uuid REFERENCES conversations(id) ON DELETE CASCADE,
-  sender_id uuid NOT NULL,
+  sender_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   content text,
   content_type text DEFAULT 'text', -- 'text'|'attachment'|'system'
   attachments jsonb DEFAULT '[]'::jsonb,
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE TABLE IF NOT EXISTS message_reads (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   message_id uuid REFERENCES messages(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL,
+  user_id uuid NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   read_at timestamptz DEFAULT now(),
   UNIQUE(message_id, user_id)
 );

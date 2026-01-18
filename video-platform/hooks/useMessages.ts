@@ -64,9 +64,7 @@ export function useMessages({
       // Auto-mark unread messages as read
       if (autoMarkAsRead && data) {
         const unreadMessages = data.filter(msg => msg.sender_id !== userId);
-        for (const msg of unreadMessages) {
-          await markAsRead(msg.id);
-        }
+        await Promise.all(unreadMessages.map(msg => markAsRead(msg.id)));
       }
     } catch (err) {
       setError(err as Error);

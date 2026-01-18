@@ -157,7 +157,7 @@ export async function getMessages(
     .from('messages')
     .select(`
       *,
-      sender:profiles!messages_sender_id_fkey (
+      sender:profiles (
         id,
         username,
         full_name,
