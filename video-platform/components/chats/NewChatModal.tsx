@@ -10,8 +10,8 @@ interface NewChatModalProps {
 
 interface UserSearchResult {
   id: string;
-  username: string;
-  full_name: string;
+  username?: string;
+  full_name?: string;
   profile_picture_url?: string;
 }
 

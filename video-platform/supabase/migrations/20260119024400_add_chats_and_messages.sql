@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.chats (
 CREATE TABLE IF NOT EXISTS public.chat_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   chat_id uuid REFERENCES public.chats(id) ON DELETE CASCADE,
-  user_id uuid NOT NULL,
+  user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   joined_at timestamptz NOT NULL DEFAULT now(),
   last_read timestamptz,
   role text DEFAULT 'member',
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.chat_members (
 CREATE TABLE IF NOT EXISTS public.messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   chat_id uuid REFERENCES public.chats(id) ON DELETE CASCADE,
-  sender_id uuid NOT NULL,
+  sender_id uuid REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
   content text NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   edited_at timestamptz,

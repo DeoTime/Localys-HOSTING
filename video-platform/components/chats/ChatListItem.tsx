@@ -2,11 +2,10 @@ import { ChatWithDetails } from '@/lib/supabase/messages';
 
 interface ChatListItemProps {
   chat: ChatWithDetails;
-  currentUserId: string;
   onClick?: () => void;
 }
 
-export function ChatListItem({ chat, currentUserId, onClick }: ChatListItemProps) {
+export function ChatListItem({ chat, onClick }: ChatListItemProps) {
   const otherUser = chat.other_user;
   const displayName = otherUser?.full_name || otherUser?.username || 'Unknown User';
   const avatarUrl = otherUser?.profile_picture_url;

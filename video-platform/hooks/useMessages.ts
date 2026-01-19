@@ -7,6 +7,7 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
   const [error, setError] = useState<Error | null>(null);
   const [sending, setSending] = useState(false);
   const subscriptionRef = useRef<ReturnType<typeof subscribeToMessages> | null>(null);
+  const markAsReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadMessages = useCallback(async () => {
     if (!chatId) {
@@ -34,6 +35,19 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
       setLoading(false);
     }
   }, [chatId, userId]);
+
+  // Debounced mark as read function
+  const debouncedMarkAsRead = useCallback((chatId: string, userId: string) => {
+    // Clear existing timeout
+    if (markAsReadTimeoutRef.current) {
+      clearTimeout(markAsReadTimeoutRef.current);
+    }
+
+    // Set new timeout to mark as read after 1 second
+    markAsReadTimeoutRef.current = setTimeout(() => {
+      markMessagesAsRead(chatId, userId);
+    }, 1000);
+  }, []);
 
   const send = async (content: string) => {
     if (!chatId || !userId || !content.trim()) {
@@ -68,7 +82,7 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
     loadMessages();
 
     // Subscribe to new messages
-    if (chatId) {
+    if (chatId && userId) {
       subscriptionRef.current = subscribeToMessages(chatId, (newMessage) => {
         setMessages(prev => {
           // Avoid duplicates
@@ -78,9 +92,9 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
           return [...prev, newMessage];
         });
 
-        // Mark as read if not from current user
-        if (userId && newMessage.sender_id !== userId) {
-          markMessagesAsRead(chatId, userId);
+        // Mark as read if not from current user (debounced)
+        if (newMessage.sender_id !== userId) {
+          debouncedMarkAsRead(chatId, userId);
         }
       });
     }
@@ -89,8 +103,11 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
       }
+      if (markAsReadTimeoutRef.current) {
+        clearTimeout(markAsReadTimeoutRef.current);
+      }
     };
-  }, [chatId, userId, loadMessages]);
+  }, [chatId, userId, loadMessages, debouncedMarkAsRead]);
 
   return {
     messages,

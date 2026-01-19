@@ -126,9 +126,9 @@ export async function getChats(userId: string) {
     });
 
     return { data: chats, error: null };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching chats:', error);
-    return { data: null, error };
+    return { data: null, error: error instanceof Error ? error : new Error('Unknown error') };
   }
 }
 
@@ -140,7 +140,7 @@ export async function getMessages(chatId: string) {
     .from('messages')
     .select(`
       *,
-      sender:profiles!messages_sender_id_fkey (
+      sender:sender_id (
         id,
         username,
         full_name,
@@ -163,7 +163,7 @@ export async function sendMessage(message: Omit<Message, 'id' | 'created_at'>) {
     .insert(message)
     .select(`
       *,
-      sender:profiles!messages_sender_id_fkey (
+      sender:sender_id (
         id,
         username,
         full_name,
@@ -176,69 +176,50 @@ export async function sendMessage(message: Omit<Message, 'id' | 'created_at'>) {
 }
 
 /**
- * Find existing 1:1 chat between two users
+ * Find existing 1:1 chat between two users (optimized version)
  */
 export async function findOneToOneChat(userId1: string, userId2: string) {
   try {
-    // Find all non-group chats where userId1 is a member
-    const { data: user1Chats, error: error1 } = await supabase
-      .from('chat_members')
-      .select('chat_id, chats:chat_id!inner(is_group)')
-      .eq('user_id', userId1);
+    // Optimized query: Find non-group chats that have both users and exactly 2 members
+    const { data: chats, error } = await supabase
+      .from('chats')
+      .select(`
+        id,
+        is_group,
+        metadata,
+        created_at,
+        chat_members!inner(user_id)
+      `)
+      .eq('is_group', false);
 
-    if (error1) throw error1;
-    if (!user1Chats || user1Chats.length === 0) {
+    if (error) throw error;
+    if (!chats || chats.length === 0) {
       return { data: null, error: null };
     }
 
-    // Filter to only non-group chats
-    const nonGroupChatIds = user1Chats
-      .filter(c => {
-        const chat = c.chats as { is_group?: boolean } | null;
-        return chat && !chat.is_group;
-      })
-      .map(c => c.chat_id);
-
-    if (nonGroupChatIds.length === 0) {
-      return { data: null, error: null };
-    }
-
-    // Find chats where userId2 is also a member
-    const { data: user2Chats, error: error2 } = await supabase
-      .from('chat_members')
-      .select('chat_id')
-      .eq('user_id', userId2)
-      .in('chat_id', nonGroupChatIds);
-
-    if (error2) throw error2;
-    if (!user2Chats || user2Chats.length === 0) {
-      return { data: null, error: null };
-    }
-
-    // For each matching chat, verify it has exactly 2 members
-    for (const chat of user2Chats) {
-      const { data: members, error: membersError } = await supabase
-        .from('chat_members')
-        .select('user_id')
-        .eq('chat_id', chat.chat_id);
-
-      if (membersError) continue;
-      if (members && members.length === 2) {
-        // Found the 1:1 chat
-        const { data: chatData, error: chatError } = await supabase
-          .from('chats')
-          .select('*')
-          .eq('id', chat.chat_id)
-          .single();
-
-        return { data: chatData, error: chatError };
+    // Filter in application to find chat with exactly both users
+    for (const chat of chats) {
+      const members = (chat as { chat_members: { user_id: string }[] }).chat_members;
+      if (members.length === 2) {
+        const userIds = members.map(m => m.user_id).sort();
+        const targetIds = [userId1, userId2].sort();
+        if (userIds[0] === targetIds[0] && userIds[1] === targetIds[1]) {
+          // Found the matching chat, fetch full details
+          const { data: fullChat, error: chatError } = await supabase
+            .from('chats')
+            .select('*')
+            .eq('id', chat.id)
+            .single();
+          
+          return { data: fullChat, error: chatError };
+        }
       }
     }
 
     return { data: null, error: null };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error finding one-to-one chat:', error);
-    return { data: null, error };
+    return { data: null, error: error instanceof Error ? error : new Error('Unknown error') };
   }
 }
 
@@ -278,9 +259,9 @@ export async function getOrCreateOneToOneChat(userId1: string, userId2: string) 
     if (membersError) throw membersError;
 
     return { data: newChat, error: null };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating one-to-one chat:', error);
-    return { data: null, error };
+    return { data: null, error: error instanceof Error ? error : new Error('Unknown error') };
   }
 }
 
