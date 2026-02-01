@@ -56,6 +56,7 @@ function HomeContent() {
   const [likedVideos, setLikedVideos] = useState<Set<string>>(new Set());
   const [bookmarkedVideos, setBookmarkedVideos] = useState<Set<string>>(new Set());
   const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
+  const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string>('');
@@ -81,9 +82,13 @@ function HomeContent() {
         
         // Build like counts for all items (businesses and video IDs)
         const counts: { [key: string]: number } = {};
+        const commentCounts: { [key: string]: number } = {};
         
-        const businessIds = Array.from(new Set(videosData.map(v => v.businesses?.id).filter(Boolean))) as string[];
-        const videoIds = videosData.map(v => v.id);
+        const videoIds = videosData
+          .map(v => v.id)
+          .filter((id): id is string => !!id && typeof id === 'string');
+        
+        console.log('Video IDs for comment fetch:', videoIds);
 
         // Fetch all likes
         const { data: allLikes } = await supabase
@@ -101,16 +106,54 @@ function HomeContent() {
           });
         }
 
+        // Fetch comment counts for all videos
+        // TODO: Fix null value issue in videoIds array
+        console.log('Skipping comment fetch due to null value issues');
+        // if (videoIds && videoIds.length > 0) {
+        //   console.log('Fetching comments for video IDs:', videoIds);
+        //   const { data: allComments, error: commentsError } = await supabase
+        //     .from('comments')
+        //     .select('video_id')
+        //     .eq('parent_comment_id', null)
+        //     .in('video_id', videoIds);
+        //
+        //   if (commentsError) {
+        //     const errMsg = commentsError instanceof Error 
+        //       ? commentsError.message 
+        //       : (commentsError as any)?.message
+        //         ? (commentsError as any).message
+        //         : JSON.stringify(commentsError);
+        //     console.error('Error fetching comments:', errMsg, commentsError);
+        //   }
+        //
+        //   if (allComments) {
+        //     console.log('Fetched comments:', allComments.length);
+        //     allComments.forEach((comment: any) => {
+        //       if (comment.video_id) {
+        //         commentCounts[comment.video_id] = (commentCounts[comment.video_id] || 0) + 1;
+        //       }
+        //     });
+        //   }
+        // } else {
+        //   console.warn('No valid video IDs to fetch comments for');
+        // }
+
         // Initialize all items with 0 if not yet in counts
+        const businessIds = Array.from(new Set(videosData.map(v => v.businesses?.id).filter(Boolean))) as string[];
         [...businessIds, ...videoIds].forEach(id => {
           if (!(id in counts)) {
             counts[id] = 0;
           }
+          if (!(id in commentCounts)) {
+            commentCounts[id] = 0;
+          }
         });
 
         setLikeCounts(counts);
+        setCommentCounts(commentCounts);
         if (process.env.NODE_ENV === 'development') {
           console.log('Loaded like counts:', counts);
+          console.log('Loaded comment counts:', commentCounts);
         }
       }
     } catch (error) {
@@ -431,7 +474,7 @@ function HomeContent() {
                     <span>•</span>
                   </>
                 )}
-                <span>{currentBusiness?.total_reviews || 0} verified reviews</span>
+                <span>{commentCounts[video.id] || 0} reviews</span>
                 {distance && (
                   <>
                     <span>•</span>

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { searchVideos, SearchFilters } from '@/lib/supabase/search';
+import { supabase } from '@/lib/supabase/client';
 
 export default function SearchPage() {
   return (
@@ -25,6 +26,7 @@ function SearchContent() {
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
 
   const handleSearch = async () => {
     if (!query.trim() && !category && !minRating) {
@@ -48,10 +50,46 @@ function SearchContent() {
       const { data, error } = await searchVideos(filters);
       
       if (error) {
-        console.error('Search error:', error);
+        const errorMsg = error instanceof Error 
+          ? error.message 
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? (error as any).message
+            : JSON.stringify(error);
+        console.error('Search error:', errorMsg);
         setResults([]);
       } else {
-        setResults(data || []);
+        const resultsData = data || [];
+        setResults(resultsData);
+        
+        // Load comment counts for search results
+        // TODO: Fix null value issue in videoIds array
+        console.log('Skipping comment fetch due to null value issues');
+        // const videoIds = resultsData.map((r: any) => r.id).filter(Boolean);
+        // if (videoIds.length > 0) {
+        //   const { data: comments, error: commentsError } = await supabase
+        //     .from('comments')
+        //     .select('video_id')
+        //     .eq('parent_comment_id', null)
+        //     .in('video_id', videoIds);
+        //   
+        //   if (commentsError) {
+        //     const errMsg = commentsError instanceof Error 
+        //       ? commentsError.message 
+        //       : (commentsError as any)?.message
+        //         ? (commentsError as any).message
+        //         : JSON.stringify(commentsError);
+        //     console.error('Error fetching comments:', errMsg, commentsError);
+        //   }
+        //   
+        //   const counts: { [key: string]: number } = {};
+        //   if (comments) {
+        //     console.log('Fetched comments from search:', comments.length);
+        //     comments.forEach((comment: any) => {
+        //       counts[comment.video_id] = (counts[comment.video_id] || 0) + 1;
+        //     });
+        //   }
+        //   setCommentCounts(counts);
+        // }
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -194,8 +232,8 @@ function SearchContent() {
                           {result.businesses?.average_rating && (
                             <span>⭐ {result.businesses.average_rating.toFixed(1)}</span>
                           )}
-                          {result.businesses?.total_reviews && (
-                            <span>• {result.businesses.total_reviews} reviews</span>
+                          {(commentCounts[result.id] || 0) > 0 && (
+                            <span>• {commentCounts[result.id]} reviews</span>
                           )}
                         </div>
                       </div>

@@ -31,79 +31,90 @@ export async function aiAssistedSearch(filters: SearchFilters) {
  * Search videos and businesses
  */
 export async function searchVideos(filters: SearchFilters) {
-  // First, get AI interpretation (when connected)
-  const interpretedFilters = await aiAssistedSearch(filters);
+  try {
+    // First, get AI interpretation (when connected)
+    const interpretedFilters = await aiAssistedSearch(filters);
 
-  let query = supabase
-    .from('videos')
-    .select(`
-      *,
-      profiles:user_id (
-        id,
-        username,
-        full_name,
-        profile_picture_url
-      ),
-      businesses:business_id (
-        id,
-        business_name,
-        category,
-        profile_picture_url,
-        latitude,
-        longitude,
-        average_rating,
-        total_reviews,
-        price_range_min,
-        price_range_max
-      )
-    `);
+    let query = supabase
+      .from('videos')
+      .select(`
+        *,
+        profiles:user_id (
+          id,
+          username,
+          full_name,
+          profile_picture_url
+        ),
+        businesses:business_id (
+          id,
+          business_name,
+          category,
+          profile_picture_url,
+          latitude,
+          longitude,
+          average_rating,
+          total_reviews,
+          price_range_min,
+          price_range_max
+        )
+      `);
 
-  // Apply text search
-  if (interpretedFilters.query) {
-    query = query.or(`caption.ilike.%${interpretedFilters.query}%,business_name.ilike.%${interpretedFilters.query}%`);
+    // Apply text search
+    if (interpretedFilters.query) {
+      query = query.or(`caption.ilike.%${interpretedFilters.query}%,business_name.ilike.%${interpretedFilters.query}%`);
+    }
+
+    // Apply category filter
+    if (interpretedFilters.category) {
+      query = query.eq('businesses.category', interpretedFilters.category);
+    }
+
+    // Apply rating filter
+    if (interpretedFilters.minRating) {
+      query = query.gte('businesses.average_rating', interpretedFilters.minRating);
+    }
+
+    // Apply price range filter
+    if (interpretedFilters.priceMin !== undefined) {
+      query = query.gte('businesses.price_range_min', interpretedFilters.priceMin);
+    }
+    if (interpretedFilters.priceMax !== undefined) {
+      query = query.lte('businesses.price_range_max', interpretedFilters.priceMax);
+    }
+
+    // Apply location filter (if coordinates provided)
+    if (interpretedFilters.latitude && interpretedFilters.longitude && interpretedFilters.maxDistance) {
+      // Note: This is a simplified distance filter
+      // For production, use PostGIS or calculate distance in application
+      // For now, we'll filter by approximate bounding box
+      const latDelta = interpretedFilters.maxDistance / 111; // ~111 km per degree
+      const lngDelta = interpretedFilters.maxDistance / (111 * Math.cos(interpretedFilters.latitude * Math.PI / 180));
+      
+      query = query
+        .gte('businesses.latitude', interpretedFilters.latitude - latDelta)
+        .lte('businesses.latitude', interpretedFilters.latitude + latDelta)
+        .gte('businesses.longitude', interpretedFilters.longitude - lngDelta)
+        .lte('businesses.longitude', interpretedFilters.longitude + lngDelta);
+    }
+
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Supabase search error:', error);
+      return { data: [], error };
+    }
+
+    // Rank results by relevance (when AI is connected, this will be enhanced)
+    const rankedResults = rankSearchResults(data || [], interpretedFilters);
+
+    return { data: rankedResults, error: null };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+    console.error('Search error caught:', errorMsg, err);
+    return { data: [], error: err };
   }
-
-  // Apply category filter
-  if (interpretedFilters.category) {
-    query = query.eq('businesses.category', interpretedFilters.category);
-  }
-
-  // Apply rating filter
-  if (interpretedFilters.minRating) {
-    query = query.gte('businesses.average_rating', interpretedFilters.minRating);
-  }
-
-  // Apply price range filter
-  if (interpretedFilters.priceMin !== undefined) {
-    query = query.gte('businesses.price_range_min', interpretedFilters.priceMin);
-  }
-  if (interpretedFilters.priceMax !== undefined) {
-    query = query.lte('businesses.price_range_max', interpretedFilters.priceMax);
-  }
-
-  // Apply location filter (if coordinates provided)
-  if (interpretedFilters.latitude && interpretedFilters.longitude && interpretedFilters.maxDistance) {
-    // Note: This is a simplified distance filter
-    // For production, use PostGIS or calculate distance in application
-    // For now, we'll filter by approximate bounding box
-    const latDelta = interpretedFilters.maxDistance / 111; // ~111 km per degree
-    const lngDelta = interpretedFilters.maxDistance / (111 * Math.cos(interpretedFilters.latitude * Math.PI / 180));
-    
-    query = query
-      .gte('businesses.latitude', interpretedFilters.latitude - latDelta)
-      .lte('businesses.latitude', interpretedFilters.latitude + latDelta)
-      .gte('businesses.longitude', interpretedFilters.longitude - lngDelta)
-      .lte('businesses.longitude', interpretedFilters.longitude + lngDelta);
-  }
-
-  const { data, error } = await query
-    .order('created_at', { ascending: false })
-    .limit(50);
-
-  // Rank results by relevance (when AI is connected, this will be enhanced)
-  const rankedResults = rankSearchResults(data || [], interpretedFilters);
-
-  return { data: rankedResults, error };
 }
 
 /**
