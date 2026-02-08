@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { signOut } from '@/lib/supabase/auth';
 import { supabase } from '@/lib/supabase/client';
 import { EditableProfilePicture } from '@/components/EditableProfilePicture';
+import { BookmarkedVideos } from '@/components/BookmarkedVideos';
+import { PostedVideos } from '@/components/PostedVideos';
 import { 
   uploadProfilePicture, 
   updateProfile, 
@@ -176,6 +178,22 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
         >
           Edit Profile
         </button>
+
+        {/* Posted Videos Section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">My Videos</h3>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <PostedVideos userId={user.id} />
+          </div>
+        </div>
+
+        {/* Bookmarked Videos Section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">Bookmarked Videos</h3>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <BookmarkedVideos userId={user.id} />
+          </div>
+        </div>
 
         {/* Settings Section */}
         <div className="space-y-2 mb-8">
