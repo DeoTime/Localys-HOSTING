@@ -36,7 +36,8 @@ export async function getVideosFeed(limit = 20, offset = 0) {
       video_url,
       caption,
       created_at,
-      business_id
+      business_id,
+      view_count
     `)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -466,7 +467,8 @@ export async function getUserBookmarkedVideos(userId: string, limit = 20, offset
         video_url,
         caption,
         created_at,
-        business_id
+        business_id,
+        view_count
       `)
       .in('id', videoIds);
 
@@ -721,7 +723,8 @@ export async function getWeightedVideoFeed(limit = 20, offset = 0) {
         video_url,
         caption,
         created_at,
-        business_id
+        business_id,
+        view_count
       `)
       .in('id', selectedIds);
 
@@ -772,6 +775,40 @@ export async function getWeightedVideoFeed(limit = 20, offset = 0) {
   } catch (error: any) {
     console.error('Exception generating weighted feed:', error);
     return { data: null, error };
+  }
+}
+
+/**
+ * Track a video view and increment the view count
+ * @param videoId - The ID of the video being viewed
+ * @param userId - Optional user ID (if logged in)
+ * @param ipAddress - Optional IP address (useful for tracking anonymous views)
+ * @returns true if the view was counted, false if already viewed recently (cooldown)
+ */
+export async function trackVideoView(
+  videoId: string,
+  userId?: string,
+  ipAddress?: string
+) {
+  try {
+    const { data, error } = await supabase.rpc(
+      'increment_video_view_count',
+      {
+        p_video_id: videoId,
+        p_user_id: userId || null,
+        p_ip_address: ipAddress || null,
+      }
+    );
+
+    if (error) {
+      console.error('Error tracking video view:', error);
+      return { success: false, error };
+    }
+
+    return { success: data === true, error: null };
+  } catch (error: any) {
+    console.error('Exception tracking video view:', error);
+    return { success: false, error };
   }
 }
 

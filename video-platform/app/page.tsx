@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
-import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed } from '@/lib/supabase/videos';
+import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
 import { CommentModal } from '@/components/CommentModal';
@@ -257,6 +257,19 @@ function HomeContent() {
       }
     });
   }, [currentIndex, videos]);
+
+  // Track video view when video becomes visible
+  useEffect(() => {
+    if (videos.length > 0 && currentIndex >= 0 && currentIndex < videos.length) {
+      const currentVideo = videos[currentIndex];
+      if (currentVideo && currentVideo.id) {
+        // Track view with user ID if logged in, otherwise without
+        trackVideoView(currentVideo.id, user?.id).catch((error: any) => {
+          console.warn('Failed to track video view:', error);
+        });
+      }
+    }
+  }, [currentIndex, videos, user?.id]);
 
   // Handle scroll to change videos
   const handleScroll = (e: React.WheelEvent) => {

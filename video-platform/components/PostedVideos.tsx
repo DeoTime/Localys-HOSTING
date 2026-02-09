@@ -34,7 +34,7 @@ export function PostedVideos({ userId }: PostedVideosProps) {
       // Get all videos by this user
       const { data: userVideos, error: videosError } = await supabase
         .from('videos')
-        .select('id, video_url, caption, created_at, boost_value, coins_spent_on_promotion')
+        .select('id, video_url, caption, created_at, boost_value, coins_spent_on_promotion, view_count')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -58,27 +58,68 @@ export function PostedVideos({ userId }: PostedVideosProps) {
         });
       }
 
-      // Get comments for all videos
-      const { data: allComments } = await supabase
-        .from('comments')
-        .select('video_id')
-        .eq('parent_comment_id', null);
+      // Get comments for all videos by this user - try multiple approaches
+      const videoIds = userVideos.map(v => v.id);
+      console.log('PostedVideos - Loading comments for videos:', videoIds.slice(0, 3), '... (' + videoIds.length + ' total)');
+
+      let allComments: any[] = [];
+
+      // First try: Get all comments where video_id matches and parent_comment_id is null
+      try {
+        if (videoIds.length > 0) {
+          const { data, error } = await supabase
+            .from('comments')
+            .select('id, video_id, content, user_id')
+            .in('video_id', videoIds)
+            .is('parent_comment_id', null);
+
+          if (error) {
+            console.error('Error with .in() filter on comments:', error);
+          } else if (data && data.length > 0) {
+            console.log('PostedVideos - Got comments with .in() filter:', data.length);
+            allComments = data;
+          } else {
+            console.log('PostedVideos - No comments found with .in() filter');
+          }
+        }
+      } catch (err) {
+        console.error('Exception fetching comments with .in():', err);
+      }
+
+      // Second try: If no comments found and video IDs exist, fetch all comments and filter
+      if (allComments.length === 0 && videoIds.length > 0) {
+        try {
+          console.log('PostedVideos - Trying fallback: fetch all parent comments');
+          const { data, error } = await supabase
+            .from('comments')
+            .select('id, video_id, content, user_id')
+            .is('parent_comment_id', null);
+
+          if (error) {
+            console.error('Error fetching all comments:', error);
+          } else if (data) {
+            allComments = data.filter((c: any) => videoIds.includes(c.video_id));
+            console.log('PostedVideos - Fallback got comments:', allComments.length);
+          }
+        } catch (err) {
+          console.error('Exception fetching all comments:', err);
+        }
+      }
 
       const commentsMap: { [key: string]: number } = {};
-      if (allComments) {
-        allComments.forEach((comment: any) => {
-          if (comment.video_id) {
-            commentsMap[comment.video_id] = (commentsMap[comment.video_id] || 0) + 1;
-          }
-        });
-      }
+      allComments.forEach((comment: any) => {
+        if (comment.video_id) {
+          commentsMap[comment.video_id] = (commentsMap[comment.video_id] || 0) + 1;
+        }
+      });
+      console.log('PostedVideos - Final comments map:', commentsMap);
 
       // Combine data
       const videosWithStats = userVideos.map((video: any) => ({
         ...video,
         likes: likesMap[video.id] || 0,
         comments: commentsMap[video.id] || 0,
-        views: 0, // Placeholder - add view tracking in future
+        views: video.view_count || 0,
       }));
 
       setVideos(videosWithStats);
