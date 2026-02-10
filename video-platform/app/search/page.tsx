@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { searchVideos, searchBusinesses, SearchFilters, SearchMode } from '@/lib/supabase/search';
+import { haversineDistance } from '@/lib/utils/geo';
 
 // Filter option definitions
 const CUISINE_TYPES = ['Italian', 'Mexican', 'Chinese', 'Japanese', 'Korean', 'Indian', 'Thai', 'Vietnamese', 'Mediterranean', 'American', 'French', 'Middle Eastern'];
@@ -559,7 +560,7 @@ function BusinessResultCard({
 
   const distance =
     userLat && userLng && business.latitude && business.longitude
-      ? haversineDistanceClient(userLat, userLng, business.latitude, business.longitude)
+      ? haversineDistance(userLat, userLng, business.latitude, business.longitude)
       : null;
 
   const avgPrice =
@@ -699,17 +700,4 @@ function VideoResultCard({ result, query }: { result: any; query: string }) {
       </div>
     </Link>
   );
-}
-
-/** Client-side haversine distance (km) */
-function haversineDistanceClient(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
 }
