@@ -114,16 +114,19 @@ export async function aiAssistedSearch(filters: SearchFilters) {
 export async function searchVideos(filters: SearchFilters) {
   const interpretedFilters = await aiAssistedSearch(filters);
 
+  // Use left join instead of inner join
   let query = supabase
     .from('videos')
-    .select('*');
+    .select('*, profiles:user_id(id, username, full_name, profile_picture_url)');
 
   // Apply text search with semantic expansion
   if (interpretedFilters.query) {
     const expandedTerms = expandSearchQuery(interpretedFilters.query);
-    // Build OR filter for all semantic terms
-    const orFilters = expandedTerms.map((term) => `caption.ilike.%${term}%`).join(',');
-    query = query.or(orFilters);
+    // Create a simple OR filter for caption only - we'll filter by business name after fetching
+    const captionFilters = expandedTerms
+      .map(term => `caption.ilike.%${term}%`)
+      .join(',');
+    query = query.or(captionFilters);
   }
 
   const { data, error } = await query
@@ -153,17 +156,18 @@ export async function searchVideos(filters: SearchFilters) {
 
       if (video.business_id) {
         try {
-          const { data: businesses, error: businessError } = await supabase
-            .from('businesses')
+          // Changed from 'businesses' table to 'profiles' table
+          const { data: business, error: businessError } = await supabase
+            .from('profiles')
             .select('*')
-            .eq('id', video.business_id);
+            .eq('id', video.business_id)
+            .single();
 
-          if (!businessError && businesses && businesses.length > 0) {
-            const business = businesses[0];
+          if (!businessError && business) {
             enrichedVideo.businesses = {
               id: business.id,
-              business_name: business.business_name,
-              category: business.category,
+              business_name: business.full_name || business.username,
+              category: business.category, // May be undefined
               profile_picture_url: business.profile_picture_url,
               latitude: business.latitude,
               longitude: business.longitude,
@@ -184,6 +188,35 @@ export async function searchVideos(filters: SearchFilters) {
 
   // Apply client-side filters
   let filteredResults = results;
+
+  // Filter by business name if query provided
+  if (interpretedFilters.query) {
+    const expandedTerms = expandSearchQuery(interpretedFilters.query);
+    filteredResults = filteredResults.filter((video) => {
+      // Check caption
+      if (video.caption) {
+        const captionLower = video.caption.toLowerCase();
+        if (expandedTerms.some(term => captionLower.includes(term.toLowerCase()))) {
+          return true;
+        }
+      }
+      // Check business name
+      if (video.businesses?.business_name) {
+        const businessNameLower = video.businesses.business_name.toLowerCase();
+        if (expandedTerms.some(term => businessNameLower.includes(term.toLowerCase()))) {
+          return true;
+        }
+      }
+      // Check profile full_name
+      if (video.profiles?.full_name) {
+        const fullNameLower = video.profiles.full_name.toLowerCase();
+        if (expandedTerms.some(term => fullNameLower.includes(term.toLowerCase()))) {
+          return true;
+        }
+      }
+      return false;
+    });
+  }
 
   if (interpretedFilters.category) {
     filteredResults = filteredResults.filter((video) => {
@@ -221,39 +254,47 @@ export async function searchVideos(filters: SearchFilters) {
 export async function searchBusinesses(filters: SearchFilters) {
   const interpretedFilters = await aiAssistedSearch(filters);
 
+  // Search profiles table directly
   let query = supabase
-    .from('businesses')
+    .from('profiles')
     .select('*');
 
-  // Apply text search with semantic expansion
+  // Removed DB-level category and rating filters as they cause 42703 errors
   if (interpretedFilters.query) {
     const expandedTerms = expandSearchQuery(interpretedFilters.query);
-    const orFilters = expandedTerms
-      .map((term) => `business_name.ilike.%${term}%`)
+    const orFilter = expandedTerms
+      .map(term => `full_name.ilike.%${term}%,username.ilike.%${term}%,bio.ilike.%${term}%`)
       .join(',');
-    query = query.or(orFilters);
-  }
-
-  // Apply category filter at DB level
-  if (interpretedFilters.category) {
-    query = query.eq('category', interpretedFilters.category);
-  }
-
-  // Apply rating filter at DB level
-  if (interpretedFilters.minRating) {
-    query = query.gte('average_rating', interpretedFilters.minRating);
+    query = query.or(orFilter);
   }
 
   const { data, error } = await query
-    .order('average_rating', { ascending: false, nullsFirst: false })
-    .limit(50);
+    .limit(50); // Removed .order() on average_rating to prevent potential column errors
 
   if (error) {
     console.error('Business search error:', error);
-    return { data: [], error };
   }
 
-  let filteredResults = data || [];
+  // Transform profiles into the search result shape
+  let filteredResults = (data || []).map((profile: any) => ({
+    ...profile,
+    business_name: profile.full_name || profile.username,
+    is_profile: true,
+    profiles: {
+      full_name: profile.full_name,
+      username: profile.username,
+      profile_picture_url: profile.profile_picture_url,
+    },
+  }));
+
+  // Apply filters client-side now that we have the data
+  if (interpretedFilters.category) {
+    filteredResults = filteredResults.filter(biz => biz.category === interpretedFilters.category);
+  }
+
+  if (interpretedFilters.minRating) {
+    filteredResults = filteredResults.filter(biz => (biz.average_rating || 0) >= interpretedFilters.minRating!);
+  }
 
   // Apply price range filter client-side
   if (interpretedFilters.priceMin !== undefined || interpretedFilters.priceMax !== undefined) {

@@ -108,27 +108,14 @@ function SearchContent() {
 
   const handleSearch = useCallback(() => {
     const filters = buildFilters();
-    const hasAnyFilter = query.trim() || category || minRating || priceRange[0] > 0 || priceRange[1] < 1000
-      || cuisineType || formality || specialType || dietary.length || features.length || amenities.length
-      || payment.length || tags.length || nearMe;
-
-    if (!hasAnyFilter) {
-      setResults([]);
-      setHasSearched(false);
-      return;
-    }
+    // Execute search immediately, allowing blank or filter-only queries
     executeSearch(filters, searchMode);
   }, [query, category, minRating, priceRange, cuisineType, formality, specialType, dietary, features, amenities, payment, tags, nearMe, radius, userLat, userLng, searchMode, executeSearch]);
 
   const handleCategoryChange = (cat: string) => {
     setCategory(cat);
     const filters = buildFilters(cat);
-    const hasAnyFilter = query.trim() || cat || minRating || priceRange[0] > 0 || priceRange[1] < 1000;
-    if (!hasAnyFilter) {
-      setResults([]);
-      setHasSearched(false);
-      return;
-    }
+    // Execute search immediately when category changes
     executeSearch(filters, searchMode);
   };
 
@@ -557,6 +544,7 @@ function BusinessResultCard({
   onHover: (biz: any) => void;
 }) {
   const isHovered = hoveredId === business.id;
+  const businessName = business.business_name || business.profiles?.full_name || 'Unknown Business';
 
   const distance =
     userLat && userLng && business.latitude && business.longitude
@@ -587,7 +575,7 @@ function BusinessResultCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-white truncate">{business.business_name}</h3>
+          <h3 className="font-semibold text-white truncate">{businessName}</h3>
 
           <div className="flex items-center gap-2 text-sm text-white/70 mt-1 flex-wrap">
             {business.average_rating != null && (
