@@ -439,25 +439,6 @@ function SearchContent() {
                         hoveredId={hoveredBusiness?.id}
                         onHover={setHoveredBusiness}
                       />
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-1">
-                          {result.businesses?.business_name || 'Business'}
-                        </h3>
-                        <p className="text-sm text-white/60 mb-2 line-clamp-2">
-                          {result.caption || ''}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-white/80">
-                          {result.businesses?.average_rating && (
-                            <span>⭐ {result.businesses.average_rating.toFixed(1)}</span>
-                          )}
-                          {(commentCounts[result.id] || 0) > 0 && (
-                            <span>• {commentCounts[result.id]} reviews</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
                     ))
                   : results.map((result) => (
                       <VideoResultCard key={result.id} result={result} query={query} />
