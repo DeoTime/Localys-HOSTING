@@ -51,7 +51,6 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const subscriptionRef = useRef<RealtimeChannel | null>(null);
 
-  // Load conversation and messages on mount
   useEffect(() => {
     if (!user || !conversationId) return;
 
@@ -60,7 +59,6 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
     subscribeToNewMessages();
     markAsRead();
 
-    // Cleanup subscription on unmount
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
@@ -68,12 +66,10 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
     };
   }, [user, conversationId]);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Mark conversation as read when user is viewing it
   useEffect(() => {
     if (conversationId && user) {
       markAsRead();
@@ -115,14 +111,12 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
 
     subscriptionRef.current = subscribeToMessages(conversationId, (message) => {
       setMessages((prev) => {
-        // Avoid duplicates
         if (prev.some((m) => m.id === message.id)) {
           return prev;
         }
         return [...prev, message];
       });
 
-      // Mark as read if message is from other user
       if (message.sender_id !== user?.id) {
         markAsRead();
       }
@@ -231,16 +225,12 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
 
       if (err) {
         setError(err.message);
-        // Restore message on error
         setNewMessage(messageContent);
         return;
       }
 
-      // Message will be added via real-time subscription
-      // But we can optimistically add it for better UX
       if (data) {
         setMessages((prev) => {
-          // Avoid duplicates
           if (prev.some((m) => m.id === data.id)) {
             return prev;
           }
@@ -474,7 +464,6 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
             disabled={sending}
             className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/40 disabled:opacity-50 disabled:cursor-not-allowed"
             onKeyDown={(e) => {
-              // Allow sending with Enter (but allow Shift+Enter for new line if needed)
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSendMessage(e);

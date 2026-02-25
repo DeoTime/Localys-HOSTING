@@ -45,7 +45,6 @@ export default function BuyCoinsPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
-    // Check if Stripe is configured
     if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
       setStripeConfigured(false);
       setError('Payment system is not configured. Please contact support.');
@@ -138,7 +137,6 @@ export default function BuyCoinsPage() {
         }),
       });
 
-      // Check if response is valid JSON
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         throw new Error('Server error: Please try again later');

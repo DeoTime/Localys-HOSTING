@@ -1,70 +1,13 @@
 import { supabase } from './client';
+import type { Message, Chat, ChatMember, ChatWithDetails } from '../../models/Message';
 
-export interface Message {
-  id?: string;
-  chat_id: string;
-  sender_id: string;
-  content: string;
-  created_at?: string;
-  edited_at?: string;
-  deleted?: boolean;
-  reply_to?: string;
-  metadata?: any;
-  is_read?: boolean;
-  sender?: {
-    id: string;
-    username?: string;
-    full_name?: string;
-    profile_picture_url?: string;
-  };
-}
-
-export interface Conversation {
-  id: string;
-  is_group: boolean;
-  other_user?: {
-    id: string;
-    username?: string;
-    full_name?: string;
-    avatar_url?: string;
-    profile_picture_url?: string;
-  };
-}
-
-export interface Chat {
-  id?: string;
-  is_group?: boolean;
-  metadata?: any;
-  created_at?: string;
-}
-
-export interface ChatMember {
-  id?: string;
-  chat_id: string;
-  user_id: string;
-  joined_at?: string;
-  last_read?: string;
-  role?: string;
-}
-
-export interface ChatWithDetails extends Chat {
-  members?: ChatMember[];
-  last_message?: Message;
-  unread_count?: number;
-  other_user?: {
-    id: string;
-    username?: string;
-    full_name?: string;
-    profile_picture_url?: string;
-  };
-}
+export type { Message, Chat, ChatMember, ChatWithDetails };
 
 /**
  * Get all chats for a user with details
  */
 export async function getChats(userId: string) {
   try {
-    // Get all chats where the user is a member
     const { data: memberChats, error: memberError } = await supabase
       .from('chat_members')
       .select(`
@@ -86,7 +29,6 @@ export async function getChats(userId: string) {
 
     const chatIds = memberChats.map(m => m.chat_id);
 
-    // Get all members for these chats with profile info
     const { data: allMembers, error: membersError } = await supabase
       .from('chat_members')
       .select(`
@@ -103,7 +45,6 @@ export async function getChats(userId: string) {
 
     if (membersError) throw membersError;
 
-    // Get last message for each chat
     const { data: messages, error: messagesError } = await supabase
       .from('messages')
       .select('*')
@@ -112,7 +53,6 @@ export async function getChats(userId: string) {
 
     if (messagesError) throw messagesError;
 
-    // Build chat objects with details
     const chats: ChatWithDetails[] = memberChats.map(mc => {
       const chat = mc.chats as Chat | null;
       if (!chat) return null;
@@ -121,7 +61,6 @@ export async function getChats(userId: string) {
       const otherMember = chatMembers.find(m => m.user_id !== userId);
       const lastMessage = messages?.find(m => m.chat_id === mc.chat_id);
       
-      // Count unread messages (messages after last_read timestamp)
       const unreadMessages = messages?.filter(m => 
         m.chat_id === mc.chat_id && 
         m.sender_id !== userId &&
@@ -137,7 +76,6 @@ export async function getChats(userId: string) {
       };
     }).filter((chat): chat is ChatWithDetails => chat !== null);
 
-    // Sort by last message timestamp
     chats.sort((a, b) => {
       const aTime = a.last_message?.created_at || a.created_at || '';
       const bTime = b.last_message?.created_at || b.created_at || '';
@@ -198,7 +136,6 @@ export async function sendMessage(message: Omit<Message, 'id' | 'created_at'>) {
  */
 export async function findOneToOneChat(userId1: string, userId2: string) {
   try {
-    // Query for non-group chats where current user is a member
     const { data: userChats, error: userChatsError } = await supabase
       .from('chat_members')
       .select('chat_id')
@@ -215,7 +152,6 @@ export async function findOneToOneChat(userId1: string, userId2: string) {
 
     const chatIds = userChats.map(m => m.chat_id);
 
-    // Get all chats that match these IDs and are not group chats
     const { data: potentialChats, error: chatsError } = await supabase
       .from('chats')
       .select('id, is_group, metadata, created_at')
@@ -228,7 +164,6 @@ export async function findOneToOneChat(userId1: string, userId2: string) {
       return { data: null, error: null };
     }
 
-    // For each potential chat, check if it has exactly these two users
     for (const chat of potentialChats) {
       const { data: members, error: membersError } = await supabase
         .from('chat_members')
@@ -240,7 +175,6 @@ export async function findOneToOneChat(userId1: string, userId2: string) {
         continue;
       }
 
-      // Check if chat has exactly these two users
       if (members && members.length === 2) {
         const memberIds = members.map(m => m.user_id).sort();
         const targetIds = [userId1, userId2].sort();
@@ -267,7 +201,6 @@ export async function getOrCreateOneToOneChat(userId1: string, userId2: string) 
   try {
     console.log('Creating/fetching 1:1 chat between', userId1, 'and', userId2);
     
-    // First, try to find existing chat
     const { data: existing, error: findError } = await findOneToOneChat(userId1, userId2);
     
     if (findError) {
@@ -281,7 +214,6 @@ export async function getOrCreateOneToOneChat(userId1: string, userId2: string) 
       return { data: existing, error: null };
     }
 
-    // Create new chat
     console.log('Creating new 1:1 chat...');
     const { data: newChat, error: chatError } = await supabase
       .from('chats')
@@ -304,7 +236,6 @@ export async function getOrCreateOneToOneChat(userId1: string, userId2: string) 
 
     console.log('Chat created successfully:', newChat.id);
 
-    // Add both users as members
     console.log('Adding members to chat...');
     const { error: membersError } = await supabase
       .from('chat_members')
@@ -337,17 +268,14 @@ export async function getOrCreateOneToOneChat(userId1: string, userId2: string) 
 function extractErrorMessage(error: any): string {
   if (!error) return 'Unknown error';
   
-  // If it's already an Error instance
   if (error instanceof Error) {
     return error.message;
   }
   
-  // Supabase error object structure: { message, code, details, hint }
   if (typeof error === 'object') {
     if (error.message) return error.message;
     if (error.error_description) return error.error_description;
     if (error.msg) return error.msg;
-    // Try to stringify it for debugging
     try {
       const str = JSON.stringify(error, null, 2);
       console.log('Full error object:', str);
@@ -357,7 +285,6 @@ function extractErrorMessage(error: any): string {
     }
   }
   
-  // Fallback to string conversion
   return String(error);
 }
 
@@ -408,115 +335,3 @@ export async function searchUsers(query: string, currentUserId: string) {
 
   return { data, error };
 }
-
-/**
- * Edit a message
- */
-export async function editMessage(messageId: string, newContent: string) {
-  const { data, error } = await supabase
-    .from('messages')
-    .update({
-      content: newContent,
-      edited_at: new Date().toISOString(),
-    })
-    .eq('id', messageId)
-    .select(`
-      *,
-      sender:sender_id (
-        id,
-        username,
-        full_name,
-        profile_picture_url
-      )
-    `)
-    .single();
-
-  return { data, error };
-}
-
-/**
- * Delete a message (soft delete)
- */
-export async function deleteMessage(messageId: string) {
-  const { data, error } = await supabase
-    .from('messages')
-    .update({
-      deleted: true,
-      content: '[Message deleted]',
-    })
-    .eq('id', messageId)
-    .select()
-    .single();
-
-  return { data, error };
-}
-
-/**
- * Get a single conversation
- */
-export async function getConversation(conversationId: string) {
-  const { data, error } = await supabase
-    .from('chats')
-    .select(`
-      *,
-      members:chat_members (
-        user_id,
-        profiles:user_id (
-          id,
-          username,
-          full_name,
-          profile_picture_url,
-          avatar_url
-        )
-      )
-    `)
-    .eq('id', conversationId)
-    .single();
-
-  if (error) {
-    return { data: null, error };
-  }
-
-  // For 1:1 chats, extract the other user
-  if (data && !data.is_group && data.members) {
-    const members = data.members as any[];
-    // Find the other user (not current user)
-    const otherMember = members[0]; // In 1:1 chats, there should be 2 members
-    
-    return {
-      data: {
-        id: data.id,
-        is_group: data.is_group,
-        other_user: otherMember?.profiles,
-      },
-      error: null,
-    };
-  }
-
-  return { data, error: null };
-}
-
-/**
- * Mark a conversation as read
- */
-export async function markConversationAsRead(conversationId: string) {
-  // This assumes the current user's ID is available in the auth context
-  // We get it from the current session
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return { error: new Error('User not authenticated') };
-  }
-
-  const { error } = await supabase
-    .from('chat_members')
-    .update({ last_read: new Date().toISOString() })
-    .eq('chat_id', conversationId)
-    .eq('user_id', user.id);
-
-  return { error };
-}
-
-
-
-

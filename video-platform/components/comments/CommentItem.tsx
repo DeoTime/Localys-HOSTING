@@ -39,9 +39,8 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
   const [postingReply, setPostingReply] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // Load replies when expanded
   const loadReplies = async () => {
-    if (replies.length > 0) return; // Already loaded
+    if (replies.length > 0) return;
 
     setLoadingReplies(true);
     try {
@@ -58,7 +57,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
     }
   };
 
-  // Handle reply creation
   const handleCreateReply = async (content: string) => {
     if (!user || postingReply) return;
 
@@ -76,7 +74,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
         return;
       }
 
-      // Add reply to the list
       if (data) {
         setReplies(prev => [...prev, data]);
         setShowReplies(true);
@@ -89,7 +86,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
     }
   };
 
-  // Handle like toggle
   const handleLikeToggle = async () => {
     if (!user || liking) return;
 
@@ -102,7 +98,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
         return;
       }
 
-      // Update local state immediately for better UX
       const newLikeCount = comment.is_liked ? comment.like_count - 1 : comment.like_count + 1;
       const newIsLiked = !comment.is_liked;
 
@@ -118,33 +113,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
     }
   };
 
-  // Handle comment deletion
-  const handleDeleteComment = async () => {
-    if (!user || !confirm('Are you sure you want to delete this comment? This cannot be undone.')) {
-      return;
-    }
-
-    setDeleting(true);
-    try {
-      const { error } = await deleteComment(comment.id);
-
-      if (error) {
-        alert(`Failed to delete comment: ${error.message}`);
-        return;
-      }
-
-      // Notify parent that comment was deleted
-      if (onCommentDeleted) {
-        onCommentDeleted(comment.id);
-      }
-    } catch (err: any) {
-      alert(`Error: ${err.message}`);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  // Handle show replies toggle
   const handleShowReplies = () => {
     setShowReplies(!showReplies);
     if (!showReplies && replies.length === 0) {
@@ -152,13 +120,11 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
     }
   };
 
-  // Subscribe to new replies
   useEffect(() => {
     if (!showReplies) return;
 
     const channel = subscribeToCommentReplies(comment.id, (newReply) => {
       setReplies(prev => {
-        // Avoid duplicates
         if (prev.some(r => r.id === newReply.id)) {
           return prev;
         }

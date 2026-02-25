@@ -20,15 +20,28 @@ export default function CheckoutSuccessPage() {
       return;
     }
 
-    const verifyPurchase = async () => {
+    const timer = setTimeout(async () => {
       if (!user) return;
 
       try {
-        // Call the verify-purchase API to add coins directly
-        const response = await fetch(`/api/verify-purchase?session_id=${sessionId}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to verify purchase');
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('coin_balance')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        const { data: purchase, error: purchaseError } = await supabase
+          .from('coin_purchases')
+          .select('coins')
+          .eq('stripe_session_id', sessionId)
+          .single();
+
+        if (purchaseError) {
+          console.log('Purchase record not found yet:', purchaseError);
+        } else if (purchase) {
+          setCoinsAdded(purchase.coins);
         }
 
         const data = await response.json();

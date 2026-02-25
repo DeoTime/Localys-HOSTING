@@ -53,7 +53,6 @@ export default function VideoDetailPage() {
       setLoading(true);
       setError(null);
 
-      // Fetch video
       const { data: videoData, error: videoError } = await supabase
         .from('videos')
         .select('*')
@@ -65,7 +64,6 @@ export default function VideoDetailPage() {
         return;
       }
 
-      // Fetch related profile or business
       let enrichedVideo = { ...videoData };
 
       if (videoData.user_id) {
@@ -92,14 +90,12 @@ export default function VideoDetailPage() {
 
       setVideo(enrichedVideo);
 
-      // Load like count
       if (videoData.business_id) {
         const { data: counts } = await getLikeCounts([videoData.business_id]);
         if (counts && typeof counts === 'object') {
           setLikeCount((counts as any)[videoData.business_id] || 0);
         }
       } else {
-        // Get like count for video_id
         const { count } = await supabase
           .from('likes')
           .select('*', { count: 'exact', head: true })
@@ -107,7 +103,6 @@ export default function VideoDetailPage() {
         setLikeCount(count || 0);
       }
 
-      // Check if user liked
       if (user) {
         const likeKey = videoData.business_id || videoId;
         const { data: userLike } = await supabase
