@@ -6,7 +6,7 @@
  */
 
 // Re-export types from messages.ts
-export type { Message, Chat, ChatMember, ChatWithDetails } from './messages';
+export type { Message, Chat, ChatMember, ChatWithDetails, Conversation } from './messages';
 
 // Re-export functions from messages.ts
 export { 
@@ -18,6 +18,10 @@ export {
   markMessagesAsRead,
   subscribeToMessages,
   searchUsers,
+  editMessage,
+  deleteMessage,
+  getConversation,
+  markConversationAsRead,
 } from './messages';
 
 // Aliases for backward compatibility

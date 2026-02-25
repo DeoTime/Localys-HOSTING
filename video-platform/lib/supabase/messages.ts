@@ -10,6 +10,25 @@ export interface Message {
   deleted?: boolean;
   reply_to?: string;
   metadata?: any;
+  is_read?: boolean;
+  sender?: {
+    id: string;
+    username?: string;
+    full_name?: string;
+    profile_picture_url?: string;
+  };
+}
+
+export interface Conversation {
+  id: string;
+  is_group: boolean;
+  other_user?: {
+    id: string;
+    username?: string;
+    full_name?: string;
+    avatar_url?: string;
+    profile_picture_url?: string;
+  };
 }
 
 export interface Chat {
@@ -148,7 +167,6 @@ export async function getMessages(chatId: string) {
       )
     `)
     .eq('chat_id', chatId)
-    .eq('deleted', false)
     .order('created_at', { ascending: true });
 
   return { data, error };
@@ -389,6 +407,114 @@ export async function searchUsers(query: string, currentUserId: string) {
     .limit(10);
 
   return { data, error };
+}
+
+/**
+ * Edit a message
+ */
+export async function editMessage(messageId: string, newContent: string) {
+  const { data, error } = await supabase
+    .from('messages')
+    .update({
+      content: newContent,
+      edited_at: new Date().toISOString(),
+    })
+    .eq('id', messageId)
+    .select(`
+      *,
+      sender:sender_id (
+        id,
+        username,
+        full_name,
+        profile_picture_url
+      )
+    `)
+    .single();
+
+  return { data, error };
+}
+
+/**
+ * Delete a message (soft delete)
+ */
+export async function deleteMessage(messageId: string) {
+  const { data, error } = await supabase
+    .from('messages')
+    .update({
+      deleted: true,
+      content: '[Message deleted]',
+    })
+    .eq('id', messageId)
+    .select()
+    .single();
+
+  return { data, error };
+}
+
+/**
+ * Get a single conversation
+ */
+export async function getConversation(conversationId: string) {
+  const { data, error } = await supabase
+    .from('chats')
+    .select(`
+      *,
+      members:chat_members (
+        user_id,
+        profiles:user_id (
+          id,
+          username,
+          full_name,
+          profile_picture_url,
+          avatar_url
+        )
+      )
+    `)
+    .eq('id', conversationId)
+    .single();
+
+  if (error) {
+    return { data: null, error };
+  }
+
+  // For 1:1 chats, extract the other user
+  if (data && !data.is_group && data.members) {
+    const members = data.members as any[];
+    // Find the other user (not current user)
+    const otherMember = members[0]; // In 1:1 chats, there should be 2 members
+    
+    return {
+      data: {
+        id: data.id,
+        is_group: data.is_group,
+        other_user: otherMember?.profiles,
+      },
+      error: null,
+    };
+  }
+
+  return { data, error: null };
+}
+
+/**
+ * Mark a conversation as read
+ */
+export async function markConversationAsRead(conversationId: string) {
+  // This assumes the current user's ID is available in the auth context
+  // We get it from the current session
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return { error: new Error('User not authenticated') };
+  }
+
+  const { error } = await supabase
+    .from('chat_members')
+    .update({ last_read: new Date().toISOString() })
+    .eq('chat_id', conversationId)
+    .eq('user_id', user.id);
+
+  return { error };
 }
 
 

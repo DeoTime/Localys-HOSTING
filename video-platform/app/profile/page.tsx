@@ -5,20 +5,26 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { signOut } from '@/lib/supabase/auth';
 import { supabase } from '@/lib/supabase/client';
 import { EditableProfilePicture } from '@/components/EditableProfilePicture';
+import { LanguageSettings } from '@/components/LanguageSettings';
 import { BookmarkedVideos } from '@/components/BookmarkedVideos';
 import { PostedVideos } from '@/components/PostedVideos';
+import { MenuList } from '@/components/MenuList';
 import { 
   uploadProfilePicture, 
   updateProfile, 
   getUserBusiness, 
   updateBusinessInfo,
+  createBusiness,
+  ensureUserBusiness,
   Profile,
   Business,
   ProfileUpdateData,
   BusinessUpdateData,
+  BusinessHours,
   MAX_PROFILE_PICTURE_SIZE,
   BYTES_TO_MB
 } from '@/lib/supabase/profiles';
@@ -33,6 +39,7 @@ export default function ProfilePage() {
 
 function ProfileContent() {
   const { user, signOut: contextSignOut } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -71,12 +78,12 @@ function ProfileContent() {
     if (!user) return;
 
     try {
-      const { data, error } = await getUserBusiness(user.id);
+      const { data, error } = await ensureUserBusiness(user.id);
       if (!error && data) {
         setBusiness(data);
       }
     } catch (error) {
-      // Failed to load business - user may not have one, which is fine
+      // Failed to load or create business
       setBusiness(null);
     }
   };
@@ -91,7 +98,7 @@ function ProfileContent() {
       <div className="min-h-screen bg-black text-white pb-20 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Loading profile...</p>
+          <p>{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -101,8 +108,9 @@ function ProfileContent() {
     <div className="min-h-screen bg-black text-white pb-20">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Profile</h1>
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <h1 className="text-2xl font-bold">{t('profile.title')}</h1>
+          <LanguageSettings />
         </div>
       </div>
 
@@ -145,6 +153,9 @@ interface ProfileViewProps {
 }
 
 function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfileUpdated, pathname }: ProfileViewProps) {
+  const { t } = useTranslation();
+  const [showBusinessHours, setShowBusinessHours] = useState(false);
+  
   return (
     <>
       <div className="max-w-2xl mx-auto px-4 py-8">
@@ -166,17 +177,51 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
               <p className="text-white/80 text-sm mb-2">{profile.bio}</p>
             )}
             {business && (
-              <p className="text-blue-400 text-sm">🏪 {business.business_name}</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-blue-400 text-sm">🏪 {business.business_name}</p>
+                {business.business_type && (
+                  <span className="bg-blue-500/30 text-blue-200 text-xs px-2 py-1 rounded-full capitalize">
+                    {business.business_type === 'hybrid' ? '📦 Pickup & Delivery' : `🏷️ ${business.business_type}`}
+                  </span>
+                )}
+                {business.business_hours && (
+                  <button
+                    onClick={() => setShowBusinessHours(!showBusinessHours)}
+                    className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
+                  >
+                    {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>
+
+        {/* Business Hours Display */}
+        {business?.business_hours && showBusinessHours && (
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-8 space-y-2">
+            <h3 className="text-lg font-semibold mb-4">⏰ Business Hours</h3>
+            {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+              <div key={day} className="flex justify-between items-center text-sm">
+                <span className="text-white/80 capitalize font-medium">{day}</span>
+                <span className="text-white/60">
+                  {business.business_hours?.[day]?.closed ? (
+                    'Closed'
+                  ) : (
+                    `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Edit Profile Button */}
         <button 
           onClick={onEditClick}
           className="w-full bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg py-3 mb-6 transition-all duration-200 hover:scale-[1.02] active:scale-98"
         >
-          Edit Profile
+          {t('profile.edit_profile')}
         </button>
 
         {/* Coin Balance & Buy Coins Buttons */}
@@ -191,13 +236,21 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
             href="/buy-coins"
             className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg py-3 px-4 transition-all duration-200 hover:scale-[1.02] active:scale-98 text-center"
           >
-            Buy Coins
+            {t('nav.buy_coins')}
           </Link>
+        </div>
+
+        {/* Menus Section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">🍽️ {t('menu.title')}</h3>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <MenuList userId={user.id} businessId={business?.id} isOwnProfile={true} />
+          </div>
         </div>
 
         {/* Posted Videos Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">My Videos</h3>
+          <h3 className="text-xl font-semibold mb-4">{t('profile.videos')}</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
             <PostedVideos userId={user.id} />
           </div>
@@ -205,7 +258,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
 
         {/* Bookmarked Videos Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">Bookmarked Videos</h3>
+          <h3 className="text-xl font-semibold mb-4">{t('profile.bookmarked')}</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
             <BookmarkedVideos userId={user.id} />
           </div>
@@ -213,21 +266,12 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
 
         {/* Settings Section */}
         <div className="space-y-2 mb-8">
-          <h3 className="text-xl font-semibold mb-4">Settings</h3>
+          <h3 className="text-xl font-semibold mb-4">{t('common.settings')}</h3>
           <Link
             href="/settings/payment"
             className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
           >
             <span>Payment Methods</span>
-            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-          <Link
-            href="/settings/language"
-            className="flex items-center justify-between p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all duration-200"
-          >
-            <span>Language Preferences</span>
             <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
@@ -248,7 +292,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
           onClick={onSignOut}
           className="w-full bg-red-500/20 hover:bg-red-500/30 border border-red-500/50 text-red-200 rounded-lg py-3 transition-all duration-200 hover:scale-[1.02] active:scale-98"
         >
-          Sign Out
+          {t('profile.sign_out')}
         </button>
       </div>
 
@@ -271,6 +315,21 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
   const [username, setUsername] = useState(profile?.username || '');
   const [bio, setBio] = useState(profile?.bio || '');
   const [businessName, setBusinessName] = useState(business?.business_name || '');
+  const [businessType, setBusinessType] = useState(business?.business_type || 'general');
+  const [businessHours, setBusinessHours] = useState<BusinessHours>(
+    business?.business_hours || {
+      monday: { open: '09:00', close: '17:00' },
+      tuesday: { open: '09:00', close: '17:00' },
+      wednesday: { open: '09:00', close: '17:00' },
+      thursday: { open: '09:00', close: '17:00' },
+      friday: { open: '09:00', close: '17:00' },
+      saturday: { open: '10:00', close: '16:00' },
+      sunday: { closed: true },
+    }
+  );
+  const [customMessages, setCustomMessages] = useState<string[]>(
+    business?.custom_messages || ['Hi, interested in this!']
+  );
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(
     profile?.profile_picture_url || null
@@ -288,6 +347,18 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
       }
     };
   }, [profilePicturePreview]);
+
+  // Update state when business data loads
+  useEffect(() => {
+    if (business) {
+      setBusinessName(business.business_name || '');
+      setBusinessType(business.business_type || 'general');
+      setCustomMessages(business.custom_messages || ['Hi, interested in this!']);
+      if (business.business_hours) {
+        setBusinessHours(business.business_hours);
+      }
+    }
+  }, [business]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -352,14 +423,17 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
       }
 
       // Update business if it exists and business name changed
-      if (business && businessName !== business.business_name) {
+      if (business && (businessName !== business.business_name || businessType !== business.business_type || JSON.stringify(customMessages) !== JSON.stringify(business.custom_messages))) {
         const businessUpdates: BusinessUpdateData = {
           business_name: businessName,
+          business_type: businessType,
+          business_hours: businessHours,
+          custom_messages: customMessages,
         };
         const { error: businessError } = await updateBusinessInfo(business.id, businessUpdates);
         if (businessError) {
           // Business update failed but profile succeeded - inform user
-          setSuccess('Profile updated successfully! Note: Business name update failed.');
+          setSuccess('Profile updated successfully! Note: Business info update failed.');
           setTimeout(() => {
             onSave();
           }, 1500);
@@ -459,19 +533,143 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
 
         {/* Business Name (if business exists) */}
         {business && (
-          <div>
-            <label className="block text-white/80 text-sm font-medium mb-2">Business Name</label>
-            <input
-              type="text"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your business name"
-            />
-            <p className="text-white/40 text-xs mt-1">
-              Update your restaurant or business name
-            </p>
-          </div>
+          <>
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-2">Business Name</label>
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your business name"
+              />
+              <p className="text-white/40 text-xs mt-1">
+                Update your restaurant or business name
+              </p>
+            </div>
+
+            {/* Business Type */}
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-2">Business Type</label>
+              <select
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                className="w-full bg-white text-black border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="general">General</option>
+                <option value="pickup">Pickup</option>
+                <option value="delivery">Delivery</option>
+                <option value="dine-in">Dine-In</option>
+                <option value="services">Services</option>
+                <option value="retail">Retail</option>
+                <option value="hybrid">Pickup & Delivery</option>
+              </select>
+              <p className="text-white/40 text-xs mt-1">
+                Select how customers can access your business
+              </p>
+            </div>
+
+            {/* Business Hours */}
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-3">Business Hours</label>
+              <div className="space-y-3 bg-white/5 p-4 rounded-lg border border-white/10">
+                {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                  <div key={day} className="flex items-center gap-3">
+                    <label className="w-20 text-white/60 text-sm capitalize">{day}</label>
+                    <div className="flex items-center gap-2 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={!businessHours[day]?.closed}
+                        onChange={(e) => {
+                          setBusinessHours({
+                            ...businessHours,
+                            [day]: e.target.checked 
+                              ? { open: '09:00', close: '17:00' }
+                              : { closed: true },
+                          });
+                        }}
+                        className="w-4 h-4 rounded"
+                      />
+                      {!businessHours[day]?.closed ? (
+                        <>
+                          <input
+                            type="time"
+                            value={businessHours[day]?.open || '09:00'}
+                            onChange={(e) => {
+                              setBusinessHours({
+                                ...businessHours,
+                                [day]: { ...businessHours[day], open: e.target.value },
+                              });
+                            }}
+                            className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          <span className="text-white/40">to</span>
+                          <input
+                            type="time"
+                            value={businessHours[day]?.close || '17:00'}
+                            onChange={(e) => {
+                              setBusinessHours({
+                                ...businessHours,
+                                [day]: { ...businessHours[day], close: e.target.value },
+                              });
+                            }}
+                            className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </>
+                      ) : (
+                        <span className="text-white/40 text-sm">Closed</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/40 text-xs mt-2">
+                Check the box to set hours, uncheck to mark as closed
+              </p>
+            </div>
+
+            {/* Custom Messages */}
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-3">Quick Messages for Customers</label>
+              <div className="space-y-2 bg-white/5 p-4 rounded-lg border border-white/10">
+                {customMessages.map((message, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => {
+                        const newMessages = [...customMessages];
+                        newMessages[index] = e.target.value;
+                        setCustomMessages(newMessages);
+                      }}
+                      className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      placeholder="e.g., Hi, interested in this!"
+                      maxLength={100}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomMessages(customMessages.filter((_, i) => i !== index));
+                      }}
+                      className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCustomMessages([...customMessages, 'Hi, interested in this!'])}
+                className="mt-3 w-full px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors border border-blue-500/50"
+              >
+                + Add Message
+              </button>
+              <p className="text-white/40 text-xs mt-2">
+                Add up to 5 quick messages that customers can click on your videos
+              </p>
+            </div>
+          </>
         )}
 
         {/* Error Message */}

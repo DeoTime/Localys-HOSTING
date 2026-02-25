@@ -812,6 +812,84 @@ export async function trackVideoView(
   }
 }
 
+/**
+ * Delete a video by ID (only owner can delete)
+ */
+export async function deleteVideo(videoId: string, userId: string) {
+  try {
+    // First verify the video exists and belongs to the user
+    const { data: video, error: fetchError } = await supabase
+      .from('videos')
+      .select('id, user_id, video_url')
+      .eq('id', videoId)
+      .single();
+
+    if (fetchError || !video) {
+      return { 
+        data: null, 
+        error: new Error('Video not found') 
+      };
+    }
+
+    // Verify user ownership
+    if (video.user_id !== userId) {
+      return { 
+        data: null, 
+        error: new Error('Unauthorized: You can only delete your own videos') 
+      };
+    }
+
+    // Delete the video record (will cascade delete comments and likes)
+    const { error: deleteError } = await supabase
+      .from('videos')
+      .delete()
+      .eq('id', videoId)
+      .eq('user_id', userId);
+
+    if (deleteError) {
+      console.error('Error deleting video:', deleteError);
+      return { 
+        data: null, 
+        error: new Error(deleteError.message || 'Failed to delete video') 
+      };
+    }
+
+    // Try to delete the video file from storage
+    if (video.video_url) {
+      try {
+        // Extract the file path from the URL or use it directly if it's a path
+        let filePath = video.video_url;
+        if (filePath.startsWith('http')) {
+          // Try to extract path from signed URL
+          const urlObj = new URL(filePath);
+          const match = urlObj.pathname.match(/\/storage\/v1\/object\/(?:public|authenticated)\/[^\/]+\/(.+)$/);
+          if (match && match[1]) {
+            filePath = decodeURIComponent(match[1]);
+          }
+        }
+        
+        await supabase.storage
+          .from(STORAGE_BUCKET)
+          .remove([filePath]);
+      } catch (err) {
+        console.warn('Could not delete video file from storage:', err);
+        // Don't fail the whole operation if file deletion fails
+      }
+    }
+
+    return { 
+      data: { success: true }, 
+      error: null 
+    };
+  } catch (error: any) {
+    console.error('Exception deleting video:', error);
+    return { 
+      data: null, 
+      error: error instanceof Error ? error : new Error('An error occurred while deleting the video') 
+    };
+  }
+}
+
 // Re-export list to help static analyzers and ensure named exports are explicit
 // (explicit export list removed — functions are exported where declared)
 

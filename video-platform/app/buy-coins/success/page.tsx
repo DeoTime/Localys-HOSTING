@@ -20,42 +20,34 @@ export default function CheckoutSuccessPage() {
       return;
     }
 
-    // Wait a moment for the webhook to process
-    const timer = setTimeout(async () => {
+    const verifyPurchase = async () => {
       if (!user) return;
 
       try {
-        // Fetch the user's current coin balance
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('coin_balance')
-          .eq('id', user.id)
-          .single();
-
-        if (error) throw error;
-
-        // Fetch the purchase record to get coins added
-        const { data: purchase, error: purchaseError } = await supabase
-          .from('coin_purchases')
-          .select('coins')
-          .eq('stripe_session_id', sessionId)
-          .single();
-
-        if (purchaseError) {
-          console.log('Purchase record not found yet:', purchaseError);
-        } else if (purchase) {
-          setCoinsAdded(purchase.coins);
+        // Call the verify-purchase API to add coins directly
+        const response = await fetch(`/api/verify-purchase?session_id=${sessionId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to verify purchase');
         }
 
-        setNewBalance(profile?.coin_balance || 0);
-        setStatus('success');
+        const data = await response.json();
+        
+        if (data.success) {
+          setCoinsAdded(data.coinsAdded);
+          setNewBalance(data.newBalance);
+          setStatus('success');
+        } else {
+          throw new Error(data.error || 'Failed to confirm purchase');
+        }
       } catch (error) {
         console.error('Error verifying purchase:', error);
         setStatus('error');
       }
-    }, 2000);
+    };
 
-    return () => clearTimeout(timer);
+    // Call immediately, don't wait
+    verifyPurchase();
   }, [sessionId, user]);
 
   if (status === 'loading') {

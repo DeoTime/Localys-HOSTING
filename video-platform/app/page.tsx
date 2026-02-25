@@ -62,6 +62,7 @@ function HomeContent() {
   const [commentPostId, setCommentPostId] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string>('');
   const [userCoins, setUserCoins] = useState(100);
+  const [volume, setVolume] = useState(0.5); // Default 50% volume
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
@@ -235,10 +236,19 @@ function HomeContent() {
     }
   };
 
-  // Handle video autoplay when scrolling
+  // Update volume when it changes
   useEffect(() => {
     const currentVideo = videoRefs.current[currentIndex];
     if (currentVideo) {
+      currentVideo.volume = volume;
+    }
+  }, [volume, currentIndex]);
+
+  // Set volume on video when it's loaded
+  useEffect(() => {
+    const currentVideo = videoRefs.current[currentIndex];
+    if (currentVideo) {
+      currentVideo.volume = volume;
       const playPromise = currentVideo.play();
       if (playPromise !== undefined) {
         playPromise.catch((error: any) => {
@@ -526,9 +536,9 @@ function HomeContent() {
             <video
               ref={(el) => { videoRefs.current[index] = el; }}
               src={video.video_url}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
+              controls
               loop
-              muted
               playsInline
               autoPlay={index === currentIndex}
             />
@@ -579,6 +589,25 @@ function HomeContent() {
             <div className="text-xs text-white/70">Coins</div>
             <div className="text-xl font-bold text-yellow-300">{userCoins}</div>
           </div>
+        </div>
+      </div>
+
+      {/* Top Right - Volume Control Bar */}
+      <div className="absolute top-0 right-0 z-20 p-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-3 flex items-center gap-3 min-w-max">
+          <svg className="w-5 h-5 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.04v8.05c1.48-.75 2.5-2.27 2.5-4.01zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+          </svg>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(volume * 100)}
+            onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
+            className="w-40 h-2 bg-white/20 rounded-lg cursor-pointer accent-white"
+            aria-label="Volume slider"
+          />
+          <span className="text-white text-sm font-semibold w-10 text-right">{Math.round(volume * 100)}%</span>
         </div>
       </div>
 

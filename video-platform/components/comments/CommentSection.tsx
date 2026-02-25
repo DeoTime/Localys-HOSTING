@@ -165,6 +165,11 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
     );
   }, []);
 
+  // Handle comment deletion
+  const handleCommentDeleted = useCallback((commentId: string) => {
+    setComments(prev => prev.filter(comment => comment.id !== commentId));
+  }, []);
+
   // Load comments when component mounts or videoId changes
   useEffect(() => {
     if (!videoId) return;
@@ -256,6 +261,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
                 comment={comment}
                 videoId={videoId}
                 onLikeUpdate={handleLikeUpdate}
+                onCommentDeleted={handleCommentDeleted}
               />
             ))}
 

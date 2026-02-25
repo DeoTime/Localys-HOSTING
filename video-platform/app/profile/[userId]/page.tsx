@@ -7,7 +7,9 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { getOrCreateOneToOneChat } from '@/lib/supabase/messaging';
-import { getProfileByUserId } from '@/lib/supabase/profiles';
+import { getProfileByUserId, Business, BusinessHours } from '@/lib/supabase/profiles';
+import { MenuList } from '@/components/MenuList';
+import { PostedVideos } from '@/components/PostedVideos';
 
 interface Profile {
   id: string;
@@ -33,6 +35,8 @@ function UserProfileContent() {
   const userId = params.userId as string;
   
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [showBusinessHours, setShowBusinessHours] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [messagingLoading, setMessagingLoading] = useState(false);
@@ -40,6 +44,7 @@ function UserProfileContent() {
   useEffect(() => {
     if (userId) {
       loadProfile();
+      loadBusiness();
     }
   }, [userId]);
 
@@ -58,6 +63,23 @@ function UserProfileContent() {
       setError('Failed to load profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadBusiness = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('owner_id', userId)
+        .single();
+
+      if (!error && data) {
+        setBusiness(data);
+      }
+    } catch (error) {
+      // Business doesn't exist, which is fine
+      setBusiness(null);
     }
   };
 
@@ -159,7 +181,27 @@ function UserProfileContent() {
           <h2 className="text-2xl font-bold mb-1">{profile.full_name}</h2>
           <p className="text-white/60 mb-4">@{profile.username}</p>
           {profile.bio && (
-            <p className="text-white/80 text-center max-w-md mb-6">{profile.bio}</p>
+            <p className="text-white/80 text-center max-w-md mb-2">{profile.bio}</p>
+          )}
+          
+          {/* Business Info */}
+          {business && (
+            <div className="flex items-center gap-2 flex-wrap justify-center mb-6">
+              <p className="text-blue-400 text-sm">🏪 {business.business_name}</p>
+              {business.business_type && (
+                <span className="bg-blue-500/30 text-blue-200 text-xs px-2 py-1 rounded-full capitalize">
+                  {business.business_type === 'hybrid' ? '📦 Pickup & Delivery' : `🏷️ ${business.business_type}`}
+                </span>
+              )}
+              {business.business_hours && (
+                <button
+                  onClick={() => setShowBusinessHours(!showBusinessHours)}
+                  className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
+                >
+                  {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
+                </button>
+              )}
+            </div>
           )}
           
           {/* Message Button */}
@@ -184,11 +226,40 @@ function UserProfileContent() {
           </button>
         </div>
 
-        {/* Placeholder for videos/posts */}
+        {/* Business Hours Section */}
+        {business?.business_hours && showBusinessHours && (
+          <div className="mt-8 mb-8">
+            <h3 className="text-xl font-semibold mb-4">⏰ Business Hours</h3>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-2">
+              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                <div key={day} className="flex justify-between items-center text-sm">
+                  <span className="text-white/80 capitalize font-medium">{day}</span>
+                  <span className="text-white/60">
+                    {business.business_hours?.[day]?.closed ? (
+                      'Closed'
+                    ) : (
+                      `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Menus Section */}
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Videos</h3>
-          <div className="text-white/60 text-center py-12">
-            <p>No videos yet</p>
+          <h3 className="text-xl font-semibold mb-4">🍽️ Items</h3>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <MenuList userId={userId} isOwnProfile={false} />
+          </div>
+        </div>
+
+        {/* Videos Section */}
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-4">📹 Videos</h3>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <PostedVideos userId={userId} />
           </div>
         </div>
       </div>

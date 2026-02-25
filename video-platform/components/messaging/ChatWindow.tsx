@@ -22,9 +22,12 @@ import {
   subscribeToMessages,
   markConversationAsRead,
   getConversation,
+  editMessage,
+  deleteMessage,
   Message,
   Conversation,
 } from '@/lib/supabase/messaging';
+import { supabase } from '@/lib/supabase/client';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
 interface ChatWindowProps {
@@ -40,6 +43,9 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -121,11 +127,87 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
         markAsRead();
       }
     });
+
+    // Also listen for message updates (edits and deletes)
+    const updateSubscription = supabase
+      .channel(`chat_updates:${conversationId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const updatedMessage = payload.new as Message;
+          setMessages((prev) =>
+            prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m))
+          );
+        }
+      )
+      .subscribe();
   };
 
   const markAsRead = async () => {
     if (!conversationId || !user) return;
     await markConversationAsRead(conversationId);
+  };
+
+  const handleEditStart = (message: Message) => {
+    setEditingId(message.id || null);
+    setEditingContent(message.content);
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditingContent('');
+  };
+
+  const handleEditSave = async (messageId: string | undefined) => {
+    if (!messageId || !editingContent.trim()) return;
+
+    try {
+      const { data, error: err } = await editMessage(messageId, editingContent.trim());
+      if (err) {
+        setError('Failed to edit message');
+        return;
+      }
+
+      // Update message locally
+      if (data) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId ? data : m))
+        );
+      }
+
+      handleEditCancel();
+    } catch (err: any) {
+      setError(err.message || 'Failed to edit message');
+    }
+  };
+
+  const handleDelete = async (messageId: string | undefined) => {
+    if (!messageId) return;
+
+    if (!confirm('Are you sure you want to delete this message?')) return;
+
+    try {
+      const { error: err } = await deleteMessage(messageId);
+      if (err) {
+        setError('Failed to delete message');
+        return;
+      }
+
+      // Update message locally
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId ? { ...m, deleted: true, content: '[Message deleted]' } : m
+        )
+      );
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete message');
+    }
   };
 
   const scrollToBottom = () => {
@@ -267,6 +349,12 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
         </div>
       )}
 
+      {/* Debug Section - Remove Later */}
+      <div className="px-4 py-2 bg-yellow-900/20 border-y border-yellow-700/50 text-xs text-yellow-300 space-y-1">
+        <p>Debug: Hovering={hoveredMessageId || 'none'} | Editing={editingId || 'none'}</p>
+        <p>Messages: {messages.length} total | Your messages: {messages.filter(m => m.sender_id === user?.id).length}</p>
+      </div>
+
       {/* Messages */}
       <div
         ref={messagesContainerRef}
@@ -279,10 +367,13 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
         ) : (
           messages.map((message) => {
             const isOwn = message.sender_id === user?.id;
+            const isEditing = editingId === message.id;
             return (
               <div
                 key={message.id}
                 className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                onMouseEnter={() => setHoveredMessageId(message.id || null)}
+                onMouseLeave={() => setHoveredMessageId(null)}
               >
                 <div className={`max-w-xs lg:max-w-md ${isOwn ? 'items-end' : 'items-start'} flex flex-col`}>
                   {!isOwn && message.sender && (
@@ -290,24 +381,76 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
                       {message.sender.full_name || message.sender.username}
                     </span>
                   )}
-                  <div
-                    className={`px-4 py-2 rounded-lg ${
-                      isOwn
-                        ? 'bg-white text-black rounded-br-none'
-                        : 'bg-white/10 text-white rounded-bl-none'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                    <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                      <span className={`text-xs ${isOwn ? 'text-black/60' : 'text-white/60'}`}>
-                        {formatTimestamp(message.created_at)}
-                      </span>
-                      {isOwn && (
-                        <span className={`text-xs ${isOwn ? 'text-black/60' : 'text-white/60'}`}>
-                          {message.is_read ? '✓✓' : '✓'}
-                        </span>
-                      )}
-                    </div>
+                  <div className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}>
+                    {isEditing ? (
+                      <div className="max-w-xs lg:max-w-md">
+                        <textarea
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/40 focus:outline-none focus:bg-white/30"
+                          rows={2}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => handleEditSave(message.id)}
+                            className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleEditCancel}
+                            className="text-xs px-2 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        className={`px-4 py-2 rounded-lg ${
+                          isOwn
+                            ? 'bg-white text-black rounded-br-none'
+                            : 'bg-white/10 text-white rounded-bl-none'
+                        }`}
+                      >
+                        <p className={`text-sm whitespace-pre-wrap break-words ${message.deleted ? 'italic text-gray-400' : ''}`}>
+                          {message.content}
+                        </p>
+                        <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                          <span className={`text-xs ${isOwn ? 'text-black/60' : 'text-white/60'}`}>
+                            {formatTimestamp(message.created_at || '')}
+                          </span>
+                          {message.edited_at && (
+                            <span className={`text-xs ${isOwn ? 'text-black/60' : 'text-white/60'}`}>
+                              (edited)
+                            </span>
+                          )}
+                          {isOwn && (
+                            <span className={`text-xs ${isOwn ? 'text-black/60' : 'text-white/60'}`}>
+                              {message.is_read ? '✓✓' : '✓'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {isOwn && hoveredMessageId === message.id && !isEditing && !message.deleted && (
+                      <div className="flex flex-col gap-1 justify-start">
+                        <button
+                          onClick={() => handleEditStart(message)}
+                          className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                          title="Edit message"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleDelete(message.id)}
+                          className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                          title="Delete message"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

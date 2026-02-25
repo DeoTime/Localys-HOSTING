@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { createWelcomeCoupon } from './coupons';
 
 export interface SignUpData {
   email: string;
@@ -42,6 +43,15 @@ export async function signUp({ email, password, name, username }: SignUpData) {
       // or database trigger to ensure data consistency
       console.error('Profile creation failed:', profileError);
       throw profileError;
+    }
+
+    // Create welcome coupon for new user
+    const { data: couponData, error: couponError } = await createWelcomeCoupon(authData.user.id);
+    if (couponError) {
+      console.warn('Failed to create welcome coupon:', couponError);
+      // Don't throw - coupon creation failure shouldn't block signup
+    } else {
+      console.log('Welcome coupon created:', couponData);
     }
 
     return { data: authData, error: null };
