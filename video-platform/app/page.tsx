@@ -34,7 +34,7 @@ interface Video {
     latitude?: number;
     longitude?: number;
   };
-  like_count?: number; // Add like count to video
+  like_count?: number;
 }
 
 export default function Home() {
@@ -62,11 +62,11 @@ function HomeContent() {
   const [commentPostId, setCommentPostId] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string>('');
   const [userCoins, setUserCoins] = useState(100);
+  const [volume, setVolume] = useState(0.5); // Default 50% volume
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
-  // Load videos from Supabase
   useEffect(() => {
     loadVideos();
     if (user) {
@@ -75,7 +75,6 @@ function HomeContent() {
     }
   }, [user]);
 
-  // Reload coins when page becomes visible (user returns from upload)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && user) {
@@ -97,7 +96,6 @@ function HomeContent() {
         const videosData = data as Video[];
         setVideos(videosData);
         
-        // Build like counts for all items (businesses and video IDs)
         const counts: { [key: string]: number } = {};
         const commentCounts: { [key: string]: number } = {};
         
@@ -107,7 +105,6 @@ function HomeContent() {
         
         console.log('Video IDs for comment fetch:', videoIds);
 
-        // Fetch all likes
         const { data: allLikes } = await supabase
           .from('likes')
           .select('business_id, video_id');
@@ -123,39 +120,9 @@ function HomeContent() {
           });
         }
 
-        // Fetch comment counts for all videos
-        // TODO: Fix null value issue in videoIds array
         console.log('Skipping comment fetch due to null value issues');
-        // if (videoIds && videoIds.length > 0) {
-        //   console.log('Fetching comments for video IDs:', videoIds);
-        //   const { data: allComments, error: commentsError } = await supabase
-        //     .from('comments')
-        //     .select('video_id')
-        //     .eq('parent_comment_id', null)
-        //     .in('video_id', videoIds);
-        //
-        //   if (commentsError) {
-        //     const errMsg = commentsError instanceof Error 
-        //       ? commentsError.message 
-        //       : (commentsError as any)?.message
-        //         ? (commentsError as any).message
-        //         : JSON.stringify(commentsError);
-        //     console.error('Error fetching comments:', errMsg, commentsError);
-        //   }
-        //
-        //   if (allComments) {
-        //     console.log('Fetched comments:', allComments.length);
-        //     allComments.forEach((comment: any) => {
-        //       if (comment.video_id) {
-        //         commentCounts[comment.video_id] = (commentCounts[comment.video_id] || 0) + 1;
-        //       }
-        //     });
-        //   }
-        // } else {
-        //   console.warn('No valid video IDs to fetch comments for');
-        // }
 
-        // Initialize all items with 0 if not yet in counts
+       
         const businessIds = Array.from(new Set(videosData.map(v => v.businesses?.id).filter(Boolean))) as string[];
         [...businessIds, ...videoIds].forEach(id => {
           if (!(id in counts)) {
@@ -184,7 +151,6 @@ function HomeContent() {
     if (!user) return;
     
     try {
-      // Load likes (both business_id and video_id)
       const { data: likes } = await supabase
         .from('likes')
         .select('business_id, video_id')
@@ -204,7 +170,6 @@ function HomeContent() {
         console.log('Loaded liked items:', Array.from(likedSet));
       }
 
-      // Load video bookmarks
       const { data: bookmarks } = await supabase
         .from('video_bookmarks')
         .select('video_id')
@@ -235,14 +200,21 @@ function HomeContent() {
     }
   };
 
-  // Handle video autoplay when scrolling
   useEffect(() => {
     const currentVideo = videoRefs.current[currentIndex];
     if (currentVideo) {
+      currentVideo.volume = volume;
+    }
+  }, [volume, currentIndex]);
+
+  // Set volume on video when it's loaded
+  useEffect(() => {
+    const currentVideo = videoRefs.current[currentIndex];
+    if (currentVideo) {
+      currentVideo.volume = volume;
       const playPromise = currentVideo.play();
       if (playPromise !== undefined) {
         playPromise.catch((error: any) => {
-          // Silently handle common autoplay errors (power saving, media removed, etc.)
           if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
             console.error('Video play error:', error);
           }
@@ -250,7 +222,6 @@ function HomeContent() {
       }
     }
 
-    // Pause other videos
     videoRefs.current.forEach((video, index) => {
       if (video && index !== currentIndex) {
         video.pause();
@@ -258,12 +229,10 @@ function HomeContent() {
     });
   }, [currentIndex, videos]);
 
-  // Track video view when video becomes visible
   useEffect(() => {
     if (videos.length > 0 && currentIndex >= 0 && currentIndex < videos.length) {
       const currentVideo = videos[currentIndex];
       if (currentVideo && currentVideo.id) {
-        // Track view with user ID if logged in, otherwise without
         trackVideoView(currentVideo.id, user?.id).catch((error: any) => {
           console.warn('Failed to track video view:', error);
         });
@@ -271,7 +240,6 @@ function HomeContent() {
     }
   }, [currentIndex, videos, user?.id]);
 
-  // Handle scroll to change videos
   const handleScroll = (e: React.WheelEvent) => {
     if (isScrolling || videos.length === 0) return;
     
@@ -279,25 +247,22 @@ function HomeContent() {
     const delta = e.deltaY;
 
     if (delta > 0) {
-      // Scroll down - go to next video or loop to beginning
       if (currentIndex < videos.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        setCurrentIndex(0); // Loop back to top
+        setCurrentIndex(0);
       }
     } else if (delta < 0) {
-      // Scroll up - go to previous video or loop to end
       if (currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       } else {
-        setCurrentIndex(videos.length - 1); // Loop to bottom
+        setCurrentIndex(videos.length - 1);
       }
     }
 
     setTimeout(() => setIsScrolling(false), 500);
   };
 
-  // Handle touch swipe for mobile
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
@@ -317,23 +282,20 @@ function HomeContent() {
     const isDownSwipe = distance < -50;
 
     if (isUpSwipe) {
-      // Swipe up - go to next video or loop to beginning
       if (currentIndex < videos.length - 1) {
         setCurrentIndex(currentIndex + 1);
       } else {
-        setCurrentIndex(0); // Loop back to top
+        setCurrentIndex(0);
       }
     } else if (isDownSwipe) {
-      // Swipe down - go to previous video or loop to end
       if (currentIndex > 0) {
         setCurrentIndex(currentIndex - 1);
       } else {
-        setCurrentIndex(videos.length - 1); // Loop to bottom
+        setCurrentIndex(videos.length - 1);
       }
     }
   };
 
-  // Toggle like
   const toggleLike = async (videoId: string, businessId?: string) => {
     if (!user) {
       setToastMessage('Please sign in to like posts');
@@ -347,7 +309,6 @@ function HomeContent() {
 
     try {
       if (isLiked) {
-        // Unlike
         const { error } = await unlikeItem(user.id, likeKey, itemType as 'video' | 'business');
         if (error) throw error;
         
@@ -357,19 +318,16 @@ function HomeContent() {
           return next;
         });
 
-        // Decrement like count
         setLikeCounts(prev => ({
           ...prev,
           [likeKey]: Math.max(0, (prev[likeKey] || 0) - 1)
         }));
       } else {
-        // Like
         const { error } = await likeItem(user.id, likeKey, itemType as 'video' | 'business');
         if (error) throw error;
         
         setLikedVideos(prev => new Set(prev).add(likeKey));
 
-        // Increment like count
         setLikeCounts(prev => ({
           ...prev,
           [likeKey]: (prev[likeKey] || 0) + 1
@@ -383,7 +341,6 @@ function HomeContent() {
     setTimeout(() => setLikeAnimating(null), 300);
   };
 
-  // Toggle bookmark
   const toggleBookmark = async (videoId: string) => {
     if (!user) {
       setToastMessage('Please sign in to bookmark videos');
@@ -417,7 +374,6 @@ function HomeContent() {
     setTimeout(() => setBookmarkAnimating(null), 300);
   };
 
-  // Navigate to profile page
   const handleProfileClick = (userId?: string) => {
     if (!userId) {
       console.warn('Profile click: userId is missing');
@@ -426,13 +382,11 @@ function HomeContent() {
     router.push(`/profile/${userId}`);
   };
 
-  // Open comment modal
   const handleCommentClick = (postId: string) => {
     setCommentPostId(postId);
     setCommentModalOpen(true);
   };
 
-  // Handle share
   const handleShareClick = async (video: Video) => {
     const businessName = video.businesses?.business_name || video.profiles?.full_name || 'Business';
     const url = `${window.location.origin}/video/${video.id}`;
@@ -448,7 +402,6 @@ function HomeContent() {
     }
   };
 
-  // Handle keyboard events for accessibility
   const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -499,9 +452,8 @@ function HomeContent() {
   const isLiked = likedVideos.has(likeKey);
   const isBookmarked = bookmarkedVideos.has(currentVideo.id);
 
-  // Calculate distance (simplified - would use actual user location in production)
   const distance = currentBusiness?.latitude && currentBusiness?.longitude 
-    ? '0.5 km' // Placeholder - would calculate actual distance
+    ? '0.5 km'
     : '';
 
   return (
@@ -526,9 +478,9 @@ function HomeContent() {
             <video
               ref={(el) => { videoRefs.current[index] = el; }}
               src={video.video_url}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
+              controls
               loop
-              muted
               playsInline
               autoPlay={index === currentIndex}
             />
@@ -579,6 +531,25 @@ function HomeContent() {
             <div className="text-xs text-white/70">Coins</div>
             <div className="text-xl font-bold text-yellow-300">{userCoins}</div>
           </div>
+        </div>
+      </div>
+
+      {/* Top Right - Volume Control Bar */}
+      <div className="absolute top-0 right-0 z-20 p-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-lg px-4 py-3 flex items-center gap-3 min-w-max">
+          <svg className="w-5 h-5 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.04v8.05c1.48-.75 2.5-2.27 2.5-4.01zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+          </svg>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={Math.round(volume * 100)}
+            onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
+            className="w-40 h-2 bg-white/20 rounded-lg cursor-pointer accent-white"
+            aria-label="Volume slider"
+          />
+          <span className="text-white text-sm font-semibold w-10 text-right">{Math.round(volume * 100)}%</span>
         </div>
       </div>
 

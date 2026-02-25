@@ -1,53 +1,28 @@
 import { supabase } from './client';
 import { haversineDistance } from '../utils/geo';
+import type { SearchMode, SearchFilters } from '../../models/Search';
 
-export type SearchMode = 'videos' | 'businesses';
-
-export interface SearchFilters {
-  query?: string;
-  category?: 'food' | 'retail' | 'services';
-  minRating?: number;
-  maxDistance?: number; // in km
-  priceMin?: number;
-  priceMax?: number;
-  latitude?: number;
-  longitude?: number;
-  // New filter fields
-  cuisineType?: string;
-  formality?: string;
-  specialType?: string;
-  dietary?: string[];
-  features?: string[];
-  amenities?: string[];
-  payment?: string[];
-  tags?: string[];
-  openNow?: boolean;
-}
+export type { SearchMode, SearchFilters };
 
 /**
  * Semantic keyword mapping for food search
  * Maps common search terms to related terms for broader matching
  */
 const SEMANTIC_MAP: Record<string, string[]> = {
-  // Noodle-related
   noodle: ['pho', 'ramen', 'spaghetti', 'pasta', 'udon', 'soba', 'lo mein', 'chow mein', 'pad thai', 'laksa', 'noodle'],
   pho: ['pho', 'noodle', 'vietnamese', 'soup'],
   ramen: ['ramen', 'noodle', 'japanese', 'soup'],
   pasta: ['pasta', 'spaghetti', 'fettuccine', 'penne', 'linguine', 'italian', 'noodle'],
   spaghetti: ['spaghetti', 'pasta', 'italian', 'noodle'],
   udon: ['udon', 'noodle', 'japanese', 'soup'],
-  // Rice-related
   rice: ['rice', 'fried rice', 'biryani', 'risotto', 'sushi', 'poke', 'bibimbap'],
   sushi: ['sushi', 'sashimi', 'japanese', 'rice', 'maki', 'nigiri'],
-  // Bread/baked
   bread: ['bread', 'bakery', 'baguette', 'sourdough', 'croissant', 'pastry'],
   pizza: ['pizza', 'italian', 'flatbread', 'calzone'],
   burger: ['burger', 'hamburger', 'cheeseburger', 'fast food', 'american'],
-  // Drinks
   coffee: ['coffee', 'espresso', 'latte', 'cappuccino', 'cafe', 'mocha', 'americano'],
   tea: ['tea', 'boba', 'bubble tea', 'matcha', 'chai', 'bbt'],
   boba: ['boba', 'bubble tea', 'bbt', 'tea', 'milk tea', 'taro'],
-  // Cuisine
   chinese: ['chinese', 'dim sum', 'dumpling', 'wonton', 'szechuan', 'cantonese'],
   japanese: ['japanese', 'sushi', 'ramen', 'udon', 'tempura', 'teriyaki', 'izakaya'],
   korean: ['korean', 'bbq', 'bibimbap', 'kimchi', 'bulgogi', 'tteokbokki'],
@@ -56,7 +31,6 @@ const SEMANTIC_MAP: Record<string, string[]> = {
   indian: ['indian', 'curry', 'naan', 'biryani', 'tandoori', 'masala'],
   thai: ['thai', 'pad thai', 'curry', 'tom yum', 'satay', 'green curry'],
   vietnamese: ['vietnamese', 'pho', 'banh mi', 'spring roll', 'bun'],
-  // General
   dessert: ['dessert', 'cake', 'ice cream', 'pastry', 'gelato', 'pie', 'cookie', 'brownie'],
   breakfast: ['breakfast', 'brunch', 'pancake', 'waffle', 'eggs', 'bacon', 'toast'],
   seafood: ['seafood', 'fish', 'shrimp', 'lobster', 'crab', 'oyster', 'salmon'],
@@ -80,7 +54,6 @@ export function expandSearchQuery(query: string): string[] {
   const normalizedQuery = query.toLowerCase().trim();
   const terms = new Set<string>([normalizedQuery]);
 
-  // Check each word in the query against the semantic map
   const words = normalizedQuery.split(/\s+/);
   for (const word of words) {
     const related = SEMANTIC_MAP[word];
@@ -97,15 +70,172 @@ export function expandSearchQuery(query: string): string[] {
  * This can be extended to call actual AI services (e.g., DeepSeek)
  */
 export async function aiAssistedSearch(filters: SearchFilters) {
-  // For now, this is a clean abstraction that can be extended
-  // When AI is connected, this function will:
-  // 1. Send query to AI service
-  // 2. Get interpreted intent (keywords, location, category)
-  // 3. Rank results by relevance
-  // 4. Return enhanced search results
-
-  // Placeholder: Return filters as-is for now
   return filters;
+}
+
+function geometricMean(values: number[]): number | null {
+  if (!values.length) return null;
+  const safeValues = values.filter((value) => value > 0);
+  if (!safeValues.length) return null;
+  const logSum = safeValues.reduce((sum, value) => sum + Math.log(value), 0);
+  return Math.exp(logSum / safeValues.length);
+}
+
+function computeRoundedPriceRange(prices: number[]): { min: number; max: number } | null {
+  if (!prices.length) return null;
+
+  const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+  const variance = prices.reduce((sum, price) => sum + (price - avg) ** 2, 0) / prices.length;
+  const stdDev = Math.sqrt(variance);
+
+  let minPrice: number;
+  let maxPrice: number;
+
+  if (avg < 70) {
+    minPrice = Math.floor(avg / 10) * 10;
+    maxPrice = minPrice + 10;
+
+    if (stdDev > avg * 0.35) {
+      maxPrice += 10;
+    }
+  } else {
+    minPrice = Math.round(avg / 25) * 25;
+    maxPrice = minPrice + 25;
+
+    if (stdDev > avg * 0.3) {
+      maxPrice += 25;
+    }
+  }
+
+  if (minPrice < 0) minPrice = 0;
+  if (maxPrice <= minPrice) maxPrice = minPrice + 10;
+
+  const minimumTightLowerBound = maxPrice / 2;
+  if (minPrice < minimumTightLowerBound) {
+    const roundingStep = maxPrice >= 100 ? 10 : 5;
+    minPrice = Math.ceil(minimumTightLowerBound / roundingStep) * roundingStep;
+    if (minPrice >= maxPrice) {
+      minPrice = Math.max(0, maxPrice - roundingStep);
+    }
+  }
+
+  return { min: minPrice, max: maxPrice };
+}
+
+async function getBusinessMetrics(businessIds: string[]) {
+  const uniqueBusinessIds = [...new Set(businessIds.filter(Boolean))];
+  const businessMetricsMap: Record<string, {
+    average_rating: number | null;
+    total_reviews: number;
+    price_range_min: number | null;
+    price_range_max: number | null;
+  }> = {};
+
+  if (!uniqueBusinessIds.length) {
+    return businessMetricsMap;
+  }
+
+  const businessIdSet = new Set(uniqueBusinessIds);
+
+  for (const businessId of uniqueBusinessIds) {
+    businessMetricsMap[businessId] = {
+      average_rating: null,
+      total_reviews: 0,
+      price_range_min: null,
+      price_range_max: null,
+    };
+  }
+
+  const [videosByBusinessRes, videosByUserRes, menuItemsRes] = await Promise.all([
+    supabase
+      .from('videos')
+      .select('id, business_id, user_id')
+      .in('business_id', uniqueBusinessIds),
+    supabase
+      .from('videos')
+      .select('id, business_id, user_id')
+      .in('user_id', uniqueBusinessIds),
+    supabase
+      .from('menu_items')
+      .select('user_id, price, category')
+      .in('user_id', uniqueBusinessIds)
+      .ilike('category', 'main'),
+  ]);
+
+  const videoBusinessMap: Record<string, string> = {};
+  const videosByBusiness = videosByBusinessRes.data || [];
+  const videosByUser = videosByUserRes.data || [];
+
+  for (const video of videosByBusiness) {
+    if (!video.id) continue;
+    const ownerId = video.business_id;
+    if (ownerId && businessIdSet.has(ownerId)) {
+      videoBusinessMap[video.id] = ownerId;
+    }
+  }
+
+  for (const video of videosByUser) {
+    if (!video.id) continue;
+    if (videoBusinessMap[video.id]) continue;
+    const ownerId = video.business_id && businessIdSet.has(video.business_id)
+      ? video.business_id
+      : video.user_id;
+    if (ownerId && businessIdSet.has(ownerId)) {
+      videoBusinessMap[video.id] = ownerId;
+    }
+  }
+
+  const videoIds = Object.keys(videoBusinessMap);
+
+  if (videoIds.length > 0) {
+    const { data: commentRatings } = await supabase
+      .from('comments')
+      .select('video_id, rating')
+      .in('video_id', videoIds)
+      .not('rating', 'is', null);
+
+    const ratingsByBusiness: Record<string, number[]> = {};
+
+    for (const businessId of uniqueBusinessIds) {
+      ratingsByBusiness[businessId] = [];
+    }
+
+    for (const row of commentRatings || []) {
+      const businessId = row.video_id ? videoBusinessMap[row.video_id] : undefined;
+      const rating = typeof row.rating === 'number' ? row.rating : Number(row.rating);
+      if (!businessId || !Number.isFinite(rating) || rating <= 0) continue;
+      ratingsByBusiness[businessId].push(rating);
+    }
+
+    for (const businessId of uniqueBusinessIds) {
+      const ratings = ratingsByBusiness[businessId] || [];
+      const gm = geometricMean(ratings);
+      businessMetricsMap[businessId].average_rating = gm !== null ? Number(gm.toFixed(2)) : null;
+      businessMetricsMap[businessId].total_reviews = ratings.length;
+    }
+  }
+
+  const pricesByBusiness: Record<string, number[]> = {};
+  for (const businessId of uniqueBusinessIds) {
+    pricesByBusiness[businessId] = [];
+  }
+
+  for (const item of menuItemsRes.data || []) {
+    const businessId = item.user_id;
+    const price = typeof item.price === 'number' ? item.price : Number(item.price);
+    if (!businessId || !businessIdSet.has(businessId) || !Number.isFinite(price)) continue;
+    pricesByBusiness[businessId].push(price);
+  }
+
+  for (const businessId of uniqueBusinessIds) {
+    const priceRange = computeRoundedPriceRange(pricesByBusiness[businessId]);
+    if (priceRange) {
+      businessMetricsMap[businessId].price_range_min = priceRange.min;
+      businessMetricsMap[businessId].price_range_max = priceRange.max;
+    }
+  }
+
+  return businessMetricsMap;
 }
 
 /**
@@ -114,100 +244,97 @@ export async function aiAssistedSearch(filters: SearchFilters) {
 export async function searchVideos(filters: SearchFilters) {
   const interpretedFilters = await aiAssistedSearch(filters);
 
-  // Use left join instead of inner join
-  let query = supabase
+  const { data, error } = await supabase
     .from('videos')
-    .select('*, profiles:user_id(id, username, full_name, profile_picture_url)');
-
-  // Apply text search with semantic expansion
-  if (interpretedFilters.query) {
-    const expandedTerms = expandSearchQuery(interpretedFilters.query);
-    // Create a simple OR filter for caption only - we'll filter by business name after fetching
-    const captionFilters = expandedTerms
-      .map(term => `caption.ilike.%${term}%`)
-      .join(',');
-    query = query.or(captionFilters);
-  }
-
-  const { data, error } = await query
+    .select('id, user_id, video_url, caption, created_at, business_id, boost_value, coins_spent_on_promotion, last_promoted_at, view_count')
     .order('created_at', { ascending: false })
-    .limit(50);
+    .limit(200);
 
   if (error) {
     console.error('Search query error:', error);
     return { data: [], error };
   }
 
-  // Now fetch related data for each video
-  const results = await Promise.all(
-    (data || []).map(async (video: any) => {
-      let enrichedVideo = { ...video };
+  // Batch-fetch referenced profiles to avoid N+1
+  const userIds = [...new Set((data || []).map((v: any) => v.user_id).filter(Boolean))];
+  const businessIds = [...new Set((data || []).map((v: any) => v.business_id).filter(Boolean))];
 
-      if (video.user_id) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id, username, full_name, profile_picture_url')
-          .eq('id', video.user_id)
-          .single();
-        if (profile) {
-          enrichedVideo.profiles = profile;
-        }
+  const authorProfileMap: Record<string, any> = {};
+  const businessProfileMap: Record<string, any> = {};
+
+  // Explicit author lookup: videos.user_id -> profiles.id
+  if (userIds.length > 0) {
+    const { data: authorProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, profile_picture_url')
+      .in('id', userIds);
+
+    if (authorProfiles) {
+      for (const profile of authorProfiles) {
+        authorProfileMap[profile.id] = profile;
       }
+    }
+  }
 
-      if (video.business_id) {
-        try {
-          // Changed from 'businesses' table to 'profiles' table
-          const { data: business, error: businessError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', video.business_id)
-            .single();
+  if (businessIds.length > 0) {
+    const { data: businessProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, profile_picture_url, type, category, latitude, longitude, average_rating, total_reviews, price_range_min, price_range_max')
+      .in('id', businessIds);
 
-          if (!businessError && business) {
-            enrichedVideo.businesses = {
-              id: business.id,
-              business_name: business.full_name || business.username,
-              category: business.category, // May be undefined
-              profile_picture_url: business.profile_picture_url,
-              latitude: business.latitude,
-              longitude: business.longitude,
-              average_rating: business.average_rating,
-              total_reviews: business.total_reviews,
-              price_range_min: business.price_range_min,
-              price_range_max: business.price_range_max,
-            };
-          }
-        } catch (err) {
-          console.error(`Exception fetching business ${video.business_id}:`, err);
-        }
+    if (businessProfiles) {
+      for (const profile of businessProfiles) {
+        businessProfileMap[profile.id] = profile;
       }
+    }
+  }
 
-      return enrichedVideo;
-    })
-  );
+  const businessMetricsMap = await getBusinessMetrics(businessIds);
 
-  // Apply client-side filters
+  const results = (data || []).map((video: any) => {
+    const userProfile = video.user_id ? authorProfileMap[video.user_id] : null;
+    const bizProfile = video.business_id ? businessProfileMap[video.business_id] : null;
+    const bizMetrics = video.business_id ? businessMetricsMap[video.business_id] : null;
+    return {
+      ...video,
+      profiles: userProfile ? {
+        id: userProfile.id,
+        username: userProfile.username,
+        full_name: userProfile.full_name,
+        profile_picture_url: userProfile.profile_picture_url,
+      } : null,
+      businesses: bizProfile ? {
+        id: bizProfile.id,
+        business_name: bizProfile.full_name || bizProfile.username,
+        category: bizProfile.type || bizProfile.category,
+        profile_picture_url: bizProfile.profile_picture_url,
+        latitude: bizProfile.latitude,
+        longitude: bizProfile.longitude,
+        average_rating: bizMetrics?.average_rating ?? bizProfile.average_rating ?? null,
+        total_reviews: bizMetrics?.total_reviews ?? bizProfile.total_reviews ?? 0,
+        price_range_min: bizMetrics?.price_range_min ?? bizProfile.price_range_min ?? null,
+        price_range_max: bizMetrics?.price_range_max ?? bizProfile.price_range_max ?? null,
+      } : null,
+    };
+  });
+
   let filteredResults = results;
 
-  // Filter by business name if query provided
   if (interpretedFilters.query) {
     const expandedTerms = expandSearchQuery(interpretedFilters.query);
     filteredResults = filteredResults.filter((video) => {
-      // Check caption
       if (video.caption) {
         const captionLower = video.caption.toLowerCase();
         if (expandedTerms.some(term => captionLower.includes(term.toLowerCase()))) {
           return true;
         }
       }
-      // Check business name
       if (video.businesses?.business_name) {
         const businessNameLower = video.businesses.business_name.toLowerCase();
         if (expandedTerms.some(term => businessNameLower.includes(term.toLowerCase()))) {
           return true;
         }
       }
-      // Check profile full_name
       if (video.profiles?.full_name) {
         const fullNameLower = video.profiles.full_name.toLowerCase();
         if (expandedTerms.some(term => fullNameLower.includes(term.toLowerCase()))) {
@@ -254,12 +381,11 @@ export async function searchVideos(filters: SearchFilters) {
 export async function searchBusinesses(filters: SearchFilters) {
   const interpretedFilters = await aiAssistedSearch(filters);
 
-  // Search profiles table directly
   let query = supabase
     .from('profiles')
-    .select('*');
+    .select('*')
+    .in('type', ['food', 'retail', 'service']);
 
-  // Removed DB-level category and rating filters as they cause 42703 errors
   if (interpretedFilters.query) {
     const expandedTerms = expandSearchQuery(interpretedFilters.query);
     const orFilter = expandedTerms
@@ -269,15 +395,15 @@ export async function searchBusinesses(filters: SearchFilters) {
   }
 
   const { data, error } = await query
-    .limit(50); // Removed .order() on average_rating to prevent potential column errors
+    .limit(50);
 
   if (error) {
     console.error('Business search error:', error);
   }
 
-  // Transform profiles into the search result shape
   let filteredResults = (data || []).map((profile: any) => ({
     ...profile,
+    category: profile.type || profile.category,
     business_name: profile.full_name || profile.username,
     is_profile: true,
     profiles: {
@@ -287,16 +413,27 @@ export async function searchBusinesses(filters: SearchFilters) {
     },
   }));
 
-  // Apply filters client-side now that we have the data
+  const businessMetricsMap = await getBusinessMetrics(filteredResults.map((biz: any) => biz.id));
+  filteredResults = filteredResults.map((biz: any) => {
+    const metrics = businessMetricsMap[biz.id];
+    if (!metrics) return biz;
+    return {
+      ...biz,
+      average_rating: metrics.average_rating ?? biz.average_rating ?? null,
+      total_reviews: metrics.total_reviews ?? biz.total_reviews ?? 0,
+      price_range_min: metrics.price_range_min ?? biz.price_range_min ?? null,
+      price_range_max: metrics.price_range_max ?? biz.price_range_max ?? null,
+    };
+  });
+
   if (interpretedFilters.category) {
-    filteredResults = filteredResults.filter(biz => biz.category === interpretedFilters.category);
+    filteredResults = filteredResults.filter(biz => (biz.type || biz.category) === interpretedFilters.category);
   }
 
   if (interpretedFilters.minRating) {
     filteredResults = filteredResults.filter(biz => (biz.average_rating || 0) >= interpretedFilters.minRating!);
   }
 
-  // Apply price range filter client-side
   if (interpretedFilters.priceMin !== undefined || interpretedFilters.priceMax !== undefined) {
     filteredResults = filteredResults.filter((biz: any) => {
       const minPrice = biz.price_range_min || 0;
@@ -307,7 +444,6 @@ export async function searchBusinesses(filters: SearchFilters) {
     });
   }
 
-  // Apply distance filter client-side if user location available
   if (
     interpretedFilters.maxDistance &&
     interpretedFilters.latitude !== undefined &&
@@ -325,7 +461,6 @@ export async function searchBusinesses(filters: SearchFilters) {
     });
   }
 
-  // Rank results
   const rankedResults = rankBusinessResults(filteredResults, interpretedFilters);
   return { data: rankedResults, error: null };
 }
@@ -340,6 +475,12 @@ function rankSearchResults(results: any[], filters: SearchFilters) {
 
     if (a.businesses?.average_rating) scoreA += a.businesses.average_rating * 10;
     if (b.businesses?.average_rating) scoreB += b.businesses.average_rating * 10;
+
+    if (a.boost_value) scoreA += a.boost_value * 5;
+    if (b.boost_value) scoreB += b.boost_value * 5;
+
+    if (a.view_count) scoreA += Math.log1p(a.view_count);
+    if (b.view_count) scoreB += Math.log1p(b.view_count);
 
     if (a.created_at) scoreA += new Date(a.created_at).getTime() / 1000000;
     if (b.created_at) scoreB += new Date(b.created_at).getTime() / 1000000;
@@ -356,15 +497,12 @@ function rankBusinessResults(results: any[], filters: SearchFilters) {
     let scoreA = 0;
     let scoreB = 0;
 
-    // Boost by rating
     if (a.average_rating) scoreA += a.average_rating * 20;
     if (b.average_rating) scoreB += b.average_rating * 20;
 
-    // Boost by review count
     if (a.total_reviews) scoreA += Math.min(a.total_reviews, 50);
     if (b.total_reviews) scoreB += Math.min(b.total_reviews, 50);
 
-    // If user location available, boost closer results
     if (filters.latitude && filters.longitude) {
       if (a.latitude && a.longitude) {
         const distA = haversineDistance(filters.latitude, filters.longitude, a.latitude, a.longitude);

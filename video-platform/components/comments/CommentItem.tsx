@@ -13,6 +13,7 @@ import {
   getCommentReplies,
   createReply,
   toggleCommentLike,
+  deleteComment,
   subscribeToCommentReplies,
   Comment,
   CreateReplyPayload,
@@ -24,10 +25,11 @@ interface CommentItemProps {
   comment: Comment;
   videoId: string;
   onLikeUpdate: (likeData: { comment_id: string; like_count: number; user_liked: boolean }) => void;
+  onCommentDeleted?: (commentId: string) => void;
   isReply?: boolean;
 }
 
-export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = false }: CommentItemProps) {
+export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentDeleted, isReply = false }: CommentItemProps) {
   const { user } = useAuth();
   const [replies, setReplies] = useState<Comment[]>([]);
   const [showReplies, setShowReplies] = useState(false);
@@ -35,10 +37,10 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
   const [loadingReplies, setLoadingReplies] = useState(false);
   const [liking, setLiking] = useState(false);
   const [postingReply, setPostingReply] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // Load replies when expanded
   const loadReplies = async () => {
-    if (replies.length > 0) return; // Already loaded
+    if (replies.length > 0) return;
 
     setLoadingReplies(true);
     try {
@@ -55,7 +57,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
     }
   };
 
-  // Handle reply creation
   const handleCreateReply = async (content: string) => {
     if (!user || postingReply) return;
 
@@ -73,7 +74,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
         return;
       }
 
-      // Add reply to the list
       if (data) {
         setReplies(prev => [...prev, data]);
         setShowReplies(true);
@@ -86,7 +86,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
     }
   };
 
-  // Handle like toggle
   const handleLikeToggle = async () => {
     if (!user || liking) return;
 
@@ -99,7 +98,6 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
         return;
       }
 
-      // Update local state immediately for better UX
       const newLikeCount = comment.is_liked ? comment.like_count - 1 : comment.like_count + 1;
       const newIsLiked = !comment.is_liked;
 
@@ -115,7 +113,24 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
     }
   };
 
-  // Handle show replies toggle
+  const handleDeleteComment = async () => {
+    if (!user || deleting) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await deleteComment(comment.id);
+      if (error) {
+        alert(`Failed to delete comment: ${error.message}`);
+        return;
+      }
+      onCommentDeleted?.(comment.id);
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleShowReplies = () => {
     setShowReplies(!showReplies);
     if (!showReplies && replies.length === 0) {
@@ -123,13 +138,11 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
     }
   };
 
-  // Subscribe to new replies
   useEffect(() => {
     if (!showReplies) return;
 
     const channel = subscribeToCommentReplies(comment.id, (newReply) => {
       setReplies(prev => {
-        // Avoid duplicates
         if (prev.some(r => r.id === newReply.id)) {
           return prev;
         }
@@ -242,12 +255,30 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, isReply = 
             )}
 
             {/* Show Replies Button */}
-            {!isReply && comment.reply_count > 0 && (
+            {!isReply && comment.reply_count && comment.reply_count > 0 && (
               <button
                 onClick={handleShowReplies}
                 className="hover:text-white transition-colors"
               >
                 {showReplies ? 'Hide' : 'View'} {comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'}
+              </button>
+            )}
+
+            {/* Delete Button - Only show if user owns the comment */}
+            {user && user.id === comment.user_id && (
+              <button
+                onClick={handleDeleteComment}
+                disabled={deleting}
+                className="hover:text-red-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete comment"
+              >
+                {deleting ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b border-current"></div>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                )}
               </button>
             )}
           </div>

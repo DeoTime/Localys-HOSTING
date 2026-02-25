@@ -11,12 +11,20 @@ export default function SignUpPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accountType, setAccountType] = useState<'business' | 'user'>('user');
+  const [businessType, setBusinessType] = useState<'food' | 'retail' | 'service' | ''>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (accountType === 'business' && !businessType) {
+      setError('Please select a business type');
+      return;
+    }
+
     setLoading(true);
 
     const { data, error: signUpError } = await signUp({
@@ -24,6 +32,8 @@ export default function SignUpPage() {
       password,
       name,
       username,
+      accountType,
+      businessType: accountType === 'business' ? businessType : undefined,
     });
 
     if (signUpError) {
@@ -50,6 +60,57 @@ export default function SignUpPage() {
           {error && (
             <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
               {error}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Account Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setAccountType('user');
+                  setBusinessType('');
+                }}
+                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  accountType === 'user'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                }`}
+              >
+                USER
+              </button>
+              <button
+                type="button"
+                onClick={() => setAccountType('business')}
+                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  accountType === 'business'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                }`}
+              >
+                BUSINESS
+              </button>
+            </div>
+          </div>
+
+          {accountType === 'business' && (
+            <div>
+              <label htmlFor="businessType" className="block text-sm font-medium mb-2">
+                Business Type
+              </label>
+              <select
+                id="businessType"
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value as 'food' | 'retail' | 'service' | '')}
+                required
+                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-200"
+              >
+                <option value="">Select business type</option>
+                <option value="food">Food</option>
+                <option value="retail">Retail</option>
+                <option value="service">Service</option>
+              </select>
             </div>
           )}
 

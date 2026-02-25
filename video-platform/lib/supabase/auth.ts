@@ -1,24 +1,18 @@
 import { supabase } from './client';
+import type { SignUpData, SignInData } from '../../models/Auth';
 
-export interface SignUpData {
-  email: string;
-  password: string;
-  name: string;
-  username: string;
-}
-
-export interface SignInData {
-  email: string;
-  password: string;
-}
+export type { SignUpData, SignInData };
 
 /**
  * Sign up a new user
  * Creates auth user and profile in public.profiles table
  */
-export async function signUp({ email, password, name, username }: SignUpData) {
+export async function signUp({ email, password, name, username, accountType, businessType }: SignUpData) {
   try {
-    // Create auth user
+    if (accountType === 'business' && !businessType) {
+      throw new Error('Business type is required for business accounts');
+    }
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -27,7 +21,6 @@ export async function signUp({ email, password, name, username }: SignUpData) {
     if (authError) throw authError;
     if (!authData.user) throw new Error('User creation failed');
 
-    // Create profile in public.profiles table
     const { error: profileError } = await supabase
       .from('profiles')
       .insert({
@@ -35,13 +28,21 @@ export async function signUp({ email, password, name, username }: SignUpData) {
         email,
         full_name: name,
         username,
+        type: accountType === 'business' ? businessType : null,
       });
 
     if (profileError) {
-      // Note: In production, you'd want to handle this with a server-side function
-      // or database trigger to ensure data consistency
       console.error('Profile creation failed:', profileError);
       throw profileError;
+    }
+
+    // Create welcome coupon for new user
+    const { data: couponData, error: couponError } = await createWelcomeCoupon(authData.user.id);
+    if (couponError) {
+      console.warn('Failed to create welcome coupon:', couponError);
+      // Don't throw - coupon creation failure shouldn't block signup
+    } else {
+      console.log('Welcome coupon created:', couponData);
     }
 
     return { data: authData, error: null };

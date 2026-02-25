@@ -20,12 +20,10 @@ export default function CheckoutSuccessPage() {
       return;
     }
 
-    // Wait a moment for the webhook to process
     const timer = setTimeout(async () => {
       if (!user) return;
 
       try {
-        // Fetch the user's current coin balance
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('coin_balance')
@@ -34,7 +32,6 @@ export default function CheckoutSuccessPage() {
 
         if (error) throw error;
 
-        // Fetch the purchase record to get coins added
         const { data: purchase, error: purchaseError } = await supabase
           .from('coin_purchases')
           .select('coins')
@@ -47,15 +44,23 @@ export default function CheckoutSuccessPage() {
           setCoinsAdded(purchase.coins);
         }
 
-        setNewBalance(profile?.coin_balance || 0);
-        setStatus('success');
+        const data = await response.json();
+        
+        if (data.success) {
+          setCoinsAdded(data.coinsAdded);
+          setNewBalance(data.newBalance);
+          setStatus('success');
+        } else {
+          throw new Error(data.error || 'Failed to confirm purchase');
+        }
       } catch (error) {
         console.error('Error verifying purchase:', error);
         setStatus('error');
       }
-    }, 2000);
+    };
 
-    return () => clearTimeout(timer);
+    // Call immediately, don't wait
+    verifyPurchase();
   }, [sessionId, user]);
 
   if (status === 'loading') {

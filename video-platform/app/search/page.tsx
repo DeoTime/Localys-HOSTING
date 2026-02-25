@@ -10,7 +10,6 @@ import { supabase } from '@/lib/supabase/client';
 import { searchVideos, searchBusinesses, SearchFilters, SearchMode } from '@/lib/supabase/search';
 import { haversineDistance } from '@/lib/utils/geo';
 
-// Filter option definitions
 const CUISINE_TYPES = ['Italian', 'Mexican', 'Chinese', 'Japanese', 'Korean', 'Indian', 'Thai', 'Vietnamese', 'Mediterranean', 'American', 'French', 'Middle Eastern'];
 const FORMALITY_TYPES = ['Restaurant', 'Cafe', 'Bar'];
 const SPECIAL_TYPES = ['Bakery', 'Bubble Tea', 'Fast Food'];
@@ -33,7 +32,6 @@ function SearchContent() {
   const { user } = useAuth();
   const pathname = usePathname();
 
-  // Core state
   const [query, setQuery] = useState('');
   const [searchMode, setSearchMode] = useState<SearchMode>('businesses');
   const [category, setCategory] = useState<string>('');
@@ -44,7 +42,6 @@ function SearchContent() {
   const [hasSearched, setHasSearched] = useState(false);
   const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
 
-  // Advanced filter state
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [cuisineType, setCuisineType] = useState('');
   const [formality, setFormality] = useState('');
@@ -55,13 +52,11 @@ function SearchContent() {
   const [payment, setPayment] = useState<string[]>([]);
   const [tags, setTags] = useState<string[]>([]);
 
-  // Location state
   const [nearMe, setNearMe] = useState(false);
   const [radius, setRadius] = useState(10);
   const [userLat, setUserLat] = useState<number | undefined>();
   const [userLng, setUserLng] = useState<number | undefined>();
 
-  // Hover preview state
   const [hoveredBusiness, setHoveredBusiness] = useState<any>(null);
 
   const toggleArrayFilter = (arr: string[], setArr: (v: string[]) => void, value: string) => {
@@ -70,7 +65,7 @@ function SearchContent() {
 
   const buildFilters = (overrideCategory?: string): SearchFilters => ({
     query: query.trim() || undefined,
-    category: ((overrideCategory ?? category) as 'food' | 'retail' | 'services' | undefined) || undefined,
+    category: ((overrideCategory ?? category) as 'food' | 'retail' | 'service' | undefined) || undefined,
     minRating,
     priceMin: priceRange[0] > 0 ? priceRange[0] : undefined,
     priceMax: priceRange[1] < 1000 ? priceRange[1] : undefined,
@@ -107,35 +102,8 @@ function SearchContent() {
         const resultsData = data || [];
         setResults(resultsData);
         
-        // Load comment counts for search results
-        // TODO: Fix null value issue in videoIds array
         console.log('Skipping comment fetch due to null value issues');
-        // const videoIds = resultsData.map((r: any) => r.id).filter(Boolean);
-        // if (videoIds.length > 0) {
-        //   const { data: comments, error: commentsError } = await supabase
-        //     .from('comments')
-        //     .select('video_id')
-        //     .eq('parent_comment_id', null)
-        //     .in('video_id', videoIds);
-        //   
-        //   if (commentsError) {
-        //     const errMsg = commentsError instanceof Error 
-        //       ? commentsError.message 
-        //       : (commentsError as any)?.message
-        //         ? (commentsError as any).message
-        //         : JSON.stringify(commentsError);
-        //     console.error('Error fetching comments:', errMsg, commentsError);
-        //   }
-        //   
-        //   const counts: { [key: string]: number } = {};
-        //   if (comments) {
-        //     console.log('Fetched comments from search:', comments.length);
-        //     comments.forEach((comment: any) => {
-        //       counts[comment.video_id] = (counts[comment.video_id] || 0) + 1;
-        //     });
-        //   }
-        //   setCommentCounts(counts);
-        // }
+      
       }
     } catch (error) {
       console.error('Search error:', error);
@@ -147,14 +115,12 @@ function SearchContent() {
 
   const handleSearch = useCallback(() => {
     const filters = buildFilters();
-    // Execute search immediately, allowing blank or filter-only queries
     executeSearch(filters, searchMode);
   }, [query, category, minRating, priceRange, cuisineType, formality, specialType, dietary, features, amenities, payment, tags, nearMe, radius, userLat, userLng, searchMode, executeSearch]);
 
   const handleCategoryChange = (cat: string) => {
     setCategory(cat);
     const filters = buildFilters(cat);
-    // Execute search immediately when category changes
     executeSearch(filters, searchMode);
   };
 
@@ -171,6 +137,20 @@ function SearchContent() {
     } else {
       setNearMe(!nearMe);
     }
+  };
+
+  const handleMinRatingStarClick = (starValue: number) => {
+    if (minRating === starValue) {
+      setMinRating(starValue - 0.5);
+      return;
+    }
+
+    if (minRating === starValue - 0.5) {
+      setMinRating(starValue);
+      return;
+    }
+
+    setMinRating(starValue);
   };
 
   const clearAllFilters = () => {
@@ -195,256 +175,274 @@ function SearchContent() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-20">
+      <StarSymbolDefs />
+
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold">Search</h1>
         </div>
       </div>
 
       {/* Search Content */}
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="space-y-6">
-          {/* Search Mode Toggle */}
-          <div className="flex bg-white/10 rounded-lg p-1">
-            <button
-              onClick={() => setSearchMode('businesses')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                searchMode === 'businesses'
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              🏪 Businesses
-            </button>
-            <button
-              onClick={() => setSearchMode('videos')}
-              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                searchMode === 'videos'
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              🎬 Videos
-            </button>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)] gap-6 lg:gap-8">
+          <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start max-h-[calc(100vh-7rem)] overflow-y-auto pr-1">
+            {/* Search Mode Toggle */}
+            <div className="flex bg-white/10 rounded-lg p-1">
+              <button
+                onClick={() => setSearchMode('businesses')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  searchMode === 'businesses'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                🏪 Businesses
+              </button>
+              <button
+                onClick={() => setSearchMode('videos')}
+                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  searchMode === 'videos'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                🎬 Videos
+              </button>
+            </div>
 
-          {/* Search Bar */}
-          <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 flex gap-2 hover:bg-white/15 hover:border-white/30 transition-all duration-200">
-            <svg className="w-5 h-5 text-white/60 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder={searchMode === 'businesses' ? 'Search businesses, cuisine, keywords...' : 'Search videos by keywords, business name...'}
-              className="bg-transparent text-white placeholder-white/60 flex-1 outline-none"
-              autoFocus
-            />
-            <button
-              onClick={handleSearch}
-              disabled={loading}
-              className="bg-white text-black px-4 py-2 rounded-lg font-semibold hover:bg-white/90 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-            >
-              {loading ? '...' : 'Search'}
-            </button>
-          </div>
+            {/* Search Bar */}
+            <div className="bg-white/10 border border-white/20 rounded-lg px-4 py-3 flex gap-2 hover:bg-white/15 hover:border-white/30 transition-all duration-200">
+              <svg className="w-5 h-5 text-white/60 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder={searchMode === 'businesses' ? 'Search businesses, cuisine, keywords...' : 'Search videos by keywords, business name...'}
+                className="bg-transparent text-white placeholder-white/60 flex-1 outline-none"
+                autoFocus
+              />
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="bg-white text-black px-4 py-2 rounded-lg font-semibold hover:bg-white/90 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              >
+                {loading ? '...' : 'Search'}
+              </button>
+            </div>
 
-          {/* Filters */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Filters</h2>
-              <div className="flex gap-3 items-center">
-                {hasActiveFilters && (
-                  <button onClick={clearAllFilters} className="text-sm text-blue-400 hover:text-blue-300">
-                    Clear All
+            {/* Filters */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Filters</h2>
+                <div className="flex gap-3 items-center">
+                  {hasActiveFilters && (
+                    <button onClick={clearAllFilters} className="text-sm text-blue-400 hover:text-blue-300">
+                      Clear All
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="text-sm text-white/60 hover:text-white flex items-center gap-1"
+                  >
+                    {showAdvancedFilters ? 'Less' : 'More'} Filters
+                    <svg className={`w-4 h-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </button>
-                )}
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className="text-sm text-white/60 hover:text-white flex items-center gap-1"
-                >
-                  {showAdvancedFilters ? 'Less' : 'More'} Filters
-                  <svg className={`w-4 h-4 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-4">
-              {/* Category Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {['', 'food', 'retail', 'services'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => handleCategoryChange(cat)}
-                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                        category === cat
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      }`}
-                    >
-                      {cat === '' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </button>
-                  ))}
                 </div>
               </div>
 
-              {/* Minimum Rating Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Minimum Rating</label>
-                <select
-                  value={minRating || ''}
-                  onChange={(e) => setMinRating(e.target.value ? Number(e.target.value) : undefined)}
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white text-sm"
-                >
-                  <option value="">Any Rating</option>
-                  <option value="3">3+ Stars</option>
-                  <option value="3.5">3.5+ Stars</option>
-                  <option value="4">4+ Stars</option>
-                  <option value="4.5">4.5+ Stars</option>
-                  <option value="5">5 Stars</option>
-                </select>
-              </div>
-
-              {/* Price Range Filter */}
-              <div>
-                <label className="block text-sm font-medium mb-3">
-                  Price Range: ${priceRange[0]} - ${priceRange[1]}
-                </label>
-                <div className="space-y-2">
-                  <div className="flex gap-4 items-center">
-                    <input type="range" min="0" max="1000" value={priceRange[0]}
-                      onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-                      className="flex-1 accent-blue-500" />
-                    <span className="text-sm text-gray-400 w-12">${priceRange[0]}</span>
+              <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-4">
+                {/* Category Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Category</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['', 'food', 'retail', 'service'].map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => handleCategoryChange(cat)}
+                        className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                          category === cat
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                        }`}
+                      >
+                        {cat === '' ? 'All' : cat === 'service' ? 'Services' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </button>
+                    ))}
                   </div>
-                  <div className="flex gap-4 items-center">
-                    <input type="range" min="0" max="1000" value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-                      className="flex-1 accent-blue-500" />
-                    <span className="text-sm text-gray-400 w-12">${priceRange[1]}</span>
+                </div>
+
+                {/* Minimum Rating Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Minimum Rating</label>
+                  <div className="flex items-center gap-1 mb-2">
+                    {[1, 2, 3, 4, 5].map((starValue) => {
+                      const fill = minRating ? Math.max(0, Math.min(1, minRating - (starValue - 1))) : 0;
+                      return (
+                        <button
+                          key={starValue}
+                          type="button"
+                          onClick={() => handleMinRatingStarClick(starValue)}
+                          className="p-0.5"
+                          aria-label={`Set minimum rating to ${starValue} stars`}
+                        >
+                          <RatingStar fill={fill} />
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setMinRating(undefined)}
+                      className="ml-2 text-xs text-blue-400 hover:text-blue-300"
+                    >
+                      Any
+                    </button>
+                  </div>
+                  <p className="text-xs text-white/60">
+                    {minRating ? `${minRating}+ stars` : 'Any rating'}
+                  </p>
+                </div>
+
+                {/* Price Range Filter */}
+                <div>
+                  <label className="block text-sm font-medium mb-3">
+                    Price Range: ${priceRange[0]} - ${priceRange[1]}
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex gap-4 items-center">
+                      <input type="range" min="0" max="1000" value={priceRange[0]}
+                        onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
+                        className="flex-1 accent-blue-500" />
+                      <span className="text-sm text-gray-400 w-12">${priceRange[0]}</span>
+                    </div>
+                    <div className="flex gap-4 items-center">
+                      <input type="range" min="0" max="1000" value={priceRange[1]}
+                        onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
+                        className="flex-1 accent-blue-500" />
+                      <span className="text-sm text-gray-400 w-12">${priceRange[1]}</span>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Advanced Filters */}
+              {showAdvancedFilters && (
+                <div className="space-y-4">
+                  {/* Cuisine Type */}
+                  <FilterSection title="🍽️ Cuisine Type">
+                    <div className="flex flex-wrap gap-2">
+                      {CUISINE_TYPES.map((c) => (
+                        <ChipButton key={c} label={c} active={cuisineType === c} onClick={() => setCuisineType(cuisineType === c ? '' : c)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Formality */}
+                  <FilterSection title="🏠 Formality">
+                    <div className="flex flex-wrap gap-2">
+                      {FORMALITY_TYPES.map((f) => (
+                        <ChipButton key={f} label={f} active={formality === f} onClick={() => setFormality(formality === f ? '' : f)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Special Types */}
+                  <FilterSection title="🧁 Special Types">
+                    <div className="flex flex-wrap gap-2">
+                      {SPECIAL_TYPES.map((s) => (
+                        <ChipButton key={s} label={s} active={specialType === s} onClick={() => setSpecialType(specialType === s ? '' : s)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Dietary */}
+                  <FilterSection title="🥗 Dietary & Health">
+                    <div className="flex flex-wrap gap-2">
+                      {DIETARY_OPTIONS.map((d) => (
+                        <ChipButton key={d} label={d} active={dietary.includes(d)} onClick={() => toggleArrayFilter(dietary, setDietary, d)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Location */}
+                  <FilterSection title="📍 Location">
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleNearMe}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          nearMe ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                        }`}
+                      >
+                        📍 Near Me
+                      </button>
+                      {nearMe && (
+                        <div>
+                          <label className="block text-sm text-gray-400 mb-1">Radius: {radius} km</label>
+                          <input type="range" min="1" max="50" value={radius}
+                            onChange={(e) => setRadius(Number(e.target.value))}
+                            className="w-full accent-blue-500" />
+                        </div>
+                      )}
+                    </div>
+                  </FilterSection>
+
+                  {/* Restaurant Features */}
+                  <FilterSection title="🪑 Restaurant Features">
+                    <div className="flex flex-wrap gap-2">
+                      {FEATURE_OPTIONS.map((f) => (
+                        <ChipButton key={f} label={f} active={features.includes(f)} onClick={() => toggleArrayFilter(features, setFeatures, f)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Food & Drink */}
+                  <FilterSection title="🍺 Food & Drink Options">
+                    <div className="flex flex-wrap gap-2">
+                      {DRINK_OPTIONS.map((d) => (
+                        <ChipButton key={d} label={d} active={features.includes(d)} onClick={() => toggleArrayFilter(features, setFeatures, d)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Amenities */}
+                  <FilterSection title="📶 Amenities">
+                    <div className="flex flex-wrap gap-2">
+                      {AMENITY_OPTIONS.map((a) => (
+                        <ChipButton key={a} label={a} active={amenities.includes(a)} onClick={() => toggleArrayFilter(amenities, setAmenities, a)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Payment */}
+                  <FilterSection title="💳 Payment & Policies">
+                    <div className="flex flex-wrap gap-2">
+                      {PAYMENT_OPTIONS.map((p) => (
+                        <ChipButton key={p} label={p} active={payment.includes(p)} onClick={() => toggleArrayFilter(payment, setPayment, p)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+
+                  {/* Modern Tags */}
+                  <FilterSection title="✨ More">
+                    <div className="flex flex-wrap gap-2">
+                      {MODERN_TAGS.map((t) => (
+                        <ChipButton key={t} label={t} active={tags.includes(t)} onClick={() => toggleArrayFilter(tags, setTags, t)} />
+                      ))}
+                    </div>
+                  </FilterSection>
+                </div>
+              )}
             </div>
-
-            {/* Advanced Filters */}
-            {showAdvancedFilters && (
-              <div className="space-y-4">
-                {/* Cuisine Type */}
-                <FilterSection title="🍽️ Cuisine Type">
-                  <div className="flex flex-wrap gap-2">
-                    {CUISINE_TYPES.map((c) => (
-                      <ChipButton key={c} label={c} active={cuisineType === c} onClick={() => setCuisineType(cuisineType === c ? '' : c)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Formality */}
-                <FilterSection title="🏠 Formality">
-                  <div className="flex flex-wrap gap-2">
-                    {FORMALITY_TYPES.map((f) => (
-                      <ChipButton key={f} label={f} active={formality === f} onClick={() => setFormality(formality === f ? '' : f)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Special Types */}
-                <FilterSection title="🧁 Special Types">
-                  <div className="flex flex-wrap gap-2">
-                    {SPECIAL_TYPES.map((s) => (
-                      <ChipButton key={s} label={s} active={specialType === s} onClick={() => setSpecialType(specialType === s ? '' : s)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Dietary */}
-                <FilterSection title="🥗 Dietary & Health">
-                  <div className="flex flex-wrap gap-2">
-                    {DIETARY_OPTIONS.map((d) => (
-                      <ChipButton key={d} label={d} active={dietary.includes(d)} onClick={() => toggleArrayFilter(dietary, setDietary, d)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Location */}
-                <FilterSection title="📍 Location">
-                  <div className="space-y-3">
-                    <button
-                      onClick={handleNearMe}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        nearMe ? 'bg-blue-500 text-white' : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                      }`}
-                    >
-                      📍 Near Me
-                    </button>
-                    {nearMe && (
-                      <div>
-                        <label className="block text-sm text-gray-400 mb-1">Radius: {radius} km</label>
-                        <input type="range" min="1" max="50" value={radius}
-                          onChange={(e) => setRadius(Number(e.target.value))}
-                          className="w-full accent-blue-500" />
-                      </div>
-                    )}
-                  </div>
-                </FilterSection>
-
-                {/* Restaurant Features */}
-                <FilterSection title="🪑 Restaurant Features">
-                  <div className="flex flex-wrap gap-2">
-                    {FEATURE_OPTIONS.map((f) => (
-                      <ChipButton key={f} label={f} active={features.includes(f)} onClick={() => toggleArrayFilter(features, setFeatures, f)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Food & Drink */}
-                <FilterSection title="🍺 Food & Drink Options">
-                  <div className="flex flex-wrap gap-2">
-                    {DRINK_OPTIONS.map((d) => (
-                      <ChipButton key={d} label={d} active={features.includes(d)} onClick={() => toggleArrayFilter(features, setFeatures, d)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Amenities */}
-                <FilterSection title="📶 Amenities">
-                  <div className="flex flex-wrap gap-2">
-                    {AMENITY_OPTIONS.map((a) => (
-                      <ChipButton key={a} label={a} active={amenities.includes(a)} onClick={() => toggleArrayFilter(amenities, setAmenities, a)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Payment */}
-                <FilterSection title="💳 Payment & Policies">
-                  <div className="flex flex-wrap gap-2">
-                    {PAYMENT_OPTIONS.map((p) => (
-                      <ChipButton key={p} label={p} active={payment.includes(p)} onClick={() => toggleArrayFilter(payment, setPayment, p)} />
-                    ))}
-                  </div>
-                </FilterSection>
-
-                {/* Modern Tags */}
-                <FilterSection title="✨ More">
-                  <div className="flex flex-wrap gap-2">
-                    {MODERN_TAGS.map((t) => (
-                      <ChipButton key={t} label={t} active={tags.includes(t)} onClick={() => toggleArrayFilter(tags, setTags, t)} />
-                    ))}
-                  </div>
-                </FilterSection>
-              </div>
-            )}
-          </div>
+          </aside>
 
           {/* Search Results */}
-          <div className="mt-8">
+          <section className="min-w-0">
             <div className="mb-4">
               <h2 className="text-lg font-semibold mb-2">
                 {loading ? 'Searching...' : hasSearched ? `Results (${results.length})` : 'Search Results'}
@@ -473,25 +471,6 @@ function SearchContent() {
                         hoveredId={hoveredBusiness?.id}
                         onHover={setHoveredBusiness}
                       />
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-1">
-                          {result.businesses?.business_name || 'Business'}
-                        </h3>
-                        <p className="text-sm text-white/60 mb-2 line-clamp-2">
-                          {result.caption || ''}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-white/80">
-                          {result.businesses?.average_rating && (
-                            <span>⭐ {result.businesses.average_rating.toFixed(1)}</span>
-                          )}
-                          {(commentCounts[result.id] || 0) > 0 && (
-                            <span>• {commentCounts[result.id]} reviews</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
                     ))
                   : results.map((result) => (
                       <VideoResultCard key={result.id} result={result} query={query} />
@@ -516,7 +495,7 @@ function SearchContent() {
                 <p className="text-white/40 text-sm mt-1">Use filters to narrow down results</p>
               </div>
             )}
-          </div>
+          </section>
         </div>
       </div>
 
@@ -583,6 +562,42 @@ function ChipButton({ label, active, onClick }: { label: string; active: boolean
     >
       {label}
     </button>
+  );
+}
+
+function RatingStar({ fill }: { fill: number }) {
+  const clampedFill = Math.max(0, Math.min(1, fill));
+
+  return (
+    <div className="relative w-6 h-6" aria-hidden="true">
+      <svg className="absolute inset-0 w-full h-full text-white/25" viewBox="0 0 24 24">
+        <use href="#search-rating-star" />
+      </svg>
+      <div className="absolute inset-0 overflow-hidden" style={{ width: `${clampedFill * 100}%` }}>
+        <svg className="w-6 h-6 text-yellow-400" viewBox="0 0 24 24">
+          <use href="#search-rating-star" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function StarSymbolDefs() {
+  return (
+    <svg width="0" height="0" className="absolute" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="search-rating-star" viewBox="0 0 24 24">
+          <path
+            d="M8.58737 8.23597L11.1849 3.00376C11.5183 2.33208 12.4817 2.33208 12.8151 3.00376L15.4126 8.23597L21.2215 9.08017C21.9668 9.18848 22.2638 10.0994 21.7243 10.6219L17.5217 14.6918L18.5135 20.4414C18.6409 21.1798 17.8614 21.7428 17.1945 21.3941L12 18.678L6.80547 21.3941C6.1386 21.7428 5.35909 21.1798 5.48645 20.4414L6.47825 14.6918L2.27575 10.6219C1.73617 10.0994 2.03322 9.18848 2.77852 9.08017L8.58737 8.23597Z"
+            fill="currentColor"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </symbol>
+      </defs>
+    </svg>
   );
 }
 
@@ -660,7 +675,7 @@ function BusinessResultCard({
 
       {/* Hover preview tooltip */}
       {isHovered && (
-        <div className="absolute left-0 right-0 top-full mt-1 z-30 bg-gray-900 border border-white/20 rounded-lg p-4 shadow-xl">
+        <div className="mt-3 bg-gray-900 border border-white/20 rounded-lg p-4 shadow-xl transition-all duration-200">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <p className="text-white/50 text-xs">Rating</p>
@@ -696,6 +711,12 @@ function BusinessResultCard({
 }
 
 function VideoResultCard({ result, query }: { result: any; query: string }) {
+  const authorName = result.profiles?.full_name || result.profiles?.username || 'Unknown author';
+  const postedDate = result.created_at
+    ? new Date(result.created_at).toLocaleDateString()
+    : 'Unknown date';
+  const views = typeof result.view_count === 'number' ? result.view_count : 0;
+
   return (
     <Link
       href={`/video/${result.id}`}
@@ -714,9 +735,17 @@ function VideoResultCard({ result, query }: { result: any; query: string }) {
           <h3 className="font-semibold mb-1 text-white">
             {result.businesses?.business_name || result.profiles?.full_name || 'Business'}
           </h3>
+          <p className="text-xs text-white/50 mb-1">
+            By {authorName}
+          </p>
           <p className="text-sm text-white/60 mb-2 line-clamp-2">
             {result.caption || 'No description'}
           </p>
+          <div className="flex items-center gap-2 text-xs text-white/55 mb-2">
+            <span>{postedDate}</span>
+            <span>•</span>
+            <span>{views.toLocaleString()} views</span>
+          </div>
           <div className="flex items-center gap-3 text-sm text-white/80 mb-2">
             {result.businesses?.average_rating && (
               <>
