@@ -31,6 +31,15 @@ export async function signUp({ email, password, name, username }: SignUpData) {
       throw profileError;
     }
 
+    // Create welcome coupon for new user
+    const { data: couponData, error: couponError } = await createWelcomeCoupon(authData.user.id);
+    if (couponError) {
+      console.warn('Failed to create welcome coupon:', couponError);
+      // Don't throw - coupon creation failure shouldn't block signup
+    } else {
+      console.log('Welcome coupon created:', couponData);
+    }
+
     return { data: authData, error: null };
   } catch (error: any) {
     return { data: null, error };

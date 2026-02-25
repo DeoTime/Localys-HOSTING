@@ -105,7 +105,6 @@ export async function getMessages(chatId: string) {
       )
     `)
     .eq('chat_id', chatId)
-    .eq('deleted', false)
     .order('created_at', { ascending: true });
 
   return { data, error };

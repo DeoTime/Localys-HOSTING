@@ -23,8 +23,10 @@ interface Video {
   };
   businesses?: {
     id: string;
+    owner_id: string;
     business_name: string;
     profile_picture_url: string;
+    custom_messages?: string[];
   };
 }
 
@@ -78,7 +80,7 @@ export default function VideoDetailPage() {
       if (videoData.business_id) {
         const { data: business } = await supabase
           .from('businesses')
-          .select('id, business_name, profile_picture_url')
+          .select('id, owner_id, business_name, profile_picture_url, custom_messages')
           .eq('id', videoData.business_id)
           .single();
         if (business) {
@@ -148,6 +150,66 @@ export default function VideoDetailPage() {
     setCommentModalOpen(true);
   };
 
+  const handleSendQuickMessage = async (messageText: string) => {
+    if (!user || !video?.businesses) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const businessOwnerId = video.businesses.owner_id;
+
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`and(user_id.eq.${user.id},other_user_id.eq.${businessOwnerId}),and(user_id.eq.${businessOwnerId},other_user_id.eq.${user.id})`)
+        .single();
+
+      let conversationId: string;
+
+      if (existingConversation) {
+        conversationId = existingConversation.id;
+      } else {
+        // Create new conversation
+        const { data: newConversation, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            user_id: user.id,
+            other_user_id: businessOwnerId,
+          })
+          .select('id')
+          .single();
+
+        if (convError || !newConversation) {
+          console.error('Failed to create conversation:', convError);
+          return;
+        }
+
+        conversationId = newConversation.id;
+      }
+
+      // Send the message
+      const { error: messageError } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          user_id: user.id,
+          content: messageText,
+        });
+
+      if (messageError) {
+        console.error('Failed to send message:', messageError);
+        return;
+      }
+
+      // Navigate to chat
+      router.push(`/chats/${conversationId}`);
+    } catch (err) {
+      console.error('Error sending quick message:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -190,13 +252,28 @@ export default function VideoDetailPage() {
         {/* Video Container */}
         <div className="bg-gray-900 rounded-lg overflow-hidden">
           {/* Video Player */}
-          <div className="relative bg-black aspect-video flex items-center justify-center">
+          <div className="relative bg-black aspect-video flex items-center justify-center group">
             <video
               src={video.video_url}
               controls
               className="w-full h-full object-contain"
               autoPlay
             />
+
+            {/* Floating Message Buttons */}
+            {video.businesses && video.businesses.custom_messages && video.businesses.custom_messages.length > 0 && (
+              <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {video.businesses.custom_messages.map((message, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSendQuickMessage(message)}
+                    className="px-3 py-2 bg-blue-500/70 hover:bg-blue-600/70 text-white text-sm rounded-lg backdrop-blur-sm transition-all hover:scale-105"
+                  >
+                    💬 {message}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Video Info */}

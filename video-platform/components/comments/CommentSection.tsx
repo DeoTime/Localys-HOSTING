@@ -239,6 +239,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
                 comment={comment}
                 videoId={videoId}
                 onLikeUpdate={handleLikeUpdate}
+                onCommentDeleted={handleCommentDeleted}
               />
             ))}
 

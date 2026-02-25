@@ -44,15 +44,23 @@ export default function CheckoutSuccessPage() {
           setCoinsAdded(purchase.coins);
         }
 
-        setNewBalance(profile?.coin_balance || 0);
-        setStatus('success');
+        const data = await response.json();
+        
+        if (data.success) {
+          setCoinsAdded(data.coinsAdded);
+          setNewBalance(data.newBalance);
+          setStatus('success');
+        } else {
+          throw new Error(data.error || 'Failed to confirm purchase');
+        }
       } catch (error) {
         console.error('Error verifying purchase:', error);
         setStatus('error');
       }
-    }, 2000);
+    };
 
-    return () => clearTimeout(timer);
+    // Call immediately, don't wait
+    verifyPurchase();
   }, [sessionId, user]);
 
   if (status === 'loading') {

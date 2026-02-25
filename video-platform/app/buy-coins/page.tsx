@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserCoins } from '@/lib/supabase/profiles';
+import { getUserCoupons, validateCoupon } from '@/lib/supabase/coupons';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import type { UserCoupon } from '@/lib/supabase/coupons';
 
 const COIN_PACKAGES = [
   {
@@ -38,6 +40,9 @@ export default function BuyCoinsPage() {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stripeConfigured, setStripeConfigured] = useState(true);
+  const [availableCoupons, setAvailableCoupons] = useState<UserCoupon[]>([]);
+  const [selectedCoupon, setSelectedCoupon] = useState<UserCoupon | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY) {
@@ -47,8 +52,23 @@ export default function BuyCoinsPage() {
 
     if (user) {
       loadCoinBalance();
+      loadCoupons();
     }
   }, [user]);
+
+  const loadCoupons = async () => {
+    try {
+      const { data: coupons, error } = await getUserCoupons(user?.id || '');
+      console.log('Loaded coupons:', { coupons, error });
+      if (!error && coupons) {
+        setAvailableCoupons(coupons);
+      } else if (error) {
+        console.error('Error loading coupons:', error);
+      }
+    } catch (err) {
+      console.error('Error loading coupons:', err);
+    }
+  };
 
   const loadCoinBalance = async () => {
     try {
@@ -58,6 +78,39 @@ export default function BuyCoinsPage() {
       console.error('Error loading coin balance:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApplyCoupon = async (coupon: UserCoupon) => {
+    if (!selectedPackage) {
+      setError('Please select a package first');
+      return;
+    }
+
+    try {
+      // Validate coupon
+      const couponCode = (coupon.coupon as any)?.code || '';
+      const { data: validatedCoupon, error: validateError } = await validateCoupon(
+        couponCode,
+        user?.id || ''
+      );
+
+      if (validateError || !validatedCoupon) {
+        setError(validateError?.message || 'Invalid coupon');
+        return;
+      }
+
+      setSelectedCoupon(coupon);
+      
+      // Calculate discount
+      const pkg = COIN_PACKAGES.find(p => p.id === selectedPackage);
+      if (pkg) {
+        const discount = Math.ceil(pkg.price * (validatedCoupon.discount_percentage / 100));
+        setDiscountAmount(discount);
+      }
+    } catch (err) {
+      console.error('Error applying coupon:', err);
+      setError('Failed to apply coupon');
     }
   };
 
@@ -80,6 +133,7 @@ export default function BuyCoinsPage() {
         body: JSON.stringify({
           packageId,
           userId: user.id,
+          couponCode: selectedCoupon ? (selectedCoupon.coupon as any)?.code : null,
         }),
       });
 
@@ -146,6 +200,49 @@ export default function BuyCoinsPage() {
           </div>
         )}
 
+        {/* Available Coupons */}
+        {availableCoupons.length > 0 && (
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold mb-4">🎉 Available Coupons</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {availableCoupons.map((coupon) => {
+                const couponData = (coupon.coupon as any);
+                const isSelected = selectedCoupon?.id === coupon.id;
+                return (
+                  <button
+                    key={coupon.id}
+                    onClick={() => handleApplyCoupon(coupon)}
+                    className={`p-4 rounded-lg border-2 transition-all text-left ${
+                      isSelected
+                        ? 'border-green-500 bg-green-500/20'
+                        : 'border-green-500/30 bg-green-500/5 hover:border-green-500/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-green-400">{couponData.code}</p>
+                        <p className="text-white/60 text-sm">{couponData.discount_percentage}% Off</p>
+                      </div>
+                      {isSelected && (
+                        <span className="text-green-400 text-lg">✓</span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Coupon Applied Not */}
+        {selectedCoupon && (
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-8">
+            <p className="text-blue-400 text-sm">
+              ✓ Coupon applied! You'll save ${discountAmount} on your purchase.
+            </p>
+          </div>
+        )}
+
         {/* Error Message */}
         {error && (
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
@@ -192,7 +289,14 @@ export default function BuyCoinsPage() {
 
                 {/* Price */}
                 <div className="text-center mb-8 border-t border-b border-white/10 py-6">
-                  <p className="text-4xl font-bold">${pkg.price}</p>
+                  <div className="flex items-center justify-center gap-2">
+                    <p className="text-4xl font-bold">
+                      ${selectedCoupon && selectedPackage === pkg.id ? Math.max(0, pkg.price - discountAmount) : pkg.price}
+                    </p>
+                    {selectedCoupon && selectedPackage === pkg.id && (
+                      <p className="text-white/40 line-through text-lg">${pkg.price}</p>
+                    )}
+                  </div>
                   <p className="text-white/60 text-sm">
                     {(pkg.coins / pkg.price).toFixed(0)} coins per dollar
                   </p>
