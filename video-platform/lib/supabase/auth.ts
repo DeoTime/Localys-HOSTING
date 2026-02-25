@@ -7,8 +7,12 @@ export type { SignUpData, SignInData };
  * Sign up a new user
  * Creates auth user and profile in public.profiles table
  */
-export async function signUp({ email, password, name, username }: SignUpData) {
+export async function signUp({ email, password, name, username, accountType, businessType }: SignUpData) {
   try {
+    if (accountType === 'business' && !businessType) {
+      throw new Error('Business type is required for business accounts');
+    }
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -24,6 +28,7 @@ export async function signUp({ email, password, name, username }: SignUpData) {
         email,
         full_name: name,
         username,
+        type: accountType === 'business' ? businessType : null,
       });
 
     if (profileError) {

@@ -145,6 +145,10 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
     });
   }, []);
 
+  const handleCommentDeleted = useCallback((commentId: string) => {
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  }, []);
+
   const handleLikeUpdate = useCallback((likeData: { comment_id: string; like_count: number; user_liked: boolean }) => {
     setComments(prev =>
       prev.map(comment =>

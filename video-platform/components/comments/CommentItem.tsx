@@ -113,6 +113,24 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
     }
   };
 
+  const handleDeleteComment = async () => {
+    if (!user || deleting) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await deleteComment(comment.id);
+      if (error) {
+        alert(`Failed to delete comment: ${error.message}`);
+        return;
+      }
+      onCommentDeleted?.(comment.id);
+    } catch (err: any) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleShowReplies = () => {
     setShowReplies(!showReplies);
     if (!showReplies && replies.length === 0) {

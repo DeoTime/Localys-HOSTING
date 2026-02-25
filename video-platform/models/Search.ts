@@ -2,7 +2,7 @@ export type SearchMode = 'videos' | 'businesses';
 
 export interface SearchFilters {
   query?: string;
-  category?: 'food' | 'retail' | 'services';
+  category?: 'food' | 'retail' | 'service';
   minRating?: number;
   maxDistance?: number;
   priceMin?: number;

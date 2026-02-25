@@ -3,6 +3,8 @@ export interface SignUpData {
   password: string;
   name: string;
   username: string;
+  accountType: 'business' | 'user';
+  businessType?: 'food' | 'retail' | 'service';
 }
 
 export interface SignInData {
