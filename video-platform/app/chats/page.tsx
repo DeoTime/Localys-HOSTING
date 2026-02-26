@@ -20,7 +20,7 @@ export default function ChatsPage() {
 function ChatsContent() {
   const { user } = useAuth();
   const pathname = usePathname();
-  const { chats, loading } = useChats(user?.id);
+  const { chats, loading, error } = useChats(user?.id);
   const [showNewChatModal, setShowNewChatModal] = useState(false);
 
   return (
@@ -43,6 +43,12 @@ function ChatsContent() {
 
       {/* Chats Content */}
       <div className="max-w-2xl mx-auto px-4 py-8">
+        {error && (
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg">
+            <p className="text-red-400 font-semibold mb-2">Error loading chats</p>
+            <p className="text-red-400/80 text-sm">{error.message}</p>
+          </div>
+        )}
         <ChatList chats={chats} currentUserId={user?.id || ''} loading={loading} />
       </div>
 

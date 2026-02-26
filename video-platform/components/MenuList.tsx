@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/contexts/AuthContext';
 import { Menu, getUserMenus, getUserMenu, deleteMenu } from '@/lib/supabase/profiles';
 import { MenuModal } from './MenuModal';
+import { MenuItemPurchaseButton } from './MenuItemPurchaseButton';
 
 interface MenuListProps {
   userId: string;
@@ -14,6 +16,7 @@ interface MenuListProps {
 
 export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: MenuListProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [menus, setMenus] = useState<Menu[]>([]);
   const [primaryMenu, setPrimaryMenu] = useState<Menu | null>(null);
   const [loading, setLoading] = useState(true);
@@ -213,7 +216,20 @@ export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: Me
                           )}
 
                           {!item.is_available && (
-                            <div className="text-red-400 text-xs">Out of Stock</div>
+                            <div className="text-red-400 text-xs mb-2">Out of Stock</div>
+                          )}
+
+                          {/* Purchase Button for Other Users */}
+                          {!isOwnProfile && user && item.is_available && (
+                            <MenuItemPurchaseButton
+                              itemId={item.id}
+                              itemName={item.item_name}
+                              itemPrice={item.price}
+                              itemImage={item.image_url}
+                              sellerId={userId}
+                              buyerId={user.id}
+                              isOwnBusiness={false}
+                            />
                           )}
                         </div>
                       </div>

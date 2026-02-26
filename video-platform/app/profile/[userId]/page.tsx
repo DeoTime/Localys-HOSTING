@@ -74,10 +74,18 @@ function UserProfileContent() {
         .eq('owner_id', userId)
         .single();
 
+      console.log('Business fetch result:', { data, error }); // DEBUG
+
       if (!error && data) {
+        // Parse business_hours if it's a string
+        if (data.business_hours && typeof data.business_hours === 'string') {
+          data.business_hours = JSON.parse(data.business_hours);
+        }
+        console.log('Business after parsing:', data); // DEBUG
         setBusiness(data);
       }
     } catch (error) {
+      console.error('Business load error:', error); // DEBUG
       // Business doesn't exist, which is fine
       setBusiness(null);
     }
@@ -190,14 +198,12 @@ function UserProfileContent() {
                   {business.business_type === 'hybrid' ? '📦 Pickup & Delivery' : `🏷️ ${business.business_type}`}
                 </span>
               )}
-              {business.business_hours && (
-                <button
-                  onClick={() => setShowBusinessHours(!showBusinessHours)}
-                  className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
-                >
-                  {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
-                </button>
-              )}
+              <button
+                onClick={() => setShowBusinessHours(!showBusinessHours)}
+                className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
+              >
+                {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
+              </button>
             </div>
           )}
           
@@ -224,22 +230,26 @@ function UserProfileContent() {
         </div>
 
         {/* Business Hours Section */}
-        {business?.business_hours && showBusinessHours && (
+        {showBusinessHours && (
           <div className="mt-8 mb-8">
             <h3 className="text-xl font-semibold mb-4">⏰ Business Hours</h3>
             <div className="bg-white/5 border border-white/10 rounded-lg p-6 space-y-2">
-              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
-                <div key={day} className="flex justify-between items-center text-sm">
-                  <span className="text-white/80 capitalize font-medium">{day}</span>
-                  <span className="text-white/60">
-                    {business.business_hours?.[day]?.closed ? (
-                      'Closed'
-                    ) : (
-                      `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
-                    )}
-                  </span>
-                </div>
-              ))}
+              {business?.business_hours ? (
+                ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                  <div key={day} className="flex justify-between items-center text-sm">
+                    <span className="text-white/80 capitalize font-medium">{day}</span>
+                    <span className="text-white/60">
+                      {business.business_hours?.[day]?.closed ? (
+                        'Closed'
+                      ) : (
+                        `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
+                      )}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-white/60 text-center py-4">Business hours not set</p>
+              )}
             </div>
           </div>
         )}
