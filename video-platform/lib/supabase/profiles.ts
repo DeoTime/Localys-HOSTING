@@ -139,9 +139,15 @@ export async function getUserBusiness(userId: string) {
       .from('businesses')
       .select('*')
       .eq('owner_id', userId)
-      .single();
+      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1);
 
-    if (error && error.code === 'PGRST116') {
+    if (error) {
+      return { data: null, error };
+    }
+
+    if (!data || data.length === 0) {
       return { data: null, error: null };
     }
 
@@ -226,7 +232,9 @@ export async function ensureUserBusiness(userId: string) {
       .from('businesses')
       .select('*')
       .eq('owner_id', userId)
-      .single();
+      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1);
 
     // If business exists, return it
     if (!checkError && existing) {
@@ -237,15 +245,15 @@ export async function ensureUserBusiness(userId: string) {
       return { data: existing, error: null };
     }
 
-    // If business doesn't exist, create one
-    if (checkError?.code === 'PGRST116') {
-      return await createBusiness(userId);
+    const existingBusiness = existing?.[0] || null;
+
+    // If business exists, return it
+    if (existingBusiness) {
+      return { data: existingBusiness, error: null };
     }
 
-    // If different error, return it
-    if (checkError) return { data: null, error: checkError };
-
-    return { data: existing, error: null };
+    // If business doesn't exist, create one
+    return await createBusiness(userId);
   } catch (error: any) {
     return { data: null, error };
   }
@@ -742,6 +750,68 @@ export async function getMenuItems(menuId: string) {
   } catch (error: any) {
     console.error('Exception fetching menu items:', error);
     return { data: null, error };
+  }
+}
+
+// ============================================
+// BUSINESS LOCATIONS
+// ============================================
+
+export interface BusinessLocation {
+  id: string;
+  profile_id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+}
+
+export async function getBusinessLocations(profileId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('business_locations')
+      .select('*')
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: true });
+
+    if (error) return { data: null, error };
+    return { data: data as BusinessLocation[], error: null };
+  } catch (error: any) {
+    return { data: null, error };
+  }
+}
+
+export async function addBusinessLocation(
+  profileId: string,
+  label: string,
+  latitude: number,
+  longitude: number
+) {
+  try {
+    const { data, error } = await supabase
+      .from('business_locations')
+      .insert({ profile_id: profileId, label, latitude, longitude })
+      .select()
+      .single();
+
+    if (error) return { data: null, error };
+    return { data: data as BusinessLocation, error: null };
+  } catch (error: any) {
+    return { data: null, error };
+  }
+}
+
+export async function deleteBusinessLocation(locationId: string) {
+  try {
+    const { error } = await supabase
+      .from('business_locations')
+      .delete()
+      .eq('id', locationId);
+
+    if (error) return { error };
+    return { error: null };
+  } catch (error: any) {
+    return { error };
   }
 }
 

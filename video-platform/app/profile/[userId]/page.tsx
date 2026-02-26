@@ -2,14 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { getOrCreateOneToOneChat } from '@/lib/supabase/messaging';
-import { getProfileByUserId, Business, BusinessHours } from '@/lib/supabase/profiles';
+import { getUserBusiness, getBusinessLocations, Business, BusinessHours, BusinessLocation } from '@/lib/supabase/profiles';
 import { MenuList } from '@/components/MenuList';
 import { PostedVideos } from '@/components/PostedVideos';
+
+const BusinessLocationMap = dynamic(
+  () => import('@/components/BusinessLocationMap'),
+  {
+    ssr: false,
+    loading: () => <div className="h-[300px] bg-white/5 animate-pulse rounded-t-none" />,
+  }
+);
 
 interface Profile {
   id: string;
@@ -36,6 +45,7 @@ function UserProfileContent() {
   
   const [profile, setProfile] = useState<Profile | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
+  const [businessLocations, setBusinessLocations] = useState<BusinessLocation[]>([]);
   const [showBusinessHours, setShowBusinessHours] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,8 +55,14 @@ function UserProfileContent() {
     if (userId) {
       loadProfile();
       loadBusiness();
+      loadLocations();
     }
   }, [userId]);
+
+  const loadLocations = async () => {
+    const { data } = await getBusinessLocations(userId);
+    setBusinessLocations(data ?? []);
+  };
 
   const loadProfile = async () => {
     try {
@@ -68,11 +84,7 @@ function UserProfileContent() {
 
   const loadBusiness = async () => {
     try {
-      const { data, error } = await supabase
-        .from('businesses')
-        .select('*')
-        .eq('owner_id', userId)
-        .single();
+      const { data, error } = await getUserBusiness(userId);
 
       console.log('Business fetch result:', { data, error }); // DEBUG
 
@@ -83,6 +95,8 @@ function UserProfileContent() {
         }
         console.log('Business after parsing:', data); // DEBUG
         setBusiness(data);
+      } else {
+        setBusiness(null);
       }
     } catch (error) {
       console.error('Business load error:', error); // DEBUG
@@ -250,6 +264,21 @@ function UserProfileContent() {
               ) : (
                 <p className="text-white/60 text-center py-4">Business hours not set</p>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Business Location Map */}
+        {businessLocations.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold mb-4">
+              📍 Location{businessLocations.length > 1 ? 's' : ''}
+            </h3>
+            <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+              <BusinessLocationMap
+                locations={businessLocations}
+                businessName={business?.business_name ?? ''}
+              />
             </div>
           </div>
         )}
