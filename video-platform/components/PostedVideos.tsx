@@ -22,6 +22,7 @@ interface PostedVideosProps {
 export function PostedVideos({ userId }: PostedVideosProps) {
   const [videos, setVideos] = useState<PostedVideo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
 
   useEffect(() => {
     loadPostedVideos();
@@ -125,6 +126,32 @@ export function PostedVideos({ userId }: PostedVideosProps) {
     }
   };
 
+  const deleteVideo = async (videoId: string) => {
+    if (!confirm('Are you sure you want to delete this video? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeletingVideoId(videoId);
+
+      // Delete from database
+      const { error } = await supabase
+        .from('videos')
+        .delete()
+        .eq('id', videoId);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setVideos(videos.filter(v => v.id !== videoId));
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      alert('Failed to delete video. Please try again.');
+    } finally {
+      setDeletingVideoId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -182,15 +209,27 @@ export function PostedVideos({ userId }: PostedVideosProps) {
                 </div>
               </div>
 
-              {/* Boost Info */}
-              {video.boost_value && video.boost_value > 1 && (
-                <div className="mt-2 inline-flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/50 rounded px-2 py-1">
-                  <span className="text-xs text-yellow-300">🚀 Boosted</span>
-                  <span className="text-xs text-yellow-300/70">
-                    (Boost: {video.boost_value.toFixed(1)})
-                  </span>
-                </div>
-              )}
+            {/* Boost Info */}
+            {video.boost_value && video.boost_value > 1 && (
+              <div className="mt-2 inline-flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/50 rounded px-2 py-1">
+                <span className="text-xs text-yellow-300">🚀 Boosted</span>
+                <span className="text-xs text-yellow-300/70">
+                  (Boost: {video.boost_value.toFixed(1)})
+                </span>
+              </div>
+            )}
+            </div>
+
+            {/* Delete Button */}
+            <div className="flex flex-col justify-center ml-2">
+              <button
+                onClick={() => deleteVideo(video.id)}
+                disabled={deletingVideoId === video.id}
+                className="text-red-400 hover:text-red-300 transition-colors text-sm font-medium px-3 py-1.5 rounded hover:bg-red-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete this video"
+              >
+                {deletingVideoId === video.id ? '...' : '🗑️ Delete'}
+              </button>
             </div>
           </div>
         </div>
