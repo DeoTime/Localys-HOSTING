@@ -1,14 +1,12 @@
-# Sync upstream/main into this fork's main branch.
-# - Tries a fast-forward merge and pushes to origin/main.
-# - If fast-forward isn't possible, creates branch sync/upstream-main-YYYYMMDD and opens a PR.
-# - Run schedule daily + manual dispatch.
-# Edit `UPSTREAM_REPO` or `DEFAULT_BRANCH` if needed.
-name: Sync upstream -> main
+# Fork: sync with upstream when upstream notifies via repository_dispatch (and keep polling/manual)
+name: Sync upstream -> main (on upstream dispatch or schedule)
 
 on:
+  repository_dispatch:
+    types: [upstream_push]
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * *' # daily at 02:00 UTC
+    - cron: '*/5 * * * *' # fallback polling every 5 minutes (optional)
 
 env:
   UPSTREAM_REPO: https://github.com/KadenLi6741/Localys.git
@@ -25,7 +23,6 @@ jobs:
       - name: Checkout fork
         uses: actions/checkout@v4
         with:
-          # Use the PAT so we can push branches and create PRs
           token: ${{ secrets.UPSTREAM_SYNC_PAT }}
           fetch-depth: 0
 
@@ -37,39 +34,34 @@ jobs:
       - name: Add upstream remote and fetch
         run: |
           git remote add upstream "${{ env.UPSTREAM_REPO }}" || true
-          git fetch upstream --prune
+          git fetch upstream --prune --tags
 
       - name: Ensure local default branch exists
-        run: |
-          git checkout --progress --force ${DEFAULT_BRANCH}
+        run: git checkout --progress --force ${{ env.DEFAULT_BRANCH }}
 
       - name: Try fast-forward merge from upstream
         id: try_ff
         run: |
-          set -e
-          if git merge --ff-only upstream/${DEFAULT_BRANCH}; then
-            echo "fast-forwarded"
+          if git merge --ff-only upstream/${{ env.DEFAULT_BRANCH }}; then
             echo "status=ff" >> $GITHUB_OUTPUT
           else
-            echo "no-ff"
             echo "status=no-ff" >> $GITHUB_OUTPUT
           fi
 
       - name: Push fast-forward to origin (if ff)
         if: steps.try_ff.outputs.status == 'ff'
-        run: |
-          git push origin ${DEFAULT_BRANCH}
+        run: git push origin ${{ env.DEFAULT_BRANCH }}
 
       - name: Create sync branch from upstream and push (if non-ff)
         if: steps.try_ff.outputs.status == 'no-ff'
+        id: create_branch
         run: |
           DATE=$(date -u +"%Y%m%d-%H%M%S")
-          BRANCH="sync/upstream-${DEFAULT_BRANCH}-${DATE}"
+          BRANCH="sync/upstream-${{ env.DEFAULT_BRANCH }}-${DATE}"
           git checkout -b "$BRANCH"
-          # Reset branch to upstream state
-          git reset --hard upstream/${DEFAULT_BRANCH}
+          git reset --hard upstream/${{ env.DEFAULT_BRANCH }}
           git push -u origin "$BRANCH"
-          echo "created_branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
       - name: Create pull request (if non-ff)
         if: steps.try_ff.outputs.status == 'no-ff'
@@ -82,5 +74,5 @@ jobs:
             This PR was automatically created to sync in changes from the upstream repository.
             Review and merge when ready.
           base: ${{ env.DEFAULT_BRANCH }}
-          head: ${{ steps.create_sync_branch.outputs.branch || github.ref_name }}
+          head: ${{ steps.create_branch.outputs.branch }}
           labels: automated, sync
