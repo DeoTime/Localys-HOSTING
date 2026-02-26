@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,9 +15,9 @@ import { BookmarkedVideos } from '@/components/BookmarkedVideos';
 import { PostedVideos } from '@/components/PostedVideos';
 import { MenuList } from '@/components/MenuList';
 import { 
-  uploadProfilePicture, 
-  updateProfile, 
-  getUserBusiness, 
+  uploadProfilePicture,
+  updateProfile,
+  getUserBusiness,
   updateBusinessInfo,
   createBusiness,
   ensureUserBusiness,
@@ -28,6 +29,11 @@ import {
   MAX_PROFILE_PICTURE_SIZE,
   BYTES_TO_MB
 } from '@/lib/supabase/profiles';
+
+const LocationManager = dynamic(
+  () => import('@/components/LocationManager'),
+  { ssr: false, loading: () => <div className="h-24 bg-white/5 rounded-lg animate-pulse" /> }
+);
 
 export default function ProfilePage() {
   return (
@@ -654,6 +660,15 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
               </button>
               <p className="text-white/40 text-xs mt-2">
                 Add up to 5 quick messages that customers can click on your videos
+              </p>
+            </div>
+
+            {/* Business Locations */}
+            <div>
+              <label className="block text-white/80 text-sm font-medium mb-3">Business Locations</label>
+              <LocationManager profileId={user.id} />
+              <p className="text-white/40 text-xs mt-2">
+                Add one or more locations so customers can find you on the map
               </p>
             </div>
           </>
