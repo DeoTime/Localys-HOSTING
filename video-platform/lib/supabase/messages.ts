@@ -126,28 +126,32 @@ async function processChatData(memberChats: any[], userId: string) {
   
   console.log('Messages fetched:', messages?.length || 0);
 
-  const chats: ChatWithDetails[] = memberChats.map(mc => {
+  const chats = memberChats.reduce<ChatWithDetails[]>((acc, mc) => {
     const chat = mc.chats as Chat | null;
-    if (!chat) return null;
-    
-    const chatMembers = allMembers?.filter(m => m.chat_id === mc.chat_id) || [];
-    const otherMember = chatMembers.find(m => m.user_id !== userId);
-    const lastMessage = messages?.find(m => m.chat_id === mc.chat_id);
-    
-    const unreadMessages = messages?.filter(m => 
-      m.chat_id === mc.chat_id && 
+    if (!chat) return acc;
+
+    const chatMembers = (allMembers?.filter(m => m.chat_id === mc.chat_id) || []) as ChatMember[];
+    const otherMember = chatMembers.find(m => m.user_id !== userId) as (ChatMember & { profiles?: unknown }) | undefined;
+    const otherProfile = otherMember?.profiles;
+    const otherUser = (Array.isArray(otherProfile) ? otherProfile[0] : otherProfile) as ChatWithDetails['other_user'];
+    const lastMessage = messages?.find(m => m.chat_id === mc.chat_id) as Message | undefined;
+
+    const unreadMessages = messages?.filter(m =>
+      m.chat_id === mc.chat_id &&
       m.sender_id !== userId &&
       (!mc.last_read || new Date(m.created_at || '').getTime() > new Date(mc.last_read).getTime())
     ) || [];
 
-    return {
+    acc.push({
       ...chat,
       members: chatMembers,
-      other_user: otherMember?.profiles as ChatWithDetails['other_user'],
+      other_user: otherUser,
       last_message: lastMessage,
       unread_count: unreadMessages.length,
-    };
-  }).filter((chat): chat is ChatWithDetails => chat !== null);
+    });
+
+    return acc;
+  }, []);
 
   chats.sort((a, b) => {
     const aTime = a.last_message?.created_at || a.created_at || '';
