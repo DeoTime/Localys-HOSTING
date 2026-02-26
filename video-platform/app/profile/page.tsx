@@ -30,6 +30,7 @@ import {
   BYTES_TO_MB
 } from '@/lib/supabase/profiles';
 import { OrderHistory } from '@/components/OrderHistory';
+import { AnalyticsDashboard } from '@/components/analytics';
 
 const LocationManager = dynamic(
   () => import('@/components/LocationManager'),
@@ -250,6 +251,9 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
             {t('nav.buy_coins')}
           </Link>
         </div>
+
+        {/* Analytics Dashboard Section */}
+        <AnalyticsDashboard userId={user.id} />
 
         {/* Services Section */}
         <div className="mb-8">
