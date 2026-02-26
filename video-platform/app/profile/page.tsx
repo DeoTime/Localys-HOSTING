@@ -263,7 +263,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">{t('profile.videos')}</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <PostedVideos userId={user.id} />
+            <PostedVideos userId={user.id} isOwnProfile={true} />
           </div>
         </div>
 
