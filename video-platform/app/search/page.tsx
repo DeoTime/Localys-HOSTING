@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -616,6 +616,7 @@ function BusinessResultCard({
   hoveredId?: string;
   onHover: (biz: any) => void;
 }) {
+  const router = useRouter();
   const isHovered = hoveredId === business.id;
   const businessName = business.business_name || business.profiles?.full_name || 'Unknown Business';
 
@@ -631,11 +632,18 @@ function BusinessResultCard({
         ? `From $${business.price_range_min}`
         : null;
 
+  const handleClick = () => {
+    if (business.id) {
+      router.push(`/profile/${business.id}`);
+    }
+  };
+
   return (
     <div
       className="relative block bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition-all duration-200 group cursor-pointer"
       onMouseEnter={() => onHover(business)}
       onMouseLeave={() => onHover(null)}
+      onClick={handleClick}
     >
       <div className="flex gap-4">
         {/* Business avatar */}

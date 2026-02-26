@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
-import { uploadVideoFile, uploadVideoMetadata } from '@/lib/supabase/videos';
+import { uploadVideoFile, uploadVideoMetadata, promoteVideo } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
 import { PromotionModal } from '@/components/PromotionModal';
 import { supabase } from '@/lib/supabase/client';
@@ -32,6 +32,9 @@ function UploadContent() {
   const [showPromotionModal, setShowPromotionModal] = useState(false);
   const [uploadedVideoId, setUploadedVideoId] = useState<string | null>(null);
   const [userCoins, setUserCoins] = useState(100);
+  const [boostCoinsFromModal, setBoostCoinsFromModal] = useState<number | null>(null);
+  const [videoBoosted, setVideoBoosted] = useState(false);
+  const [boostCoinsSpent, setBoostCoinsSpent] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -126,6 +129,84 @@ function UploadContent() {
     }
   };
 
+  const handleConfirmUploadWithBoost = async (coinsToSpend: number) => {
+    if (!selectedVideo || !user) {
+      throw new Error('Video or user not found');
+    }
+
+    // Upload the video
+    const { data: uploadData, error: uploadError } = await uploadVideoFile(selectedVideo, user.id);
+    
+    if (uploadError || !uploadData?.publicUrl) {
+      throw new Error(uploadError?.message || 'Failed to upload video');
+    }
+
+    // Create business if provided
+    let businessId: string | undefined;
+    if (businessName && category) {
+      const { data: existingBusiness } = await supabase
+        .from('businesses')
+        .select('id')
+        .eq('owner_id', user.id)
+        .eq('business_name', businessName)
+        .single();
+
+      if (existingBusiness) {
+        businessId = existingBusiness.id;
+      } else {
+        const { data: newBusiness, error: businessError } = await supabase
+          .from('businesses')
+          .insert({
+            owner_id: user.id,
+            business_name: businessName,
+            category: category as 'food' | 'retail' | 'services',
+            video_url: uploadData.publicUrl,
+            latitude: 0,
+            longitude: 0,
+          })
+          .select()
+          .single();
+
+        if (businessError) throw businessError;
+        businessId = newBusiness.id;
+      }
+    }
+
+    // Upload video metadata
+    const { data: videoData, error: metadataError } = await uploadVideoMetadata({
+      user_id: user.id,
+      video_url: uploadData.publicUrl,
+      caption: caption || undefined,
+      business_id: businessId,
+    });
+
+    if (metadataError) throw metadataError;
+
+    // Apply boost immediately
+    if (coinsToSpend > 0) {
+      const { data: boostData, error: boostError } = await promoteVideo(user.id, videoData.id, coinsToSpend);
+      if (boostError) throw boostError;
+    }
+
+    // Update coins
+    const { data: coins } = await getUserCoins(user.id);
+    setUserCoins(coins || 100);
+    setUploadedVideoId(videoData.id);
+    setBoostCoinsFromModal(null);
+    setVideoBoosted(true);
+    setBoostCoinsSpent(coinsToSpend);
+    
+    // Reset form
+    setSelectedVideo(null);
+    setVideoPreview(null);
+    setCaption('');
+    setBusinessName('');
+    setCategory('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleRemoveVideo = () => {
     if (videoPreview) {
       URL.revokeObjectURL(videoPreview);
@@ -147,7 +228,76 @@ function UploadContent() {
       </div>
 
       {/* Success Screen */}
-      {uploadedVideoId && !showPromotionModal && (
+      {uploadedVideoId && !showPromotionModal && videoBoosted && (
+        <div className="max-w-2xl mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-120px)]">
+          <div className="text-center space-y-6">
+            <div className="flex justify-center">
+              <div className="relative w-20 h-20">
+                <div className="absolute inset-0 bg-green-500/20 border border-green-500 rounded-full flex items-center justify-center animate-pulse">
+                  <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl">🚀</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Video Boosted!</h2>
+              <p className="text-white/60">Your video is now live and boosted in the feed</p>
+            </div>
+
+            <div className="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/30 rounded-lg p-6 my-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-white/70">Boost Applied</span>
+                  <span className="font-semibold text-green-400">✓ Confirmed</span>
+                </div>
+                <div className="h-px bg-white/10"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/70">Coins Spent</span>
+                  <span className="text-2xl font-bold text-yellow-400">🪙 {boostCoinsSpent}</span>
+                </div>
+                <div className="h-px bg-white/10"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-white/70">Remaining Coins</span>
+                  <span className="text-2xl font-bold text-yellow-400">🪙 {userCoins}</span>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-white/70 text-sm">Your boosted video will get more visibility and reach in the feed!</p>
+
+            <div className="flex gap-3 justify-center pt-4">
+              <button
+                onClick={() => {
+                  setUploadedVideoId(null);
+                  setVideoBoosted(false);
+                  setBoostCoinsSpent(0);
+                }}
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition-all"
+              >
+                Create Another
+              </button>
+              <button
+                onClick={() => {
+                  router.push('/');
+                  router.refresh();
+                }}
+                className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition-all flex items-center gap-2"
+              >
+                <span>👀</span>
+                <span>View Feed</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Screen */}
+      {uploadedVideoId && !showPromotionModal && !videoBoosted && (
         <div className="max-w-2xl mx-auto px-4 py-16 flex items-center justify-center min-h-[calc(100vh-120px)]">
           <div className="text-center space-y-6">
             <div className="flex justify-center">
@@ -309,10 +459,10 @@ function UploadContent() {
                   required={!!businessName}
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-200"
                 >
-                  <option value="">Select category</option>
-                  <option value="food">Food</option>
-                  <option value="retail">Retail</option>
-                  <option value="services">Services</option>
+                  <option value="" style={{ color: '#000', backgroundColor: '#f3f4f6' }}>Select category</option>
+                  <option value="food" style={{ color: '#000', backgroundColor: '#f3f4f6' }}>Food</option>
+                  <option value="retail" style={{ color: '#000', backgroundColor: '#f3f4f6' }}>Retail</option>
+                  <option value="services" style={{ color: '#000', backgroundColor: '#f3f4f6' }}>Services</option>
                 </select>
               </div>
             )}
@@ -322,6 +472,8 @@ function UploadContent() {
               type="button"
               onClick={() => {
                 setUploadedVideoId('temp');
+                setVideoBoosted(false);
+                setBoostCoinsSpent(0);
                 setShowPromotionModal(true);
               }}
               className="w-full mt-4 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/50 text-yellow-300 font-semibold py-3 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
@@ -402,10 +554,13 @@ function UploadContent() {
             }
             if (uploadedVideoId === 'temp') {
               setUploadedVideoId(null);
+              setVideoBoosted(false);
+              setBoostCoinsSpent(0);
             }
           }}
           videoId={uploadedVideoId}
           userCoins={userCoins}
+          onConfirmUpload={uploadedVideoId === 'temp' ? handleConfirmUploadWithBoost : undefined}
           onSuccess={(newBoost, coinsSpent, remainingCoins) => {
             setUserCoins(remainingCoins);
             setShowPromotionModal(false);
