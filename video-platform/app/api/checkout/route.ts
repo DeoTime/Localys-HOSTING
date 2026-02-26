@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
-
 const COIN_PACKAGES: Record<
   string,
   { coins: number; price: number; name: string }
@@ -34,6 +32,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
     const body = await request.json();
     const { packageId, userId } = body;
 
@@ -49,13 +49,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Invalid package' },
         { status: 400 }
-      );
-    }
-
-    if (!stripe || !stripe.checkout) {
-      return NextResponse.json(
-        { error: 'Stripe not initialized properly' },
-        { status: 500 }
       );
     }
 

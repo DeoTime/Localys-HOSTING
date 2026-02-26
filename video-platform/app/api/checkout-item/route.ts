@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
-
 export async function POST(request: NextRequest) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -12,6 +10,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const body = await request.json();
     const { itemId, itemName, itemPrice, sellerId, buyerId, itemImage } = body;
@@ -25,13 +25,6 @@ export async function POST(request: NextRequest) {
     }
 
     const priceInCents = Math.round(itemPrice * 100); // Convert to cents
-
-    if (!stripe || !stripe.checkout) {
-      return NextResponse.json(
-        { error: 'Stripe not initialized properly' },
-        { status: 500 }
-      );
-    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
