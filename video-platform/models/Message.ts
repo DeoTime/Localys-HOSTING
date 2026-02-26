@@ -6,8 +6,15 @@ export interface Message {
   created_at?: string;
   edited_at?: string;
   deleted?: boolean;
+  is_read?: boolean;
   reply_to?: string;
   metadata?: any;
+  sender?: {
+    id: string;
+    username?: string;
+    full_name?: string;
+    profile_picture_url?: string;
+  };
 }
 
 export interface Chat {
@@ -35,5 +42,16 @@ export interface ChatWithDetails extends Chat {
     username?: string;
     full_name?: string;
     profile_picture_url?: string;
+  };
+}
+
+export interface Conversation extends Chat {
+  members?: ChatMember[];
+  other_user?: {
+    id: string;
+    username?: string;
+    full_name?: string;
+    profile_picture_url?: string;
+    avatar_url?: string;
   };
 }

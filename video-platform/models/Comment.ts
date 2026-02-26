@@ -11,6 +11,7 @@ export interface Comment {
   username: string;
   full_name: string | null;
   avatar_url: string | null;
+  image_url?: string | null;
   reply_count?: number;
   replies?: Comment[];
   rating: number | null;
@@ -20,12 +21,14 @@ export interface CreateCommentPayload {
   video_id: string;
   content: string;
   rating?: number;
+  image_url?: string;
 }
 
 export interface CreateReplyPayload {
   parent_comment_id: string;
   content: string;
   rating?: number;
+  image_url?: string;
 }
 
 export interface UpdateCommentPayload {
