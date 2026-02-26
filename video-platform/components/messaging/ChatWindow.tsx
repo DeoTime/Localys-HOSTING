@@ -46,10 +46,12 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState('');
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const subscriptionRef = useRef<RealtimeChannel | null>(null);
+  const updateSubscriptionRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     if (!user || !conversationId) return;
@@ -62,6 +64,9 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
+      }
+      if (updateSubscriptionRef.current) {
+        updateSubscriptionRef.current.unsubscribe();
       }
     };
   }, [user, conversationId]);
@@ -108,6 +113,9 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
     if (subscriptionRef.current) {
       subscriptionRef.current.unsubscribe();
     }
+    if (updateSubscriptionRef.current) {
+      updateSubscriptionRef.current.unsubscribe();
+    }
 
     subscriptionRef.current = subscribeToMessages(conversationId, (message) => {
       setMessages((prev) => {
@@ -123,7 +131,7 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
     });
 
     // Also listen for message updates (edits and deletes)
-    const updateSubscription = supabase
+    updateSubscriptionRef.current = supabase
       .channel(`chat_updates:${conversationId}`)
       .on(
         'postgres_changes',
@@ -339,12 +347,6 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
         </div>
       )}
 
-      {/* Debug Section - Remove Later */}
-      <div className="px-4 py-2 bg-yellow-900/20 border-y border-yellow-700/50 text-xs text-yellow-300 space-y-1">
-        <p>Debug: Hovering={hoveredMessageId || 'none'} | Editing={editingId || 'none'}</p>
-        <p>Messages: {messages.length} total | Your messages: {messages.filter(m => m.sender_id === user?.id).length}</p>
-      </div>
-
       {/* Messages */}
       <div
         ref={messagesContainerRef}
@@ -424,21 +426,36 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
                       </div>
                     )}
                     {isOwn && hoveredMessageId === message.id && !isEditing && !message.deleted && (
-                      <div className="flex flex-col gap-1 justify-start">
+                      <div className="relative">
                         <button
-                          onClick={() => handleEditStart(message)}
-                          className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                          title="Edit message"
+                          onClick={() => setMenuOpenId(menuOpenId === message.id ? null : message.id || null)}
+                          className="text-xs px-2 py-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-colors"
+                          title="Message options"
                         >
-                          ✏️
+                          ⋯
                         </button>
-                        <button
-                          onClick={() => handleDelete(message.id)}
-                          className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                          title="Delete message"
-                        >
-                          🗑️
-                        </button>
+                        {menuOpenId === message.id && (
+                          <div className="absolute top-full mt-1 right-0 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg z-50">
+                            <button
+                              onClick={() => {
+                                handleEditStart(message);
+                                setMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/20 flex items-center gap-2 hover:text-blue-400 transition-colors"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleDelete(message.id);
+                                setMenuOpenId(null);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/20 flex items-center gap-2 hover:text-red-400 transition-colors border-t border-white/10"
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

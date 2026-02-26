@@ -244,9 +244,9 @@ function UserProfileContent() {
           </div>
         )}
 
-        {/* Menus Section */}
+        {/* Services Section */}
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">🍽️ Items</h3>
+          <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
             <MenuList userId={userId} isOwnProfile={false} />
           </div>

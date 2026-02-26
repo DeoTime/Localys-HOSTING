@@ -61,10 +61,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'business.create_business': 'Create Business',
 
     // Menu
-    'menu.title': 'Menu',
-    'menu.add_new': 'Add New Menu',
-    'menu.create_menu': 'Create Your Menu',
-    'menu.add_items': 'Add Items to Menu',
+    'menu.title': 'Services',
+    'menu.add_new': 'Add New Services',
+    'menu.create_menu': 'Create Services for your Business',
+    'menu.add_items': 'Add Items/Services to your Business',
     'menu.name': 'Menu Name',
     'menu.description': 'Description',
     'menu.category': 'Category',

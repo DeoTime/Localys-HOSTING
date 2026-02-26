@@ -13,9 +13,10 @@ interface PromotionModalProps {
   videoId: string;
   userCoins: number;
   onSuccess?: (newBoost: number, coinsSpent: number, remainingCoins: number) => void;
+  onConfirmUpload?: (coinsToSpend: number) => Promise<void>;
 }
 
-export function PromotionModal({ isOpen, onClose, videoId, userCoins, onSuccess }: PromotionModalProps) {
+export function PromotionModal({ isOpen, onClose, videoId, userCoins, onSuccess, onConfirmUpload }: PromotionModalProps) {
   const { user } = useAuth();
   const [coinsToSpend, setCoinsToSpend] = useState(50);
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,23 @@ export function PromotionModal({ isOpen, onClose, videoId, userCoins, onSuccess 
     } catch (err) {
       setError('An error occurred while promoting the video');
       console.error('Promotion error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!onConfirmUpload) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      await onConfirmUpload(coinsToSpend);
+      onClose();
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload and boost video');
+      console.error('Upload and boost error:', err);
     } finally {
       setLoading(false);
     }
@@ -174,7 +192,15 @@ export function PromotionModal({ isOpen, onClose, videoId, userCoins, onSuccess 
           >
             Close
           </button>
-          {!isPreviewMode && (
+          {isPreviewMode ? (
+            <button
+              onClick={handleConfirmUpload}
+              disabled={loading}
+              className="flex-1 py-3 rounded-lg font-semibold transition-all bg-green-500 hover:bg-green-600 text-white disabled:opacity-50"
+            >
+              {loading ? 'Uploading...' : `Confirm (${coinsToSpend} coins)`}
+            </button>
+          ) : (
             <button
               onClick={handlePromote}
               disabled={loading || !canAfford}

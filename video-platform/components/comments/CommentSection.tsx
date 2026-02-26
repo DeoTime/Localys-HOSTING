@@ -94,7 +94,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
     }
   }, [videoId, offset]);
 
-  const handleCreateComment = async (content: string, rating?: number) => {
+  const handleCreateComment = async (content: string, rating?: number, imageUrl?: string) => {
     if (!user || posting) return;
 
     setPosting(true);
@@ -103,6 +103,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
         video_id: videoId,
         content,
         rating,
+        image_url: imageUrl,
       };
 
       console.log('Submitting comment:', payload);

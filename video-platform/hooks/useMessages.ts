@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMessages, sendMessage, subscribeToMessages, markMessagesAsRead, Message } from '@/lib/supabase/messaging';
+import { supabase } from '@/lib/supabase/client';
 
 export function useMessages(chatId: string | undefined, userId: string | undefined) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -7,6 +8,7 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
   const [error, setError] = useState<Error | null>(null);
   const [sending, setSending] = useState(false);
   const subscriptionRef = useRef<ReturnType<typeof subscribeToMessages> | null>(null);
+  const updateSubscriptionRef = useRef<any>(null);
   const markAsReadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const loadMessages = useCallback(async () => {
@@ -85,11 +87,34 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
           debouncedMarkAsRead(chatId, userId);
         }
       });
+
+      // Listen for message updates (edits and deletes)
+      updateSubscriptionRef.current = supabase
+        .channel(`chat_updates:${chatId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'messages',
+            filter: `chat_id=eq.${chatId}`,
+          },
+          (payload) => {
+            const updatedMessage = payload.new as Message;
+            setMessages((prev) =>
+              prev.map((m) => (m.id === updatedMessage.id ? updatedMessage : m))
+            );
+          }
+        )
+        .subscribe();
     }
 
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current.unsubscribe();
+      }
+      if (updateSubscriptionRef.current) {
+        updateSubscriptionRef.current.unsubscribe();
       }
       if (markAsReadTimeoutRef.current) {
         clearTimeout(markAsReadTimeoutRef.current);

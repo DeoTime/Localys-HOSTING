@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { searchVideos, searchBusinesses, SearchFilters, SearchMode } from '@/lib/supabase/search';
 import { haversineDistance } from '@/lib/utils/geo';
@@ -573,6 +574,7 @@ function BusinessResultCard({
   hoveredId?: string;
   onHover: (biz: any) => void;
 }) {
+  const router = useRouter();
   const isHovered = hoveredId === business.id;
   const businessName = business.business_name || business.profiles?.full_name || 'Unknown Business';
 
@@ -588,11 +590,18 @@ function BusinessResultCard({
         ? `From $${business.price_range_min}`
         : null;
 
+  const handleClick = () => {
+    if (business.id) {
+      router.push(`/profile/${business.id}`);
+    }
+  };
+
   return (
     <div
       className="group relative block cursor-pointer rounded-xl border border-[var(--border-color)] bg-[var(--surface-1)] p-4 transition-all duration-200 hover:bg-[var(--surface-2)]"
       onMouseEnter={() => onHover(business)}
       onMouseLeave={() => onHover(null)}
+      onClick={handleClick}
     >
       <div className="flex gap-4">
         {/* Business avatar */}

@@ -238,9 +238,9 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
           </Link>
         </div>
 
-        {/* Menus Section */}
+        {/* Services Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">🍽️ {t('menu.title')}</h3>
+          <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
             <MenuList userId={user.id} businessId={business?.id} isOwnProfile={true} />
           </div>
