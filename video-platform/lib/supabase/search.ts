@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import { haversineDistance } from '../utils/geo';
+import { computeRoundedPriceRange } from '../utils/pricing';
 import type { SearchMode, SearchFilters } from '../../models/Search';
 
 export type { SearchMode, SearchFilters };
@@ -79,47 +80,6 @@ function geometricMean(values: number[]): number | null {
   if (!safeValues.length) return null;
   const logSum = safeValues.reduce((sum, value) => sum + Math.log(value), 0);
   return Math.exp(logSum / safeValues.length);
-}
-
-function computeRoundedPriceRange(prices: number[]): { min: number; max: number } | null {
-  if (!prices.length) return null;
-
-  const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-  const variance = prices.reduce((sum, price) => sum + (price - avg) ** 2, 0) / prices.length;
-  const stdDev = Math.sqrt(variance);
-
-  let minPrice: number;
-  let maxPrice: number;
-
-  if (avg < 70) {
-    minPrice = Math.floor(avg / 10) * 10;
-    maxPrice = minPrice + 10;
-
-    if (stdDev > avg * 0.35) {
-      maxPrice += 10;
-    }
-  } else {
-    minPrice = Math.round(avg / 25) * 25;
-    maxPrice = minPrice + 25;
-
-    if (stdDev > avg * 0.3) {
-      maxPrice += 25;
-    }
-  }
-
-  if (minPrice < 0) minPrice = 0;
-  if (maxPrice <= minPrice) maxPrice = minPrice + 10;
-
-  const minimumTightLowerBound = maxPrice / 2;
-  if (minPrice < minimumTightLowerBound) {
-    const roundingStep = maxPrice >= 100 ? 10 : 5;
-    minPrice = Math.ceil(minimumTightLowerBound / roundingStep) * roundingStep;
-    if (minPrice >= maxPrice) {
-      minPrice = Math.max(0, maxPrice - roundingStep);
-    }
-  }
-
-  return { min: minPrice, max: maxPrice };
 }
 
 async function getBusinessMetrics(businessIds: string[]) {
