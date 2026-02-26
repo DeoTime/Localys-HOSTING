@@ -149,6 +149,7 @@ export async function createComment(
         content: payload.content.trim(),
         parent_comment_id: null,
         rating: payload.rating || null,
+        image_url: payload.image_url || null,
       })
       .select()
       .single();
@@ -226,6 +227,7 @@ export async function createReply(
         content: payload.content.trim(),
         parent_comment_id: payload.parent_comment_id,
         rating: payload.rating || null,
+        image_url: payload.image_url || null,
       })
       .select()
       .single();

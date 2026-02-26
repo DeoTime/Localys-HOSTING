@@ -9,9 +9,10 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase/client';
 
 interface CommentFormProps {
-  onSubmit: (content: string, rating?: number) => Promise<void> | void;
+  onSubmit: (content: string, rating?: number, imageUrl?: string) => Promise<void> | void;
   loading?: boolean;
   placeholder?: string;
   compact?: boolean;
@@ -28,7 +29,12 @@ export default function CommentForm({
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [rating, setRating] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -43,17 +49,109 @@ export default function CommentForm({
     }
   }, [autoFocus]);
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image must be less than 5MB');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file');
+      return;
+    }
+
+    setSelectedImage(file);
+    setUploadError(null);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!selectedImage || !user) return null;
+
+    try {
+      setUploadError(null);
+      const fileExt = selectedImage.name.split('.').pop()?.toLowerCase();
+      
+      if (!fileExt || !['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExt)) {
+        setUploadError('Invalid file type. Allowed: JPG, PNG, GIF, WEBP, BMP');
+        return null;
+      }
+
+      const fileName = `comment-images/${user.id}/${Date.now()}.${fileExt}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, selectedImage, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: selectedImage.type,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        setUploadError('Failed to upload image. Please try again.');
+        return null;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
+    } catch (err: any) {
+      console.error('Upload exception:', err);
+      setUploadError('Error uploading image. Please try again.');
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const trimmedContent = content.trim();
-    if (!trimmedContent || loading) return;
+    if (!trimmedContent || loading || uploading) return;
 
     try {
-      await onSubmit(trimmedContent, rating || undefined);
+      setUploading(true);
+      let imageUrl: string | undefined;
+
+      if (selectedImage) {
+        const url = await uploadImage();
+        if (url) {
+          imageUrl = url;
+        } else {
+          setUploading(false);
+          return;
+        }
+      }
+
+      await onSubmit(trimmedContent, rating || undefined, imageUrl);
       setContent('');
       setRating(null);
+      removeImage();
     } catch (error) {
+      console.error('Error submitting comment:', error);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -137,24 +235,68 @@ export default function CommentForm({
           </div>
         )}
 
-        {/* Submit Button */}
-        <div className="flex justify-between items-center mt-2">
-          <div className="text-xs text-gray-400">
-            {!compact && 'Press Ctrl+Enter to submit'}
+        {/* Image Upload Error */}
+        {uploadError && (
+          <div className="bg-red-500/20 border border-red-500/50 text-red-200 text-xs rounded p-2">
+            {uploadError}
+          </div>
+        )}
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="relative bg-gray-800 rounded-lg p-2">
+            <img
+              src={imagePreview}
+              alt="Preview"
+              className="w-full h-32 object-cover rounded"
+            />
+            <button
+              type="button"
+              onClick={removeImage}
+              disabled={uploading}
+              className="absolute top-4 right-4 bg-red-500/80 hover:bg-red-600 disabled:opacity-50 p-1 rounded-full"
+            >
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+              </svg>
+            </button>
+          </div>
+        )}
+
+        {/* Image Upload Button and Submit */}
+        <div className="flex justify-between items-center mt-2 gap-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageSelect}
+              accept="image/*"
+              disabled={uploading || loading}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || loading}
+              className="px-3 py-1.5 rounded-lg font-semibold text-sm bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              title="Add image"
+            >
+              📷
+            </button>
           </div>
           <button
             type="submit"
-            disabled={!content.trim() || loading}
+            disabled={!content.trim() || loading || uploading}
             className={`px-4 py-1.5 rounded-lg font-semibold text-sm disabled:bg-white/10 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 ${
               compact
                 ? 'bg-white/20 text-white hover:bg-white/30 active:scale-95'
                 : 'bg-white/20 text-white hover:bg-white/30'
             }`}
           >
-            {loading ? (
+            {loading || uploading ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                Posting...
+                {uploading ? 'Uploading...' : 'Posting...'}
               </div>
             ) : (
               'Post'

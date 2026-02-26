@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Menu, createMenu, updateMenu, addMenuItemToMenu } from '@/lib/supabase/profiles';
+import { supabase } from '@/lib/supabase/client';
 
 interface MenuModalProps {
   userId: string;
@@ -27,6 +28,13 @@ export function MenuModal({ userId, businessId, menu, isOpen, onClose, onSave }:
   const [itemDescription, setItemDescription] = useState('');
   const [itemCategory, setItemCategory] = useState('');
   const [addingItem, setAddingItem] = useState(false);
+  
+  // Item image upload state
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset form when modal opens or menu changes
   useEffect(() => {
@@ -50,6 +58,12 @@ export function MenuModal({ userId, businessId, menu, isOpen, onClose, onSave }:
     setItemPrice('');
     setItemDescription('');
     setItemCategory('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    setUploadError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Handle escape key to close modal
@@ -125,24 +139,114 @@ export function MenuModal({ userId, businessId, menu, isOpen, onClose, onSave }:
     }
   };
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image must be less than 5MB');
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file');
+      return;
+    }
+
+    setSelectedImage(file);
+    setUploadError(null);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadItemImage = async (): Promise<string | null> => {
+    if (!selectedImage) return null;
+
+    try {
+      setUploadError(null);
+      const fileExt = selectedImage.name.split('.').pop()?.toLowerCase();
+      
+      if (!fileExt || !['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExt)) {
+        setUploadError('Invalid file type. Allowed: JPG, PNG, GIF, WEBP, BMP');
+        return null;
+      }
+
+      const fileName = `menu-item-images/${userId}/${Date.now()}.${fileExt}`;
+
+      const { data, error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, selectedImage, {
+          cacheControl: '3600',
+          upsert: false,
+          contentType: selectedImage.type,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        setUploadError('Failed to upload image. Please try again.');
+        return null;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
+    } catch (err: any) {
+      console.error('Upload exception:', err);
+      setUploadError('Error uploading image. Please try again.');
+      return null;
+    }
+  };
+
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!menu) return;
 
     setError(null);
     setAddingItem(true);
+    setUploading(!!selectedImage);
 
     try {
       if (!itemName.trim()) {
         setError('Item name is required');
         setAddingItem(false);
+        setUploading(false);
         return;
       }
 
       if (!itemPrice || isNaN(parseFloat(itemPrice))) {
         setError('Valid price is required');
         setAddingItem(false);
+        setUploading(false);
         return;
+      }
+
+      let imageUrl: string | undefined;
+      if (selectedImage) {
+        const url = await uploadItemImage();
+        if (url) {
+          imageUrl = url;
+        } else {
+          setAddingItem(false);
+          setUploading(false);
+          return;
+        }
       }
 
       const { error: addError } = await addMenuItemToMenu(menu.id, userId, {
@@ -150,6 +254,7 @@ export function MenuModal({ userId, businessId, menu, isOpen, onClose, onSave }:
         price: parseFloat(itemPrice),
         description: itemDescription,
         category: itemCategory,
+        image_url: imageUrl,
       });
 
       if (addError) {
@@ -162,6 +267,7 @@ export function MenuModal({ userId, businessId, menu, isOpen, onClose, onSave }:
       setError(err.message || 'An error occurred while adding item');
     } finally {
       setAddingItem(false);
+      setUploading(false);
     }
   };
 
@@ -313,12 +419,61 @@ export function MenuModal({ userId, businessId, menu, isOpen, onClose, onSave }:
                     />
                   </div>
 
+                  {/* Image Upload Error */}
+                  {uploadError && (
+                    <div className="bg-red-500/20 border border-red-500/50 text-red-200 text-xs rounded p-2">
+                      {uploadError}
+                    </div>
+                  )}
+
+                  {/* Image Preview */}
+                  {imagePreview && (
+                    <div className="relative bg-gray-800 rounded-lg p-2">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        disabled={uploading}
+                        className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 disabled:opacity-50 p-1 rounded-full"
+                      >
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Image Upload Button */}
+                  <div className="flex gap-2">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageSelect}
+                      accept="image/*"
+                      disabled={uploading || addingItem}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading || addingItem}
+                      className="px-4 py-2 rounded-lg font-medium text-sm bg-gray-700 text-white hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                      title="Add item photo"
+                    >
+                      📷 Add Photo
+                    </button>
+                  </div>
+
                   <button
                     type="submit"
-                    disabled={addingItem || !itemName.trim() || !itemPrice}
+                    disabled={addingItem || uploading || !itemName.trim() || !itemPrice}
                     className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-green-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors font-medium text-sm"
                   >
-                    {addingItem ? 'Adding...' : 'Add Item'}
+                    {addingItem || uploading ? (uploading ? 'Uploading...' : 'Adding...') : 'Add Item'}
                   </button>
                 </form>
               </div>

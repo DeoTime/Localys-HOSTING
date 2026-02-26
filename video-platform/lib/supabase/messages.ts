@@ -1,7 +1,7 @@
 import { supabase } from './client';
-import type { Message, Chat, ChatMember, ChatWithDetails } from '../../models/Message';
+import type { Message, Chat, ChatMember, ChatWithDetails, Conversation } from '../../models/Message';
 
-export type { Message, Chat, ChatMember, ChatWithDetails };
+export type { Message, Chat, ChatMember, ChatWithDetails, Conversation };
 
 /**
  * Get all chats for a user with details
@@ -334,4 +334,133 @@ export async function searchUsers(query: string, currentUserId: string) {
     .limit(10);
 
   return { data, error };
+}
+
+/**
+ * Get conversation details with other user info
+ */
+export async function getConversation(chatId: string): Promise<{ data: (Conversation & { avatar_url?: string }) | null; error: Error | null }> {
+  try {
+    const { data: chat, error: chatError } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('id', chatId)
+      .single();
+
+    if (chatError) throw chatError;
+
+    const { data: members, error: membersError } = await supabase
+      .from('chat_members')
+      .select(`
+        user_id,
+        profiles:user_id (
+          id,
+          username,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .eq('chat_id', chatId);
+
+    if (membersError) throw membersError;
+
+    const { data: currentUser } = await supabase.auth.getUser();
+    const otherUserMember = members?.find(m => m.user_id !== currentUser?.user?.id);
+    const otherUserProfile = otherUserMember?.profiles as any;
+
+    return {
+      data: {
+        ...chat,
+        other_user: {
+          id: otherUserProfile?.id,
+          username: otherUserProfile?.username,
+          full_name: otherUserProfile?.full_name,
+          profile_picture_url: otherUserProfile?.profile_picture_url,
+          avatar_url: otherUserProfile?.profile_picture_url,
+        },
+        members: members,
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error fetching conversation:', error);
+    return { data: null, error: error instanceof Error ? error : new Error('Unknown error') };
+  }
+}
+
+/**
+ * Mark conversation as read (update last_read timestamp)
+ */
+export async function markConversationAsRead(chatId: string) {
+  try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user?.id) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('chat_members')
+      .update({ last_read: new Date().toISOString() })
+      .eq('chat_id', chatId)
+      .eq('user_id', user.user.id);
+
+    if (error) throw error;
+
+    return { error: null };
+  } catch (error) {
+    console.error('Error marking conversation as read:', error);
+    return { error: error instanceof Error ? error : new Error('Unknown error') };
+  }
+}
+
+/**
+ * Edit a message
+ */
+export async function editMessage(messageId: string, content: string) {
+  try {
+    const { data, error } = await supabase
+      .from('messages')
+      .update({
+        content: content,
+        edited_at: new Date().toISOString(),
+      })
+      .eq('id', messageId)
+      .select(`
+        *,
+        sender:sender_id (
+          id,
+          username,
+          full_name,
+          profile_picture_url
+        )
+      `)
+      .single();
+
+    if (error) throw error;
+
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error editing message:', error);
+    return { data: null, error: error instanceof Error ? error : new Error('Unknown error') };
+  }
+}
+
+/**
+ * Delete a message (soft delete by marking as deleted)
+ */
+export async function deleteMessage(messageId: string) {
+  try {
+    const { error } = await supabase
+      .from('messages')
+      .update({
+        deleted: true,
+        content: '[Message deleted]',
+      })
+      .eq('id', messageId);
+
+    if (error) throw error;
+
+    return { error: null };
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    return { error: error instanceof Error ? error : new Error('Unknown error') };
+  }
 }

@@ -57,7 +57,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
     }
   };
 
-  const handleCreateReply = async (content: string) => {
+  const handleCreateReply = async (content: string, rating?: number, imageUrl?: string) => {
     if (!user || postingReply) return;
 
     setPostingReply(true);
@@ -65,6 +65,8 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
       const payload: CreateReplyPayload = {
         parent_comment_id: comment.id,
         content,
+        rating,
+        image_url: imageUrl,
       };
 
       const { data, error } = await createReply(payload);
@@ -150,7 +152,11 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
       });
     });
 
-    return () => channel.unsubscribe();
+    return () => {
+      if (channel) {
+        channel.unsubscribe();
+      }
+    };
   }, [comment.id, showReplies]);
 
   const formatTimestamp = (timestamp: string) => {
@@ -223,6 +229,17 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
           <p className="text-sm text-gray-200 whitespace-pre-wrap break-words mb-2">
             {comment.content}
           </p>
+
+          {/* Comment Image */}
+          {comment.image_url && (
+            <div className="mb-2 rounded-lg overflow-hidden max-w-sm">
+              <img
+                src={comment.image_url}
+                alt="Comment attachment"
+                className="w-full h-auto object-cover max-h-96"
+              />
+            </div>
+          )}
 
           {/* Comment Actions */}
           <div className="flex items-center gap-4 text-xs text-gray-400">

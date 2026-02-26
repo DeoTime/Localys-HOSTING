@@ -1,4 +1,4 @@
-export type { Message, Chat, ChatMember, ChatWithDetails } from './messages';
+export type { Message, Chat, ChatMember, ChatWithDetails, Conversation } from './messages';
 
 export { 
   getChats,
