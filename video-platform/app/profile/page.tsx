@@ -29,6 +29,7 @@ import {
   MAX_PROFILE_PICTURE_SIZE,
   BYTES_TO_MB
 } from '@/lib/supabase/profiles';
+import { OrderHistory } from '@/components/OrderHistory';
 
 const LocationManager = dynamic(
   () => import('@/components/LocationManager'),
@@ -85,6 +86,10 @@ function ProfileContent() {
     try {
       const { data, error } = await ensureUserBusiness(user.id);
       if (!error && data) {
+        // Parse business_hours if it's a string
+        if (data.business_hours && typeof data.business_hours === 'string') {
+          data.business_hours = JSON.parse(data.business_hours);
+        }
         setBusiness(data);
       }
     } catch (error) {
@@ -188,35 +193,37 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
                     {business.business_type === 'hybrid' ? '📦 Pickup & Delivery' : `🏷️ ${business.business_type}`}
                   </span>
                 )}
-                {business.business_hours && (
-                  <button
-                    onClick={() => setShowBusinessHours(!showBusinessHours)}
-                    className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
-                  >
-                    {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowBusinessHours(!showBusinessHours)}
+                  className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
+                >
+                  {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
+                </button>
               </div>
             )}
           </div>
         </div>
 
         {/* Business Hours Display */}
-        {business?.business_hours && showBusinessHours && (
+        {showBusinessHours && (
           <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-8 space-y-2">
             <h3 className="text-lg font-semibold mb-4">⏰ Business Hours</h3>
-            {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
-              <div key={day} className="flex justify-between items-center text-sm">
-                <span className="text-white/80 capitalize font-medium">{day}</span>
-                <span className="text-white/60">
-                  {business.business_hours?.[day]?.closed ? (
-                    'Closed'
-                  ) : (
-                    `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
-                  )}
-                </span>
-              </div>
-            ))}
+            {business?.business_hours ? (
+              ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
+                <div key={day} className="flex justify-between items-center text-sm">
+                  <span className="text-white/80 capitalize font-medium">{day}</span>
+                  <span className="text-white/60">
+                    {business.business_hours?.[day]?.closed ? (
+                      'Closed'
+                    ) : (
+                      `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
+                    )}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-white/60 text-center py-4">Business hours not set</p>
+            )}
           </div>
         )}
 
@@ -265,6 +272,14 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
           <h3 className="text-xl font-semibold mb-4">{t('profile.bookmarked')}</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
             <BookmarkedVideos userId={user.id} />
+          </div>
+        </div>
+
+        {/* Orders History Section */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4">📋 Order History</h3>
+          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+            <OrderHistory userId={user.id} isBusiness={!!business} />
           </div>
         </div>
 
@@ -357,9 +372,16 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
       setBusinessName(business.business_name || '');
       setBusinessType(business.business_type || 'general');
       setCustomMessages(business.custom_messages || ['Hi, interested in this!']);
-      if (business.business_hours) {
-        setBusinessHours(business.business_hours);
-      }
+      // Always set business hours, even if null
+      setBusinessHours(business.business_hours || {
+        monday: { open: '09:00', close: '17:00' },
+        tuesday: { open: '09:00', close: '17:00' },
+        wednesday: { open: '09:00', close: '17:00' },
+        thursday: { open: '09:00', close: '17:00' },
+        friday: { open: '09:00', close: '17:00' },
+        saturday: { open: '10:00', close: '16:00' },
+        sunday: { closed: true },
+      });
     }
   }, [business]);
 
@@ -385,12 +407,14 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('handleSubmit called!'); // DEBUG
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(null);
 
     try {
+      console.log('Starting profile update...'); // DEBUG
       let profilePictureUrl = profile?.profile_picture_url;
 
       if (profilePicture) {
@@ -418,20 +442,40 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
         throw new Error('Failed to update profile: ' + profileError.message);
       }
 
-      if (business && businessName !== business.business_name) {
-        const businessUpdates: BusinessUpdateData = {
-          business_name: businessName,
-          business_type: businessType,
-          business_hours: businessHours,
-          custom_messages: customMessages,
-        };
-        const { error: businessError } = await updateBusinessInfo(business.id, businessUpdates);
-        if (businessError) {
-          setSuccess('Profile updated successfully! Note: Business name update failed.');
-          setTimeout(() => {
-            onSave();
-          }, 1500);
-          return;
+      if (business) {
+        console.log('Checking business changes:', { // DEBUG
+          businessName,
+          businessType,
+          businessHours,
+          customMessages,
+          originalBusiness: business,
+        });
+
+        const businessHasChanges = 
+          businessName !== business.business_name ||
+          businessType !== business.business_type ||
+          JSON.stringify(businessHours) !== JSON.stringify(business.business_hours) ||
+          JSON.stringify(customMessages) !== JSON.stringify(business.custom_messages);
+
+        console.log('Business has changes:', businessHasChanges); // DEBUG
+
+        if (businessHasChanges) {
+          const businessUpdates: BusinessUpdateData = {
+            business_name: businessName,
+            business_type: businessType,
+            business_hours: businessHours,
+            custom_messages: customMessages,
+          };
+          console.log('Calling updateBusinessInfo with:', businessUpdates); // DEBUG
+          const { error: businessError } = await updateBusinessInfo(business.id, businessUpdates);
+          if (businessError) {
+            console.error('Business update error:', businessError); // DEBUG
+            setSuccess('Profile updated successfully! Note: Business info update failed.');
+            setTimeout(() => {
+              onSave();
+            }, 1500);
+            return;
+          }
         }
       }
 

@@ -14,15 +14,30 @@ export function useChats(userId: string | undefined) {
 
     try {
       setLoading(true);
+      setError(null);
+      console.log('useChats: Loading chats for user', userId);
+      
       const { data, error: fetchError } = await getChats(userId);
       
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('useChats: fetchError returned:', fetchError);
+        throw fetchError;
+      }
       
-      setChats(data || []);
+      if (!data) {
+        console.warn('useChats: No data returned, setting to empty array');
+        setChats([]);
+      } else {
+        console.log('useChats: Successfully loaded', data.length, 'chats');
+        setChats(data);
+      }
       setError(null);
     } catch (err) {
-      console.error('Error loading chats:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error'));
+      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
+      console.error('Error loading chats:', errorMsg, err);
+      const finalError = err instanceof Error ? err : new Error(errorMsg || 'Unknown error loading chats');
+      setError(finalError);
+      setChats([]);
     } finally {
       setLoading(false);
     }

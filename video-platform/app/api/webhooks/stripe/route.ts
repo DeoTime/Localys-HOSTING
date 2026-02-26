@@ -40,6 +40,12 @@ export async function POST(request: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
 
     try {
+      // Only process if payment was successful
+      if (session.payment_status !== 'paid') {
+        console.log(`Checkout session ${session.id} not fully paid. Status: ${session.payment_status}`);
+        return NextResponse.json({ received: true });
+      }
+
       const userId = session.metadata?.userId;
       const coins = parseInt(session.metadata?.coins || '0');
 

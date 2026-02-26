@@ -5,16 +5,28 @@ export interface Profile {
   username: string;
   bio?: string;
   profile_picture_url?: string;
+  coin_balance?: number;
+}
+
+export interface BusinessHours {
+  [day: string]: {
+    open?: string;
+    close?: string;
+    closed?: boolean;
+  };
 }
 
 export interface Business {
   id: string;
   owner_id: string;
   business_name: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   category?: string;
   profile_picture_url?: string;
+  business_type?: string;
+  business_hours?: BusinessHours;
+  custom_messages?: string[];
 }
 
 export interface ProfileUpdateData {
@@ -26,4 +38,7 @@ export interface ProfileUpdateData {
 
 export interface BusinessUpdateData {
   business_name?: string;
+  business_type?: string;
+  custom_messages?: string[];
+  business_hours?: BusinessHours;
 }

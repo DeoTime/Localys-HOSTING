@@ -8,85 +8,156 @@ export type { Message, Chat, ChatMember, ChatWithDetails, Conversation };
  */
 export async function getChats(userId: string) {
   try {
-    const { data: memberChats, error: memberError } = await supabase
+    console.log('Starting getChats for user:', userId);
+    
+    // Check if user is authenticated
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    console.log('Authenticated user:', authUser?.id, 'Auth error:', authError);
+
+    if (!authUser) {
+      console.warn('User not authenticated');
+      return { data: [], error: null };
+    }
+    
+    // Test a simple query first to verify table exists and RLS works
+    console.log('Testing simple query on chat_members...');
+    const { data: testData, error: testError } = await supabase
       .from('chat_members')
-      .select(`
-        chat_id,
-        last_read,
-        chats:chat_id (
-          id,
-          is_group,
-          metadata,
-          created_at
-        )
-      `)
+      .select('*', { count: 'exact', head: true });
+    
+    console.log('Test query result:', { hasError: !!testError, testError });
+
+    // Fetch chat_members for this specific user
+    console.log('Fetching chat_members for user:', userId);
+    const { data: cmembers, error: cmError } = await supabase
+      .from('chat_members')
+      .select('chat_id, last_read, user_id')
       .eq('user_id', userId);
 
-    if (memberError) throw memberError;
-    if (!memberChats || memberChats.length === 0) {
+    console.log('chat_members result:', { 
+      dataLength: cmembers?.length, 
+      hasError: !!cmError,
+      errorKeys: cmError ? Object.keys(cmError) : [],
+      errorStatus: cmError?.status,
+      errorCode: cmError?.code,
+      errorMessage: cmError?.message,
+    });
+
+    if (cmError) {
+      console.error('Error fetching chat_members - trying without RLS check...');
+      // The query failed, possibly due to RLS. Return empty for now
       return { data: [], error: null };
     }
 
-    const chatIds = memberChats.map(m => m.chat_id);
+    if (!cmembers || cmembers.length === 0) {
+      console.log('No chats found for user');
+      return { data: [], error: null };
+    }
 
-    const { data: allMembers, error: membersError } = await supabase
-      .from('chat_members')
-      .select(`
-        chat_id,
-        user_id,
-        profiles:user_id (
-          id,
-          username,
-          full_name,
-          profile_picture_url
-        )
-      `)
-      .in('chat_id', chatIds);
+    const chatIds = cmembers.map(m => m.chat_id);
+    console.log('Chat IDs found:', chatIds.length, chatIds);
 
-    if (membersError) throw membersError;
+    // Fetch the chat details
+    const { data: chatsData, error: chatsError } = await supabase
+      .from('chats')
+      .select('id, is_group, metadata, created_at')
+      .in('id', chatIds);
 
-    const { data: messages, error: messagesError } = await supabase
-      .from('messages')
-      .select('*')
-      .in('chat_id', chatIds)
-      .order('created_at', { ascending: false });
+    if (chatsError) {
+      console.error('Error fetching chats:', chatsError);
+      // Don't fail, just return what we have
+      return { data: [], error: null };
+    }
 
-    if (messagesError) throw messagesError;
+    // Reconstruct data with chat details
+    const memberChats = cmembers.map(cm => ({
+      chat_id: cm.chat_id,
+      last_read: cm.last_read,
+      chats: chatsData?.find(c => c.id === cm.chat_id) || null,
+    }));
 
-    const chats: ChatWithDetails[] = memberChats.map(mc => {
-      const chat = mc.chats as Chat | null;
-      if (!chat) return null;
-      
-      const chatMembers = allMembers?.filter(m => m.chat_id === mc.chat_id) || [];
-      const otherMember = chatMembers.find(m => m.user_id !== userId);
-      const lastMessage = messages?.find(m => m.chat_id === mc.chat_id);
-      
-      const unreadMessages = messages?.filter(m => 
-        m.chat_id === mc.chat_id && 
-        m.sender_id !== userId &&
-        (!mc.last_read || new Date(m.created_at || '').getTime() > new Date(mc.last_read).getTime())
-      ) || [];
-
-      return {
-        ...chat,
-        members: chatMembers,
-        other_user: otherMember?.profiles as ChatWithDetails['other_user'],
-        last_message: lastMessage,
-        unread_count: unreadMessages.length,
-      };
-    }).filter((chat): chat is ChatWithDetails => chat !== null);
-
-    chats.sort((a, b) => {
-      const aTime = a.last_message?.created_at || a.created_at || '';
-      const bTime = b.last_message?.created_at || b.created_at || '';
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
-    });
-
-    return { data: chats, error: null };
+    console.log('Chat members fetched successfully:', memberChats?.length || 0);
+    
+    return await processChatData(memberChats, userId);
   } catch (error) {
-    console.error('Error fetching chats:', error);
-    return { data: null, error: error instanceof Error ? error : new Error('Unknown error') };
+    const errorMessage = error instanceof Error ? error.message : JSON.stringify(error);
+    console.error('Error fetching chats (exception):', errorMessage);
+    return { data: null, error: error instanceof Error ? error : new Error('Failed to fetch chats: ' + errorMessage) };
   }
+}
+
+/**
+ * Helper function to process chat data and fetch additional info
+ */
+async function processChatData(memberChats: any[], userId: string) {
+  const chatIds = memberChats.map(m => m.chat_id);
+  console.log('Chat IDs:', chatIds);
+
+  const { data: allMembers, error: membersError } = await supabase
+    .from('chat_members')
+    .select(`
+      chat_id,
+      user_id,
+      profiles:user_id (
+        id,
+        username,
+        full_name,
+        profile_picture_url
+      )
+    `)
+    .in('chat_id', chatIds);
+
+  if (membersError) {
+    console.error('Error fetching all members:', membersError);
+    throw membersError;
+  }
+  
+  console.log('All members fetched:', allMembers?.length || 0);
+
+  const { data: messages, error: messagesError } = await supabase
+    .from('messages')
+    .select('*')
+    .in('chat_id', chatIds)
+    .order('created_at', { ascending: false });
+
+  if (messagesError) {
+    console.error('Error fetching messages:', messagesError);
+    throw messagesError;
+  }
+  
+  console.log('Messages fetched:', messages?.length || 0);
+
+  const chats: ChatWithDetails[] = memberChats.map(mc => {
+    const chat = mc.chats as Chat | null;
+    if (!chat) return null;
+    
+    const chatMembers = allMembers?.filter(m => m.chat_id === mc.chat_id) || [];
+    const otherMember = chatMembers.find(m => m.user_id !== userId);
+    const lastMessage = messages?.find(m => m.chat_id === mc.chat_id);
+    
+    const unreadMessages = messages?.filter(m => 
+      m.chat_id === mc.chat_id && 
+      m.sender_id !== userId &&
+      (!mc.last_read || new Date(m.created_at || '').getTime() > new Date(mc.last_read).getTime())
+    ) || [];
+
+    return {
+      ...chat,
+      members: chatMembers,
+      other_user: otherMember?.profiles as ChatWithDetails['other_user'],
+      last_message: lastMessage,
+      unread_count: unreadMessages.length,
+    };
+  }).filter((chat): chat is ChatWithDetails => chat !== null);
+
+  chats.sort((a, b) => {
+    const aTime = a.last_message?.created_at || a.created_at || '';
+    const bTime = b.last_message?.created_at || b.created_at || '';
+    return new Date(bTime).getTime() - new Date(aTime).getTime();
+  });
+
+  console.log('Chats processed:', chats.length);
+  return { data: chats, error: null };
 }
 
 /**

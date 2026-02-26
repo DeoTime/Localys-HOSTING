@@ -1,7 +1,7 @@
 import { supabase } from './client';
-import type { Profile, Business, ProfileUpdateData, BusinessUpdateData } from '../../models/Profile';
+import type { Profile, Business, ProfileUpdateData, BusinessUpdateData, BusinessHours } from '../../models/Profile';
 
-export type { Profile, Business, ProfileUpdateData, BusinessUpdateData };
+export type { Profile, Business, ProfileUpdateData, BusinessUpdateData, BusinessHours };
 
 const STORAGE_BUCKET = 'avatars';
 export const MAX_PROFILE_PICTURE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
@@ -151,7 +151,14 @@ export async function getUserBusiness(userId: string) {
       return { data: null, error: null };
     }
 
-    return { data: data[0], error: null };
+    if (error) return { data: null, error };
+    
+    // Parse business_hours if it's a string
+    if (data && data.business_hours && typeof data.business_hours === 'string') {
+      data.business_hours = JSON.parse(data.business_hours);
+    }
+    
+    return { data, error: null };
   } catch (error: any) {
     return { data: null, error };
   }
@@ -162,6 +169,8 @@ export async function getUserBusiness(userId: string) {
  */
 export async function updateBusinessInfo(businessId: string, updates: BusinessUpdateData) {
   try {
+    console.log('updateBusinessInfo called with:', { businessId, updates }); // DEBUG
+    
     const { data, error } = await supabase
       .from('businesses')
       .update(updates)
@@ -169,9 +178,15 @@ export async function updateBusinessInfo(businessId: string, updates: BusinessUp
       .select()
       .single();
 
-    if (error) return { data: null, error };
+    if (error) {
+      console.error('updateBusinessInfo error:', error); // DEBUG
+      return { data: null, error };
+    }
+    
+    console.log('updateBusinessInfo success:', data); // DEBUG
     return { data, error: null };
   } catch (error: any) {
+    console.error('updateBusinessInfo exception:', error); // DEBUG
     return { data: null, error };
   }
 }
@@ -221,8 +236,13 @@ export async function ensureUserBusiness(userId: string) {
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (checkError) {
-      return { data: null, error: checkError };
+    // If business exists, return it
+    if (!checkError && existing) {
+      // Parse business_hours if it's a string
+      if (existing.business_hours && typeof existing.business_hours === 'string') {
+        existing.business_hours = JSON.parse(existing.business_hours);
+      }
+      return { data: existing, error: null };
     }
 
     const existingBusiness = existing?.[0] || null;
@@ -843,5 +863,126 @@ export async function uploadMenuItemImage(file: File, userId: string, menuId: st
   } catch (error: any) {
     console.error('Menu item image upload exception:', error);
     return { data: null, error };
+  }
+}
+
+// ============================================
+// ORDERS SYSTEM
+// ============================================
+
+/**
+ * Get user's coin purchase history
+ */
+export async function getUserCoinPurchases(userId: string) {
+  try {
+    if (!userId) {
+      return { data: [], error: null };
+    }
+
+    const { data, error } = await supabase
+      .from('coin_purchases')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching coin purchases:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      });
+      // Return empty array on error to prevent breaking the UI
+      return { data: [], error: null };
+    }
+
+    return { data: data || [], error: null };
+  } catch (error: any) {
+    console.error('Exception fetching coin purchases:', {
+      message: error.message,
+      stack: error.stack,
+      error
+    });
+    // Return empty array on error to prevent breaking the UI
+    return { data: [], error: null };
+  }
+}
+
+/**
+ * Get item purchases where user is the buyer
+ */
+export async function getUserItemPurchases(userId: string) {
+  try {
+    if (!userId) {
+      return { data: [], error: null };
+    }
+
+    const { data, error } = await supabase
+      .from('item_purchases')
+      .select('*')
+      .eq('buyer_id', userId)
+      .order('purchased_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching item purchases:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      });
+      // Return empty array on error to prevent breaking the UI
+      return { data: [], error: null };
+    }
+
+    return { data: data || [], error: null };
+  } catch (error: any) {
+    console.error('Exception fetching item purchases:', {
+      message: error.message,
+      stack: error.stack,
+      error
+    });
+    // Return empty array on error to prevent breaking the UI
+    return { data: [], error: null };
+  }
+}
+
+/**
+ * Get item sales where user is the seller (for business)
+ */
+export async function getBusinessItemSales(userId: string) {
+  try {
+    if (!userId) {
+      return { data: [], error: null };
+    }
+
+    const { data, error } = await supabase
+      .from('item_purchases')
+      .select('*')
+      .eq('seller_id', userId)
+      .order('purchased_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching business sales:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        fullError: error
+      });
+      // Return empty array on error to prevent breaking the UI
+      return { data: [], error: null };
+    }
+
+    return { data: data || [], error: null };
+  } catch (error: any) {
+    console.error('Exception fetching business sales:', {
+      message: error.message,
+      stack: error.stack,
+      error
+    });
+    // Return empty array on error to prevent breaking the UI
+    return { data: [], error: null };
   }
 }
