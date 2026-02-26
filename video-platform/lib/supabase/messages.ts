@@ -38,7 +38,6 @@ export async function getChats(userId: string) {
       dataLength: cmembers?.length, 
       hasError: !!cmError,
       errorKeys: cmError ? Object.keys(cmError) : [],
-      errorStatus: cmError?.status,
       errorCode: cmError?.code,
       errorMessage: cmError?.message,
     });
