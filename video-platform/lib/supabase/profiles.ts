@@ -151,14 +151,13 @@ export async function getUserBusiness(userId: string) {
       return { data: null, error: null };
     }
 
-    if (error) return { data: null, error };
-    
-    // Parse business_hours if it's a string
-    if (data && data.business_hours && typeof data.business_hours === 'string') {
-      data.business_hours = JSON.parse(data.business_hours);
+    const business = data[0];
+
+    if (business?.business_hours && typeof business.business_hours === 'string') {
+      business.business_hours = JSON.parse(business.business_hours);
     }
-    
-    return { data, error: null };
+
+    return { data: business, error: null };
   } catch (error: any) {
     return { data: null, error };
   }
@@ -237,15 +236,14 @@ export async function ensureUserBusiness(userId: string) {
       .limit(1);
 
     // If business exists, return it
-    if (!checkError && existing) {
-      // Parse business_hours if it's a string
-      if (existing.business_hours && typeof existing.business_hours === 'string') {
-        existing.business_hours = JSON.parse(existing.business_hours);
-      }
-      return { data: existing, error: null };
-    }
-
     const existingBusiness = existing?.[0] || null;
+
+    if (!checkError && existingBusiness) {
+      if (existingBusiness.business_hours && typeof existingBusiness.business_hours === 'string') {
+        existingBusiness.business_hours = JSON.parse(existingBusiness.business_hours);
+      }
+      return { data: existingBusiness, error: null };
+    }
 
     // If business exists, return it
     if (existingBusiness) {
