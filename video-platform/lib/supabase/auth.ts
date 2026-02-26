@@ -89,6 +89,23 @@ export async function getCurrentUser() {
 }
 
 /**
+ * Send password reset email
+ */
+export async function resetPasswordForEmail(email: string) {
+  const redirectTo = `${window.location.origin}/reset-password`;
+  const { data, error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+  return { data, error };
+}
+
+/**
+ * Update user password (used after reset link callback)
+ */
+export async function updatePassword(newPassword: string) {
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+  return { data, error };
+}
+
+/**
  * Listen to auth state changes
  */
 export function onAuthStateChange(callback: (event: string, session: any) => void) {
