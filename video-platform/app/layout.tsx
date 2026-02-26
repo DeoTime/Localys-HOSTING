@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${outfit.variable} ${jetbrainsMono.variable} antialiased h-full overflow-hidden dark`}
+        className={`${outfit.variable} ${jetbrainsMono.variable} antialiased h-full dark`}
       >
         <ThemeProvider>
           <AuthProvider>
