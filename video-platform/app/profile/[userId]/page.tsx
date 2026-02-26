@@ -89,12 +89,18 @@ function UserProfileContent() {
       console.log('Business fetch result:', { data, error }); // DEBUG
 
       if (!error && data) {
-        // Parse business_hours if it's a string
-        if (data.business_hours && typeof data.business_hours === 'string') {
-          data.business_hours = JSON.parse(data.business_hours);
+        // getUserBusiness returns an array; take the first entry
+        const biz = Array.isArray(data) ? data[0] : data;
+        if (biz) {
+          // Parse business_hours if it's a string
+          if (biz.business_hours && typeof biz.business_hours === 'string') {
+            biz.business_hours = JSON.parse(biz.business_hours);
+          }
+          console.log('Business after parsing:', biz); // DEBUG
+          setBusiness(biz);
+        } else {
+          setBusiness(null);
         }
-        console.log('Business after parsing:', data); // DEBUG
-        setBusiness(data);
       } else {
         setBusiness(null);
       }

@@ -33,7 +33,7 @@ export default function SignUpPage() {
       name,
       username,
       accountType,
-      businessType: accountType === 'business' ? businessType : undefined,
+      businessType: accountType === 'business' && businessType ? businessType : undefined,
     });
 
     if (signUpError) {

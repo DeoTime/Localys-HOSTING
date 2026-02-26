@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import type { SignUpData, SignInData } from '../../models/Auth';
+import { createWelcomeCoupon } from './coupons';
 
 export type { SignUpData, SignInData };
 

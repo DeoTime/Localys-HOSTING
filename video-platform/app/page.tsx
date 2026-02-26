@@ -30,6 +30,8 @@ interface Video {
   };
   businesses?: {
     id: string;
+    owner_id?: string;
+    user_id?: string;
     business_name: string;
     category: string;
     profile_picture_url?: string;
@@ -67,6 +69,7 @@ function HomeContent() {
   const [toastMessage, setToastMessage] = useState<string>('');
   const [userCoins, setUserCoins] = useState(100);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationsByProfile, setLocationsByProfile] = useState<Record<string, { latitude: number; longitude: number }[]>>({});
   const [priceRanges, setPriceRanges] = useState<Record<string, { min: number; max: number }>>({});
   const [volume, setVolume] = useState(0.5); // Default 50% volume
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
@@ -124,12 +127,47 @@ function HomeContent() {
         const videoIds = videosData
           .map(v => v.id)
           .filter((id): id is string => !!id && typeof id === 'string');
+
+        const posterProfileIds = Array.from(
+          new Set(
+            videosData
+              .map((video) => video.user_id)
+              .filter((id): id is string => Boolean(id && typeof id === 'string'))
+          )
+        );
         
         console.log('Video IDs for comment fetch:', videoIds);
 
         const { data: allLikes } = await supabase
           .from('likes')
           .select('business_id, video_id');
+
+        if (posterProfileIds.length > 0) {
+          const { data: businessLocations } = await supabase
+            .from('business_locations')
+            .select('profile_id, latitude, longitude')
+            .in('profile_id', posterProfileIds);
+
+          const nextLocationsByProfile: Record<string, { latitude: number; longitude: number }[]> = {};
+          posterProfileIds.forEach((profileId) => {
+            nextLocationsByProfile[profileId] = [];
+          });
+
+          (businessLocations || []).forEach((row: { profile_id: string; latitude: number | string; longitude: number | string }) => {
+            if (!row.profile_id) return;
+            const latitude = typeof row.latitude === 'number' ? row.latitude : Number(row.latitude);
+            const longitude = typeof row.longitude === 'number' ? row.longitude : Number(row.longitude);
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+            if (!nextLocationsByProfile[row.profile_id]) {
+              nextLocationsByProfile[row.profile_id] = [];
+            }
+            nextLocationsByProfile[row.profile_id].push({ latitude, longitude });
+          });
+
+          setLocationsByProfile(nextLocationsByProfile);
+        } else {
+          setLocationsByProfile({});
+        }
 
         if (allLikes) {
           allLikes.forEach((like: { business_id: string | null; video_id: string | null }) => {
@@ -145,14 +183,27 @@ function HomeContent() {
         console.log('Skipping comment fetch due to null value issues');
 
        
-        const businessIds = Array.from(new Set(videosData.map(v => v.businesses?.id).filter(Boolean))) as string[];
+        const businesses = videosData
+          .map((video) => video.businesses)
+          .filter((business): business is NonNullable<Video['businesses']> => Boolean(business && business.id));
 
-        if (businessIds.length > 0) {
+        const businessIds = Array.from(new Set(businesses.map((business) => business.id)));
+        const businessToOwnerMap: Record<string, string> = {};
+
+        businesses.forEach((business) => {
+          const ownerId = business.owner_id || business.user_id;
+          if (ownerId) {
+            businessToOwnerMap[business.id] = ownerId;
+          }
+        });
+
+        const ownerIds = Array.from(new Set(Object.values(businessToOwnerMap)));
+
+        if (businessIds.length > 0 && ownerIds.length > 0) {
           const { data: menuItems } = await supabase
             .from('menu_items')
             .select('user_id, price')
-            .in('user_id', businessIds)
-            .ilike('category', 'main');
+            .in('user_id', ownerIds);
 
           const pricesByBusiness: Record<string, number[]> = {};
 
@@ -160,12 +211,22 @@ function HomeContent() {
             pricesByBusiness[businessId] = [];
           });
 
+          const ownerToBusinessIds: Record<string, string[]> = {};
+          Object.entries(businessToOwnerMap).forEach(([businessId, ownerId]) => {
+            if (!ownerToBusinessIds[ownerId]) {
+              ownerToBusinessIds[ownerId] = [];
+            }
+            ownerToBusinessIds[ownerId].push(businessId);
+          });
+
           (menuItems || []).forEach((item: { user_id: string; price: number | string }) => {
             if (!item.user_id) return;
             const price = typeof item.price === 'number' ? item.price : Number(item.price);
             if (!Number.isFinite(price) || price <= 0) return;
-            if (!pricesByBusiness[item.user_id]) return;
-            pricesByBusiness[item.user_id].push(price);
+            const linkedBusinessIds = ownerToBusinessIds[item.user_id] || [];
+            linkedBusinessIds.forEach((businessId) => {
+              pricesByBusiness[businessId].push(price);
+            });
           });
 
           const ranges: Record<string, { min: number; max: number }> = {};
@@ -510,9 +571,36 @@ function HomeContent() {
   const isLiked = likedVideos.has(likeKey);
   const isBookmarked = bookmarkedVideos.has(currentVideo.id);
 
-  const getDistanceForBusiness = (business?: Video['businesses']) => {
-    if (!business?.latitude || !business?.longitude || !userLocation) return null;
-    return haversineDistance(userLocation.lat, userLocation.lng, business.latitude, business.longitude);
+  const getNearestLocationForVideo = (video: Video) => {
+    const profileId = video.user_id;
+    if (profileId && locationsByProfile[profileId] && locationsByProfile[profileId].length > 0) {
+      const candidateLocations = locationsByProfile[profileId];
+
+      if (!userLocation) {
+        return candidateLocations[0];
+      }
+
+      return candidateLocations.reduce((closest, current) => {
+        const closestDistance = haversineDistance(userLocation.lat, userLocation.lng, closest.latitude, closest.longitude);
+        const currentDistance = haversineDistance(userLocation.lat, userLocation.lng, current.latitude, current.longitude);
+        return currentDistance < closestDistance ? current : closest;
+      });
+    }
+
+    const latitude = video.businesses?.latitude;
+    const longitude = video.businesses?.longitude;
+    if (typeof latitude === 'number' && typeof longitude === 'number' && Number.isFinite(latitude) && Number.isFinite(longitude)) {
+      return { latitude, longitude };
+    }
+
+    return null;
+  };
+
+  const getDistanceForVideo = (video: Video) => {
+    if (!userLocation) return null;
+    const nearestLocation = getNearestLocationForVideo(video);
+    if (!nearestLocation) return null;
+    return haversineDistance(userLocation.lat, userLocation.lng, nearestLocation.latitude, nearestLocation.longitude);
   };
 
   const formatDistanceLabel = (distanceKm: number | null) => {
@@ -526,7 +614,7 @@ function HomeContent() {
     return Math.max(4, Math.round((distanceKm / 35) * 60));
   };
 
-  const currentDistanceKm = getDistanceForBusiness(currentBusiness);
+  const currentDistanceKm = getDistanceForVideo(currentVideo);
   const distance = formatDistanceLabel(currentDistanceKm);
 
   return (
@@ -550,8 +638,10 @@ function HomeContent() {
           >
             {(() => {
               const feedBusiness = video.businesses;
-              const feedDistanceLabel = formatDistanceLabel(getDistanceForBusiness(feedBusiness));
-              const feedEta = getEtaMinutes(getDistanceForBusiness(feedBusiness));
+              const feedNearestLocation = getNearestLocationForVideo(video);
+              const feedDistanceKm = getDistanceForVideo(video);
+              const feedDistanceLabel = formatDistanceLabel(feedDistanceKm);
+              const feedEta = getEtaMinutes(feedDistanceKm);
 
               return (
                 <>
@@ -594,52 +684,64 @@ function HomeContent() {
                 )}
               </div>
 
-              {feedBusiness && (
-                <div className="mt-3 rounded-xl border border-white/20 bg-black/40 p-3 backdrop-blur-md">
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="rounded-lg bg-white/10 px-2 py-2">
-                      <p className="text-white/70">Avg Price</p>
-                      <p className="text-white font-semibold">
-                        {feedBusiness.id && priceRanges[feedBusiness.id]
-                          ? (() => {
-                              const avgPrice = computeAveragePrice(priceRanges[feedBusiness.id]);
-                              return avgPrice ? `~$${avgPrice}` : '—';
-                            })()
-                          : '—'}
-                      </p>
-                    </div>
-                    <div className="rounded-lg bg-white/10 px-2 py-2">
-                      <p className="text-white/70">Distance</p>
-                      <p className="text-white font-semibold">{feedDistanceLabel || 'Use GPS'}</p>
-                    </div>
-                    <div className="rounded-lg bg-white/10 px-2 py-2">
-                      <p className="text-white/70">ETA</p>
-                      <p className="text-white font-semibold">{feedEta ? `${feedEta} min` : '—'}</p>
-                    </div>
+            </div>
+
+            {feedBusiness && (
+              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2 pl-3">
+                <div className="group flex items-center">
+                  <div className="rounded-r-xl border border-white/30 bg-black/60 p-3 backdrop-blur-md">
+                    <span className="text-xl" aria-hidden="true">📍</span>
+                    <span className="sr-only">Business quick info</span>
                   </div>
 
-                  <div className="mt-2 flex gap-2">
-                    <a
-                      href={feedBusiness.latitude && feedBusiness.longitude
-                        ? `https://www.google.com/maps/dir/?api=1&destination=${feedBusiness.latitude},${feedBusiness.longitude}`
-                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feedBusiness.business_name)}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-lg bg-white text-black text-xs font-semibold px-3 py-1.5"
-                    >
-                      Directions
-                    </a>
-                    <Link
-                      href={`/profile/${feedBusiness.id}`}
-                      className="rounded-lg bg-white/15 border border-white/20 text-white text-xs font-semibold px-3 py-1.5"
-                    >
-                      Menu
-                    </Link>
+                  <div className="ml-2 w-0 overflow-hidden rounded-xl border border-white/20 bg-black/45 opacity-0 backdrop-blur-md transition-all duration-300 group-hover:w-[260px] group-hover:opacity-100 group-focus-within:w-[260px] group-focus-within:opacity-100">
+                    <div className="p-3">
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="rounded-lg bg-white/10 px-2 py-2">
+                          <p className="text-white/70">Avg Price</p>
+                          <p className="text-white font-semibold">
+                            {feedBusiness.id && priceRanges[feedBusiness.id]
+                              ? (() => {
+                                  const avgPrice = computeAveragePrice(priceRanges[feedBusiness.id]);
+                                  return avgPrice ? `~$${avgPrice}` : '—';
+                                })()
+                              : '—'}
+                          </p>
+                        </div>
+                        <div className="rounded-lg bg-white/10 px-2 py-2">
+                          <p className="text-white/70">Distance</p>
+                          <p className="text-white font-semibold">{feedDistanceLabel || 'Use GPS'}</p>
+                        </div>
+                        <div className="rounded-lg bg-white/10 px-2 py-2">
+                          <p className="text-white/70">ETA</p>
+                          <p className="text-white font-semibold">{feedEta !== null ? `${feedEta} min` : '—'}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-2 flex gap-2">
+                        <a
+                          href={feedNearestLocation
+                            ? `https://www.google.com/maps/dir/?api=1&destination=${feedNearestLocation.latitude},${feedNearestLocation.longitude}`
+                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feedBusiness.business_name)}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rounded-lg bg-blue-300 text-blue-950 text-xs font-semibold px-3 py-1.5 hover:bg-blue-200"
+                        >
+                          Directions
+                        </a>
+                        <Link
+                          href={`/profile/${feedBusiness.id}`}
+                          className="rounded-lg bg-white/15 border border-white/20 text-white text-xs font-semibold px-3 py-1.5"
+                        >
+                          Menu
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
                 </>
               );
             })()}
