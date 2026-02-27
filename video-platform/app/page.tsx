@@ -138,9 +138,21 @@ function HomeContent() {
         
         console.log('Video IDs for comment fetch:', videoIds);
 
-        const { data: allLikes } = await supabase
-          .from('likes')
-          .select('business_id, video_id');
+        const feedBusinessIds = Array.from(
+          new Set(
+            videosData
+              .map((video) => video.business_id)
+              .filter((id): id is string => Boolean(id && typeof id === 'string'))
+          )
+        );
+
+        const allFilterIds = [...videoIds, ...feedBusinessIds];
+        const { data: allLikes } = allFilterIds.length > 0
+          ? await supabase
+              .from('likes')
+              .select('business_id, video_id')
+              .or(`video_id.in.(${videoIds.join(',')}),business_id.in.(${feedBusinessIds.join(',')})`)
+          : { data: [] };
 
         if (posterProfileIds.length > 0) {
           const { data: businessLocations } = await supabase

@@ -273,9 +273,15 @@ export async function findOneToOneChat(userId1: string, userId2: string) {
  */
 export async function getOrCreateOneToOneChat(userId1: string, userId2: string) {
   try {
-    console.log('Creating/fetching 1:1 chat between', userId1, 'and', userId2);
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData?.user?.id) {
+      throw new Error('You must be signed in to start a chat.');
+    }
+
+    const initiatorUserId = authData.user.id;
+    console.log('Creating/fetching 1:1 chat between', initiatorUserId, 'and', userId2);
     
-    const { data: existing, error: findError } = await findOneToOneChat(userId1, userId2);
+    const { data: existing, error: findError } = await findOneToOneChat(initiatorUserId, userId2);
     
     if (findError) {
       const errorMsg = extractErrorMessage(findError);
@@ -314,7 +320,7 @@ export async function getOrCreateOneToOneChat(userId1: string, userId2: string) 
     const { error: membersError } = await supabase
       .from('chat_members')
       .insert([
-        { chat_id: newChat.id, user_id: userId1, role: 'member' },
+        { chat_id: newChat.id, user_id: initiatorUserId, role: 'member' },
         { chat_id: newChat.id, user_id: userId2, role: 'member' },
       ]);
 

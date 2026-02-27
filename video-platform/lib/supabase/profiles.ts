@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { cacheGet, cacheSet, cacheInvalidate } from '../cache';
 import type { Profile, Business, ProfileUpdateData, BusinessUpdateData, BusinessHours } from '../../models/Profile';
 
 export type { Profile, Business, ProfileUpdateData, BusinessUpdateData, BusinessHours };
@@ -262,6 +263,12 @@ export async function ensureUserBusiness(userId: string) {
  */
 export async function getUserCoins(userId: string) {
   try {
+    const cacheKey = `user-coins:${userId}`;
+    const cached = cacheGet<number>(cacheKey);
+    if (cached !== null) {
+      return { data: cached, error: null };
+    }
+
     const { data, error } = await supabase
       .from('profiles')
       .select('coin_balance')
@@ -269,7 +276,9 @@ export async function getUserCoins(userId: string) {
       .single();
 
     if (error) return { data: null, error };
-    return { data: data?.coin_balance || 100, error: null };
+    const balance = data?.coin_balance || 100;
+    cacheSet(cacheKey, balance, 30 * 1000); // 30 sec TTL
+    return { data: balance, error: null };
   } catch (error: any) {
     return { data: null, error };
   }
@@ -305,6 +314,7 @@ export async function deductCoins(userId: string, amount: number) {
       .single();
 
     if (error) return { data: null, error };
+    cacheInvalidate(`user-coins:${userId}`);
     return { data: data?.coin_balance, error: null };
   } catch (error: any) {
     return { data: null, error };
@@ -338,6 +348,7 @@ export async function addCoins(userId: string, amount: number) {
       .single();
 
     if (error) return { data: null, error };
+    cacheInvalidate(`user-coins:${userId}`);
     return { data: data?.coin_balance, error: null };
   } catch (error: any) {
     return { data: null, error };
