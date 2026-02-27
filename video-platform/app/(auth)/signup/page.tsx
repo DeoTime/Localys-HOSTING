@@ -97,7 +97,7 @@ export default function SignUpPage() {
     }
 
     if (data?.session) {
-      router.push('/');
+      router.push('/onboarding');
       router.refresh();
       return;
     }

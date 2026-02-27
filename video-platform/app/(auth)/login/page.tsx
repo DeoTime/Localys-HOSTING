@@ -110,7 +110,7 @@ function LoginPageContent() {
     }
 
     if (data?.session) {
-      router.push('/');
+      router.push(isEmailVerified ? '/onboarding' : '/');
       router.refresh();
     }
   };
