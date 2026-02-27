@@ -696,16 +696,16 @@ function HomeContent() {
             </div>
 
             {feedBusiness && (
-              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2 pl-3">
+              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2 pl-2 sm:pl-3">
                 <div className="group flex items-center">
-                  <div className="rounded-r-xl border border-white/30 bg-black/60 p-3 backdrop-blur-md">
-                    <span className="text-xl" aria-hidden="true">📍</span>
+                  <div className="rounded-r-xl border border-white/30 bg-black/60 p-2 sm:p-3 backdrop-blur-md">
+                    <span className="text-base sm:text-xl" aria-hidden="true">📍</span>
                     <span className="sr-only">Business quick info</span>
                   </div>
 
-                  <div className="ml-2 w-0 overflow-hidden rounded-xl border border-white/20 bg-black/45 opacity-0 backdrop-blur-md transition-all duration-300 group-hover:w-[260px] group-hover:opacity-100 group-focus-within:w-[260px] group-focus-within:opacity-100">
-                    <div className="p-3">
-                      <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="ml-1 sm:ml-2 w-0 overflow-hidden rounded-xl border border-white/20 bg-black/45 opacity-0 backdrop-blur-md transition-all duration-300 group-hover:w-[220px] group-hover:opacity-100 group-focus-within:w-[220px] group-focus-within:opacity-100 sm:group-hover:w-[260px] sm:group-focus-within:w-[260px]">
+                    <div className="p-2 sm:p-3">
+                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
                         <div className="rounded-lg bg-white/10 px-2 py-2">
                           <p className="text-white/70">Avg Price</p>
                           <p className="text-white font-semibold">
@@ -727,7 +727,7 @@ function HomeContent() {
                         </div>
                       </div>
 
-                      <div className="mt-2 flex gap-2">
+                      <div className="mt-1.5 sm:mt-2 flex gap-1.5 sm:gap-2">
                         <a
                           href={feedNearestLocation
                             ? `https://www.google.com/maps/dir/?api=1&destination=${feedNearestLocation.latitude},${feedNearestLocation.longitude}`
@@ -735,13 +735,13 @@ function HomeContent() {
                           }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-lg bg-blue-300 text-blue-950 text-xs font-semibold px-3 py-1.5 hover:bg-blue-200"
+                          className="rounded-lg bg-blue-300 text-blue-950 text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 hover:bg-blue-200"
                         >
                           Directions
                         </a>
                         <Link
                           href={`/profile/${feedBusiness.id}`}
-                          className="rounded-lg bg-white/15 border border-white/20 text-white text-xs font-semibold px-3 py-1.5"
+                          className="rounded-lg bg-white/15 border border-white/20 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5"
                         >
                           Menu
                         </Link>
@@ -759,28 +759,28 @@ function HomeContent() {
       </div>
 
       {/* Left Side - Logo and Coins */}
-      <div className="absolute top-0 left-0 z-20 p-4 space-y-3">
-        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-4 py-2 shadow-sm backdrop-blur-md">
-          <h1 className="text-xl font-bold">Localy</h1>
+      <div className="absolute top-0 left-0 z-20 p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
+        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-1.5 sm:px-4 sm:py-2 shadow-sm backdrop-blur-md">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold">Localy</h1>
         </div>
         <ThemeToggle />
-        
+
         {/* Coin Balance */}
         {showCoinBadge && (
-          <div className="bg-yellow-500/20 backdrop-blur-md border border-yellow-500/50 rounded-lg px-4 py-3 flex items-center gap-2">
-            <span className="text-2xl">🪙</span>
+          <div className="bg-yellow-500/20 backdrop-blur-md border border-yellow-500/50 rounded-lg px-2 py-2 sm:px-4 sm:py-3 flex items-center gap-2">
+            <span className="text-lg sm:text-2xl">🪙</span>
             <div>
-              <div className="text-xs text-white/70">Coins</div>
-              <div className="text-xl font-bold text-yellow-300">{userCoins}</div>
+              <div className="text-[10px] sm:text-xs text-white/70">Coins</div>
+              <div className="text-base sm:text-xl font-bold text-yellow-300">{userCoins}</div>
             </div>
           </div>
         )}
       </div>
 
       {/* Top Right - Volume Control Bar */}
-      <div className="absolute top-0 right-0 z-20 p-4">
-        <div className="flex min-w-max items-center gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-4 py-3 shadow-sm backdrop-blur-md">
-          <svg className="h-5 w-5 flex-shrink-0 text-[var(--foreground)]" fill="currentColor" viewBox="0 0 24 24">
+      <div className="absolute top-0 right-0 z-20 p-2 sm:p-3 md:p-4">
+        <div className="flex min-w-max items-center gap-2 sm:gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-2 py-2 sm:px-4 sm:py-3 shadow-sm backdrop-blur-md">
+          <svg className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-[var(--foreground)]" fill="currentColor" viewBox="0 0 24 24">
             <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.04v8.05c1.48-.75 2.5-2.27 2.5-4.01zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
           </svg>
           <input
@@ -789,15 +789,15 @@ function HomeContent() {
             max="100"
             value={Math.round(volume * 100)}
             onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
-            className="h-2 w-40 cursor-pointer rounded-lg bg-[var(--surface-2)] accent-blue-500"
+            className="h-2 w-20 sm:w-28 md:w-40 cursor-pointer rounded-lg bg-[var(--surface-2)] accent-blue-500"
             aria-label="Volume slider"
           />
-          <span className="w-10 text-right text-sm font-semibold text-[var(--foreground)]">{Math.round(volume * 100)}%</span>
+          <span className="w-8 sm:w-10 text-right text-xs sm:text-sm font-semibold text-[var(--foreground)]">{Math.round(volume * 100)}%</span>
         </div>
       </div>
 
       {/* Right Side - Interaction Buttons */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-6 pr-4">
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-3 pr-2 sm:gap-4 md:gap-6 md:pr-4">
         {/* Profile Picture */}
         <div className="relative">
           <button
@@ -809,7 +809,7 @@ function HomeContent() {
             <img
               src={currentBusiness?.profile_picture_url || currentVideo.profiles?.profile_picture_url || 'https://via.placeholder.com/60'}
               alt={currentBusiness?.business_name || 'Business'}
-              className="h-14 w-14 rounded-full border-2 border-[var(--border-color)] object-cover transition-transform duration-200 hover:scale-110 active:scale-95"
+              className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full border-2 border-[var(--border-color)] object-cover transition-transform duration-200 hover:scale-110 active:scale-95"
             />
           </button>
         </div>
@@ -820,11 +820,11 @@ function HomeContent() {
           onKeyDown={(e) => handleKeyDown(e, () => toggleLike(currentVideo.id, currentBusiness?.id))}
           className="flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
         >
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
             isLiked ? 'bg-red-500' : 'border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md'
           } ${likeAnimating === currentVideo.id ? 'scale-125' : ''}`}>
             <svg
-              className={`w-6 h-6 text-white transition-all duration-300 ${
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-all duration-300 ${
                 likeAnimating === currentVideo.id ? 'scale-150' : ''
               }`}
               fill={isLiked ? 'currentColor' : 'none'}
@@ -834,36 +834,36 @@ function HomeContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
             </svg>
           </div>
-          <span className="text-white text-xs font-semibold">
+          <span className="text-white text-[10px] sm:text-xs font-semibold">
             {likeCounts[likeKey] || 0}
           </span>
         </button>
 
         {/* Reviews Button */}
-        <button 
+        <button
           onClick={() => handleCommentClick(currentVideo.id)}
           onKeyDown={(e) => handleKeyDown(e, () => handleCommentClick(currentVideo.id))}
           className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Add a comment"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md transition-all duration-200 hover:bg-[var(--surface-2)]">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md transition-all duration-200 hover:bg-[var(--surface-2)]">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <span className="text-white text-xs font-semibold">{currentBusiness?.total_reviews || 0}</span>
+          <span className="text-white text-[10px] sm:text-xs font-semibold">{currentBusiness?.total_reviews || 0}</span>
         </button>
 
         {/* Location Button */}
         {distance && (
           <button className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md transition-all duration-200 hover:bg-[var(--surface-2)]">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md transition-all duration-200 hover:bg-[var(--surface-2)]">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <span className="text-white text-xs font-semibold">{distance}</span>
+            <span className="text-white text-[10px] sm:text-xs font-semibold">{distance}</span>
           </button>
         )}
 
@@ -872,11 +872,11 @@ function HomeContent() {
           onClick={() => toggleBookmark(currentVideo.id)}
           className="flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
         >
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
             isBookmarked ? 'bg-yellow-500' : 'border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md'
           } ${bookmarkAnimating === currentVideo.id ? 'scale-125' : ''}`}>
             <svg
-              className={`w-6 h-6 text-white transition-all duration-300 ${
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-all duration-300 ${
                 bookmarkAnimating === currentVideo.id ? 'scale-150' : ''
               }`}
               fill={isBookmarked ? 'currentColor' : 'none'}
@@ -889,14 +889,14 @@ function HomeContent() {
         </button>
 
         {/* Share Button */}
-        <button 
+        <button
           onClick={() => handleShareClick(currentVideo)}
           onKeyDown={(e) => handleKeyDown(e, () => handleShareClick(currentVideo))}
           className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Share this post"
         >
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md transition-all duration-200 hover:bg-[var(--surface-2)]">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md transition-all duration-200 hover:bg-[var(--surface-2)]">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </div>
