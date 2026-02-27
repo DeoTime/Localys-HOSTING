@@ -4,6 +4,27 @@ import { createWelcomeCoupon } from './coupons';
 
 export type { SignUpData, SignInData };
 
+type EnsureProfileInput = {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  username?: string | null;
+};
+
+async function ensureOwnProfile({ id, email, name, username }: EnsureProfileInput) {
+  const fallbackUsername = `user_${id.replace(/-/g, '').slice(0, 8)}`;
+  const profilePayload = {
+    id,
+    email: email ?? '',
+    full_name: name ?? null,
+    username: username ?? (email ? email.split('@')[0] : fallbackUsername),
+  };
+
+  return supabase
+    .from('profiles')
+    .upsert(profilePayload, { onConflict: 'id' });
+}
+
 /**
  * Sign up a new user
  * Creates auth user and profile in public.profiles table
@@ -17,24 +38,31 @@ export async function signUp({ email, password, name, username, accountType, bus
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: name,
+          username,
+          account_type: accountType,
+          business_type: businessType ?? null,
+        },
+      },
     });
 
     if (authError) throw authError;
     if (!authData.user) throw new Error('User creation failed');
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert({
+    if (authData.session) {
+      const { error: profileError } = await ensureOwnProfile({
         id: authData.user.id,
         email,
-        full_name: name,
+        name,
         username,
-        type: accountType === 'business' ? businessType : null,
       });
 
-    if (profileError) {
-      console.error('Profile creation failed:', profileError);
-      throw profileError;
+      if (profileError) {
+        console.error('Profile creation failed:', profileError);
+        throw profileError;
+      }
     }
 
     // Create welcome coupon for new user
@@ -60,6 +88,20 @@ export async function signIn({ email, password }: SignInData) {
     email,
     password,
   });
+
+  if (!error && data.user) {
+    const metadata = (data.user.user_metadata ?? {}) as Record<string, unknown>;
+    const { error: profileError } = await ensureOwnProfile({
+      id: data.user.id,
+      email: data.user.email ?? email,
+      name: (metadata.full_name as string | undefined) ?? null,
+      username: (metadata.username as string | undefined) ?? null,
+    });
+
+    if (profileError) {
+      console.warn('Profile sync on sign-in failed:', profileError);
+    }
+  }
 
   return { data, error };
 }
