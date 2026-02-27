@@ -159,7 +159,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={loading || !turnstileToken}
+                disabled={loading}
                 className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
@@ -245,7 +245,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading || !turnstileToken}
+            disabled={loading}
             className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
           >
             {loading ? 'Signing in...' : 'Sign In'}
