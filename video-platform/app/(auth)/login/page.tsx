@@ -6,7 +6,25 @@ import Link from 'next/link';
 import { signIn, resetPasswordForEmail } from '@/lib/supabase/auth';
 import TurnstileWidget from '@/components/TurnstileWidget';
 
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!;
+const DEFAULT_LOCAL_TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
+
+function resolveTurnstileSiteKey(): string {
+  const prodKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
+
+  if (typeof window === 'undefined') {
+    return prodKey;
+  }
+
+  const hostname = window.location.hostname;
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+
+  if (!isLocalhost) {
+    return prodKey;
+  }
+
+  const localKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY_LOCAL ?? '';
+  return localKey || prodKey || DEFAULT_LOCAL_TURNSTILE_SITE_KEY;
+}
 
 async function verifyTurnstile(token: string): Promise<boolean> {
   const res = await fetch('/api/verify-turnstile', {
@@ -20,6 +38,7 @@ async function verifyTurnstile(token: string): Promise<boolean> {
 
 export default function LoginPage() {
   const router = useRouter();
+  const siteKey = resolveTurnstileSiteKey();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -151,7 +170,7 @@ export default function LoginPage() {
               </div>
 
               <TurnstileWidget
-                siteKey={SITE_KEY}
+                siteKey={siteKey}
                 onVerify={setTurnstileToken}
                 onExpire={() => setTurnstileToken(null)}
                 theme="dark"
@@ -237,7 +256,7 @@ export default function LoginPage() {
           </div>
 
           <TurnstileWidget
-            siteKey={SITE_KEY}
+            siteKey={siteKey}
             onVerify={setTurnstileToken}
             onExpire={() => setTurnstileToken(null)}
             theme="dark"
