@@ -244,20 +244,22 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
         </button>
 
         {/* Coin Balance & Buy Coins Buttons */}
-        <div className="flex gap-4 mb-6">
-          <div className="flex-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg py-3 px-4 text-center">
-            <p className="text-yellow-400/80 text-xs mb-1">Coin Balance</p>
-            <p className="text-yellow-400 text-2xl font-bold">
-              🪙 {profile?.coin_balance || 0}
-            </p>
+        {profile?.type !== null && (
+          <div className="flex gap-4 mb-6">
+            <div className="flex-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg py-3 px-4 text-center">
+              <p className="text-yellow-400/80 text-xs mb-1">Coin Balance</p>
+              <p className="text-yellow-400 text-2xl font-bold">
+                🪙 {profile?.coin_balance || 0}
+              </p>
+            </div>
+            <Link
+              href="/buy-coins"
+              className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg py-3 px-4 transition-all duration-200 hover:scale-[1.02] active:scale-98 text-center"
+            >
+              {t('nav.buy_coins')}
+            </Link>
           </div>
-          <Link
-            href="/buy-coins"
-            className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-semibold rounded-lg py-3 px-4 transition-all duration-200 hover:scale-[1.02] active:scale-98 text-center"
-          >
-            {t('nav.buy_coins')}
-          </Link>
-        </div>
+        )}
 
         {/* Analytics Dashboard Section */}
         <AnalyticsDashboard userId={user.id} />

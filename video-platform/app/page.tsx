@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
-import { getUserCoins } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
 import { CommentModal } from '@/components/CommentModal';
 import { Toast } from '@/components/Toast';
@@ -68,6 +67,7 @@ function HomeContent() {
   const [commentPostId, setCommentPostId] = useState<string>('');
   const [toastMessage, setToastMessage] = useState<string>('');
   const [userCoins, setUserCoins] = useState(100);
+  const [showCoinBadge, setShowCoinBadge] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationsByProfile, setLocationsByProfile] = useState<Record<string, { latitude: number; longitude: number }[]>>({});
   const [priceRanges, setPriceRanges] = useState<Record<string, { min: number; max: number }>>({});
@@ -305,15 +305,24 @@ function HomeContent() {
     if (!user) return;
     
     try {
-      const { data, error } = await getUserCoins(user.id);
-      console.log('loadUserCoins - fetched data:', data, 'error:', error);
-      if (!error && data !== null) {
-        console.log('Setting userCoins to:', data);
-        setUserCoins(data);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('coin_balance, type')
+        .eq('id', user.id)
+        .single();
+
+      if (!error && data) {
+        const hasProfileType = data.type !== null;
+        setShowCoinBadge(hasProfileType);
+        if (hasProfileType) {
+          setUserCoins(typeof data.coin_balance === 'number' ? data.coin_balance : 100);
+        }
       } else {
+        setShowCoinBadge(false);
         console.error('Error loading coins:', error);
       }
     } catch (error) {
+      setShowCoinBadge(false);
       console.error('Exception loading coins:', error);
     }
   };
@@ -757,13 +766,15 @@ function HomeContent() {
         <ThemeToggle />
         
         {/* Coin Balance */}
-        <div className="bg-yellow-500/20 backdrop-blur-md border border-yellow-500/50 rounded-lg px-4 py-3 flex items-center gap-2">
-          <span className="text-2xl">🪙</span>
-          <div>
-            <div className="text-xs text-white/70">Coins</div>
-            <div className="text-xl font-bold text-yellow-300">{userCoins}</div>
+        {showCoinBadge && (
+          <div className="bg-yellow-500/20 backdrop-blur-md border border-yellow-500/50 rounded-lg px-4 py-3 flex items-center gap-2">
+            <span className="text-2xl">🪙</span>
+            <div>
+              <div className="text-xs text-white/70">Coins</div>
+              <div className="text-xl font-bold text-yellow-300">{userCoins}</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Top Right - Volume Control Bar */}
