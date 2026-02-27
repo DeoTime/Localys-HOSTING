@@ -26,6 +26,7 @@ interface Profile {
   full_name: string;
   profile_picture_url?: string;
   bio?: string;
+  type?: string | null;
 }
 
 export default function UserProfilePage() {
@@ -54,10 +55,18 @@ function UserProfileContent() {
   useEffect(() => {
     if (userId) {
       loadProfile();
-      loadBusiness();
-      loadLocations();
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (profile?.type) {
+      loadBusiness();
+      loadLocations();
+    } else {
+      setBusiness(null);
+      setBusinessLocations([]);
+    }
+  }, [profile?.type]);
 
   const loadLocations = async () => {
     const { data } = await getBusinessLocations(userId);
@@ -68,7 +77,7 @@ function UserProfileContent() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, username, full_name, profile_picture_url, bio')
+        .select('id, username, full_name, profile_picture_url, bio, type')
         .eq('id', userId)
         .single();
 
@@ -289,13 +298,15 @@ function UserProfileContent() {
           </div>
         )}
 
-        {/* Services Section */}
-        <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <MenuList userId={userId} isOwnProfile={false} />
+        {/* Services Section (business only) */}
+        {profile.type && (
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <MenuList userId={userId} isOwnProfile={false} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Videos Section */}
         <div className="mt-8">

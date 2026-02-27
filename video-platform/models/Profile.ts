@@ -6,6 +6,7 @@ export interface Profile {
   bio?: string;
   profile_picture_url?: string;
   coin_balance?: number;
+  type?: string | null;
 }
 
 export interface BusinessHours {

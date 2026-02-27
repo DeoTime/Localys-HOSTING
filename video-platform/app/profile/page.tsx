@@ -58,9 +58,16 @@ function ProfileContent() {
   useEffect(() => {
     if (user) {
       loadProfile();
-      loadBusiness();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (profile?.type) {
+      loadBusiness();
+    } else {
+      setBusiness(null);
+    }
+  }, [profile?.type]);
 
   const loadProfile = async () => {
     if (!user) return;
@@ -132,7 +139,7 @@ function ProfileContent() {
           user={user}
           onSave={async () => {
             await loadProfile();
-            await loadBusiness();
+            if (profile?.type) await loadBusiness();
             setIsEditMode(false);
           }}
           onCancel={() => setIsEditMode(false)}
@@ -255,13 +262,15 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
         {/* Analytics Dashboard Section */}
         <AnalyticsDashboard userId={user.id} />
 
-        {/* Services Section */}
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
-          <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <MenuList userId={user.id} businessId={business?.id} isOwnProfile={true} />
+        {/* Services Section (business only) */}
+        {business && (
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+              <MenuList userId={user.id} businessId={business?.id} isOwnProfile={true} />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Posted Videos Section */}
         <div className="mb-8">
@@ -446,16 +455,8 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
         throw new Error('Failed to update profile: ' + profileError.message);
       }
 
-      if (business) {
-        console.log('Checking business changes:', { // DEBUG
-          businessName,
-          businessType,
-          businessHours,
-          customMessages,
-          originalBusiness: business,
-        });
-
-        const businessHasChanges = 
+      if (profile?.type && business) {
+        const businessHasChanges =
           businessName !== business.business_name ||
           businessType !== business.business_type ||
           JSON.stringify(businessHours) !== JSON.stringify(business.business_hours) ||
@@ -572,8 +573,8 @@ function ProfileEditForm({ profile, business, user, onSave, onCancel }: ProfileE
           />
         </div>
 
-        {/* Business Name (if business exists) */}
-        {business && (
+        {/* Business Name (if business user) */}
+        {profile?.type && business && (
           <>
             <div>
               <label className="block text-white/80 text-sm font-medium mb-2">Business Name</label>
