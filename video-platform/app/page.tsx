@@ -797,7 +797,7 @@ function HomeContent() {
       </div>
 
       {/* Right Side - Interaction Buttons */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-3 pr-2 sm:gap-4 md:gap-6 md:pr-4">
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
         {/* Profile Picture */}
         <div className="relative">
           <button
