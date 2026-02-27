@@ -62,16 +62,22 @@ function LoginPageContent() {
   const [resetMode, setResetMode] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+
+  const resetTurnstile = () => {
+    setTurnstileToken(null);
+    setTurnstileResetKey((prev) => prev + 1);
+  };
 
   const switchToReset = () => {
     setResetMode(true);
-    setTurnstileToken(null);
+    resetTurnstile();
     setError('');
   };
 
   const switchToLogin = () => {
     setResetMode(false);
-    setTurnstileToken(null);
+    resetTurnstile();
     setError('');
   };
 
@@ -89,7 +95,7 @@ function LoginPageContent() {
     const verified = await verifyTurnstile(turnstileToken);
     if (!verified) {
       setError('Security check failed. Please try again.');
-      setTurnstileToken(null);
+      resetTurnstile();
       setLoading(false);
       return;
     }
@@ -98,7 +104,7 @@ function LoginPageContent() {
 
     if (signInError) {
       setError(signInError.message || 'Failed to sign in');
-      setTurnstileToken(null);
+      resetTurnstile();
       setLoading(false);
       return;
     }
@@ -118,20 +124,18 @@ function LoginPageContent() {
       return;
     }
 
+    const normalizedIdentifier = identifier.trim();
+    if (!normalizedIdentifier.includes('@')) {
+      setError('Enter your account email to reset your password.');
+      return;
+    }
+
     setLoading(true);
 
     const verified = await verifyTurnstile(turnstileToken);
     if (!verified) {
       setError('Security check failed. Please try again.');
-      setTurnstileToken(null);
-      setLoading(false);
-      return;
-    }
-
-    const normalizedIdentifier = identifier.trim();
-    if (!normalizedIdentifier.includes('@')) {
-      setError('Enter your account email to reset your password.');
-      setTurnstileToken(null);
+      resetTurnstile();
       setLoading(false);
       return;
     }
@@ -140,7 +144,7 @@ function LoginPageContent() {
 
     if (resetError) {
       setError(resetError.message || 'Failed to send reset email');
-      setTurnstileToken(null);
+      resetTurnstile();
       setLoading(false);
       return;
     }
@@ -204,6 +208,7 @@ function LoginPageContent() {
                 onVerify={setTurnstileToken}
                 onExpire={() => setTurnstileToken(null)}
                 theme="dark"
+                resetKey={turnstileResetKey}
               />
 
               <button
@@ -296,6 +301,7 @@ function LoginPageContent() {
             onVerify={setTurnstileToken}
             onExpire={() => setTurnstileToken(null)}
             theme="dark"
+            resetKey={turnstileResetKey}
           />
 
           <button

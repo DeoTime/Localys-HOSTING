@@ -19,6 +19,7 @@ interface TurnstileWidgetProps {
   onExpire?: () => void;
   onError?: (errorCode?: string) => void;
   theme?: 'light' | 'dark' | 'auto';
+  resetKey?: number;
 }
 
 export default function TurnstileWidget({
@@ -27,6 +28,7 @@ export default function TurnstileWidget({
   onExpire,
   onError,
   theme = 'dark',
+  resetKey,
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
@@ -74,6 +76,14 @@ export default function TurnstileWidget({
       renderWidget();
     }
   }, [siteKey, theme]);
+
+  useEffect(() => {
+    if (!window.turnstile || !widgetIdRef.current) {
+      return;
+    }
+
+    window.turnstile.reset(widgetIdRef.current);
+  }, [resetKey]);
 
   return (
     <>

@@ -49,6 +49,12 @@ export default function SignUpPage() {
   const [verificationEmail, setVerificationEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+
+  const resetTurnstile = () => {
+    setTurnstileToken(null);
+    setTurnstileResetKey((prev) => prev + 1);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +75,7 @@ export default function SignUpPage() {
     const verified = await verifyTurnstile(turnstileToken);
     if (!verified) {
       setError('Security check failed. Please try again.');
-      setTurnstileToken(null);
+      resetTurnstile();
       setLoading(false);
       return;
     }
@@ -85,7 +91,7 @@ export default function SignUpPage() {
 
     if (signUpError) {
       setError(signUpError.message || 'Failed to create account');
-      setTurnstileToken(null);
+      resetTurnstile();
       setLoading(false);
       return;
     }
@@ -98,7 +104,7 @@ export default function SignUpPage() {
 
     setVerificationEmail(email);
     setPassword('');
-    setTurnstileToken(null);
+    resetTurnstile();
     setLoading(false);
   };
 
@@ -245,6 +251,7 @@ export default function SignUpPage() {
             onVerify={setTurnstileToken}
             onExpire={() => setTurnstileToken(null)}
             theme="dark"
+            resetKey={turnstileResetKey}
           />
 
             <button
