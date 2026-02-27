@@ -82,7 +82,7 @@ export async function uploadProfilePicture(file: File, userId: string) {
     const { data, error } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(fileName, file, {
-        cacheControl: '3600',
+        cacheControl: '31536000',
         upsert: false,
         contentType: file.type,
       });
@@ -138,7 +138,7 @@ export async function getUserBusiness(userId: string) {
   try {
     const { data, error } = await supabase
       .from('businesses')
-      .select('*')
+      .select('id, owner_id, business_name, business_type, category, profile_picture_url, business_hours, custom_messages, updated_at, created_at')
       .eq('owner_id', userId)
       .order('updated_at', { ascending: false })
       .order('created_at', { ascending: false })
@@ -230,7 +230,7 @@ export async function ensureUserBusiness(userId: string) {
     // Check if business exists
     const { data: existing, error: checkError } = await supabase
       .from('businesses')
-      .select('*')
+      .select('id, owner_id, business_name, business_type, category, profile_picture_url, business_hours, custom_messages, updated_at, created_at')
       .eq('owner_id', userId)
       .order('updated_at', { ascending: false })
       .order('created_at', { ascending: false })
@@ -853,7 +853,7 @@ export async function uploadMenuItemImage(file: File, userId: string, menuId: st
     const { data, error } = await supabase.storage
       .from('avatars')
       .upload(fileName, file, {
-        cacheControl: '3600',
+        cacheControl: '31536000',
         upsert: false,
         contentType: file.type,
       });

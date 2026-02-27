@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { cacheGet, cacheSet } from '../cache';
 import { haversineDistance } from '../utils/geo';
 import { computeRoundedPriceRange } from '../utils/pricing';
 import type { SearchMode, SearchFilters } from '../../models/Search';
@@ -83,17 +84,22 @@ function geometricMean(values: number[]): number | null {
 }
 
 async function getBusinessMetrics(businessIds: string[]) {
-  const uniqueBusinessIds = [...new Set(businessIds.filter(Boolean))];
+  const uniqueBusinessIds = [...new Set(businessIds.filter(Boolean))].sort();
+
+  if (!uniqueBusinessIds.length) {
+    return {} as Record<string, { average_rating: number | null; total_reviews: number; price_range_min: number | null; price_range_max: number | null }>;
+  }
+
+  const cacheKey = `business-metrics:${uniqueBusinessIds.join(',')}`;
+  const cached = cacheGet<Record<string, { average_rating: number | null; total_reviews: number; price_range_min: number | null; price_range_max: number | null }>>(cacheKey);
+  if (cached) return cached;
+
   const businessMetricsMap: Record<string, {
     average_rating: number | null;
     total_reviews: number;
     price_range_min: number | null;
     price_range_max: number | null;
   }> = {};
-
-  if (!uniqueBusinessIds.length) {
-    return businessMetricsMap;
-  }
 
   const businessIdSet = new Set(uniqueBusinessIds);
 
@@ -195,6 +201,7 @@ async function getBusinessMetrics(businessIds: string[]) {
     }
   }
 
+  cacheSet(cacheKey, businessMetricsMap, 5 * 60 * 1000); // 5 min TTL
   return businessMetricsMap;
 }
 
@@ -343,7 +350,7 @@ export async function searchBusinesses(filters: SearchFilters) {
 
   let query = supabase
     .from('profiles')
-    .select('*')
+    .select('id, full_name, username, profile_picture_url, type, category, bio, latitude, longitude, average_rating, total_reviews, price_range_min, price_range_max')
     .in('type', ['food', 'retail', 'service']);
 
   if (interpretedFilters.query) {

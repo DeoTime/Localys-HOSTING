@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +19,7 @@ import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/prici
 interface Video {
   id: string;
   user_id?: string;
+  business_id?: string;
   video_url: string;
   caption?: string;
   created_at: string;
@@ -818,10 +820,13 @@ function HomeContent() {
             className="rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--foreground)] focus:ring-offset-2 focus:ring-offset-[var(--background)]"
             aria-label={`View profile of ${currentBusiness?.business_name || currentVideo.profiles?.full_name || 'user'}`}
           >
-            <img
+            <Image
               src={currentBusiness?.profile_picture_url || currentVideo.profiles?.profile_picture_url || 'https://via.placeholder.com/60'}
               alt={currentBusiness?.business_name || 'Business'}
+              width={56}
+              height={56}
               className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full border-2 border-[var(--border-color)] object-cover transition-transform duration-200 hover:scale-110 active:scale-95"
+              unoptimized={!(currentBusiness?.profile_picture_url || currentVideo.profiles?.profile_picture_url)}
             />
           </button>
         </div>

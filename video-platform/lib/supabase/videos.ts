@@ -164,35 +164,37 @@ export async function getVideoById(videoId: string) {
 
   if (error) return { data: null, error };
 
+  const videoWithBusiness: any = { ...video };
+
   if (video.business_id) {
     const { data: business } = await supabase
       .from('businesses')
       .select('id, owner_id, business_name, business_type, category, profile_picture_url, average_rating, total_reviews, latitude, longitude')
       .eq('id', video.business_id)
       .single();
-    
+
     if (business) {
-      video.businesses = business;
+      videoWithBusiness.businesses = business;
     }
   }
 
-  if (video.video_url && !video.video_url.startsWith('http')) {
-    const cacheKey = `signed-url:${STORAGE_BUCKET}:${video.video_url}`;
+  if (videoWithBusiness.video_url && !videoWithBusiness.video_url.startsWith('http')) {
+    const cacheKey = `signed-url:${STORAGE_BUCKET}:${videoWithBusiness.video_url}`;
     const cached = cacheGet<string>(cacheKey);
     if (cached) {
-      video.video_url = cached;
+      videoWithBusiness.video_url = cached;
     } else {
       const { data: signed } = await supabase.storage
         .from(STORAGE_BUCKET)
-        .createSignedUrl(video.video_url, 60 * 60);
+        .createSignedUrl(videoWithBusiness.video_url, 60 * 60);
       if (signed?.signedUrl) {
-        video.video_url = signed.signedUrl;
+        videoWithBusiness.video_url = signed.signedUrl;
         cacheSet(cacheKey, signed.signedUrl, 55 * 60 * 1000);
       }
     }
   }
 
-  return { data: video, error: null };
+  return { data: videoWithBusiness, error: null };
 }
 
 export async function uploadVideoFile(file: File, userId: string) {
@@ -202,7 +204,7 @@ export async function uploadVideoFile(file: File, userId: string) {
   const { data, error } = await supabase.storage
     .from(STORAGE_BUCKET)
     .upload(fileName, file, {
-      cacheControl: '3600',
+      cacheControl: '31536000',
       upsert: false,
     });
 
@@ -479,7 +481,7 @@ export async function getUserBookmarkedVideos(userId: string, limit = 20, offset
     if (userIds.length > 0) {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, username, full_name, profile_picture_url')
         .in('id', userIds);
 
       if (!profilesError && profiles) {
@@ -490,7 +492,7 @@ export async function getUserBookmarkedVideos(userId: string, limit = 20, offset
     if (businessIds.length > 0) {
       const { data: businesses, error: businessesError } = await supabase
         .from('businesses')
-        .select('*')
+        .select('id, owner_id, business_name, category, profile_picture_url, average_rating, total_reviews, latitude, longitude')
         .in('id', businessIds);
 
       if (!businessesError && businesses) {

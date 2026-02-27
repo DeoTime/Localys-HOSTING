@@ -115,7 +115,7 @@ async function processChatData(memberChats: any[], userId: string) {
 
   const { data: messages, error: messagesError } = await supabase
     .from('messages')
-    .select('*')
+    .select('id, chat_id, sender_id, content, created_at')
     .in('chat_id', chatIds)
     .order('created_at', { ascending: false });
 
@@ -238,22 +238,29 @@ export async function findOneToOneChat(userId1: string, userId2: string) {
       return { data: null, error: null };
     }
 
+    const potentialChatIds = potentialChats.map(c => c.id);
+    const { data: allMembers, error: membersError } = await supabase
+      .from('chat_members')
+      .select('chat_id, user_id')
+      .in('chat_id', potentialChatIds);
+
+    if (membersError) {
+      console.error('Error fetching members for chats:', membersError);
+      throw membersError;
+    }
+
+    const membersByChatId: Record<string, string[]> = {};
+    (allMembers || []).forEach(m => {
+      if (!membersByChatId[m.chat_id]) membersByChatId[m.chat_id] = [];
+      membersByChatId[m.chat_id].push(m.user_id);
+    });
+
+    const targetIds = [userId1, userId2].sort();
     for (const chat of potentialChats) {
-      const { data: members, error: membersError } = await supabase
-        .from('chat_members')
-        .select('user_id')
-        .eq('chat_id', chat.id);
-
-      if (membersError) {
-        console.error('Error fetching members for chat:', chat.id, membersError);
-        continue;
-      }
-
-      if (members && members.length === 2) {
-        const memberIds = members.map(m => m.user_id).sort();
-        const targetIds = [userId1, userId2].sort();
-        
-        if (memberIds[0] === targetIds[0] && memberIds[1] === targetIds[1]) {
+      const members = membersByChatId[chat.id] || [];
+      if (members.length === 2) {
+        const sorted = [...members].sort();
+        if (sorted[0] === targetIds[0] && sorted[1] === targetIds[1]) {
           console.log('Found matching 1:1 chat:', chat.id);
           return { data: chat, error: null };
         }
@@ -423,7 +430,7 @@ export async function getConversation(chatId: string): Promise<{ data: (Conversa
   try {
     const { data: chat, error: chatError } = await supabase
       .from('chats')
-      .select('*')
+      .select('id, is_group, metadata, created_at')
       .eq('id', chatId)
       .single();
 
@@ -432,6 +439,7 @@ export async function getConversation(chatId: string): Promise<{ data: (Conversa
     const { data: members, error: membersError } = await supabase
       .from('chat_members')
       .select(`
+        chat_id,
         user_id,
         profiles:user_id (
           id,
