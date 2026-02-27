@@ -13,16 +13,45 @@ type EnsureProfileInput = {
 
 async function ensureOwnProfile({ id, email, name, username }: EnsureProfileInput) {
   const fallbackUsername = `user_${id.replace(/-/g, '').slice(0, 8)}`;
+  const sanitizedUsername = username
+    ?.toLowerCase()
+    .replace(/[^a-z0-9_]/g, '')
+    .slice(0, 30);
+
+  const profileEmail = email && email.trim().length > 0 ? email : `${id}@localy.invalid`;
   const profilePayload = {
     id,
-    email: email ?? '',
+    email: profileEmail,
     full_name: name ?? null,
-    username: username ?? (email ? email.split('@')[0] : fallbackUsername),
+    username: sanitizedUsername || (email ? email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 30) : fallbackUsername),
   };
+
+  const firstAttempt = await supabase
+    .from('profiles')
+    .upsert(profilePayload, { onConflict: 'id' });
+
+  if (!firstAttempt.error) {
+    return firstAttempt;
+  }
+
+  const isUsernameConflict =
+    firstAttempt.error.code === '23505' &&
+    (firstAttempt.error.message.includes('profiles_username_key') ||
+      firstAttempt.error.message.toLowerCase().includes('username'));
+
+  if (!isUsernameConflict) {
+    return firstAttempt;
+  }
 
   return supabase
     .from('profiles')
-    .upsert(profilePayload, { onConflict: 'id' });
+    .upsert(
+      {
+        ...profilePayload,
+        username: `${fallbackUsername}_${id.replace(/-/g, '').slice(0, 4)}`,
+      },
+      { onConflict: 'id' }
+    );
 }
 
 /**
@@ -35,10 +64,15 @@ export async function signUp({ email, password, name, username, accountType, bus
       throw new Error('Business type is required for business accounts');
     }
 
+    const emailRedirectTo = typeof window !== 'undefined'
+      ? `${window.location.origin}/auth/verified`
+      : undefined;
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo,
         data: {
           full_name: name,
           username,

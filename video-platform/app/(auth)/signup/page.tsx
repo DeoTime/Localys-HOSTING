@@ -46,6 +46,7 @@ export default function SignUpPage() {
   const [accountType, setAccountType] = useState<'business' | 'user'>('user');
   const [businessType, setBusinessType] = useState<'food' | 'retail' | 'service' | ''>('');
   const [error, setError] = useState('');
+  const [verificationEmail, setVerificationEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
@@ -89,10 +90,16 @@ export default function SignUpPage() {
       return;
     }
 
-    if (data?.user) {
+    if (data?.session) {
       router.push('/');
       router.refresh();
+      return;
     }
+
+    setVerificationEmail(email);
+    setPassword('');
+    setTurnstileToken(null);
+    setLoading(false);
   };
 
   return (
@@ -103,12 +110,22 @@ export default function SignUpPage() {
           <p className="text-white/60">Create your account</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
-              {error}
+        {verificationEmail ? (
+          <div className="space-y-6">
+            <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+              Account created. Check <span className="font-semibold">{verificationEmail}</span> to verify your account before signing in.
             </div>
-          )}
+            <p className="text-white/70 text-sm">
+              If you don&apos;t see the email, check spam/junk and try again in a minute.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
 
           <div>
             <label className="block text-sm font-medium mb-2">Account Type</label>
@@ -230,14 +247,15 @@ export default function SignUpPage() {
             theme="dark"
           />
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
-          >
-            {loading ? 'Creating account...' : 'Sign Up'}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
+            >
+              {loading ? 'Creating account...' : 'Sign Up'}
+            </button>
+          </form>
+        )}
 
         <p className="text-center text-white/60">
           Already have an account?{' '}

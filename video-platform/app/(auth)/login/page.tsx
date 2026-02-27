@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, resetPasswordForEmail } from '@/lib/supabase/auth';
 import TurnstileWidget from '@/components/TurnstileWidget';
@@ -38,6 +38,8 @@ async function verifyTurnstile(token: string): Promise<boolean> {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEmailVerified = searchParams.get('verified') === '1';
   const siteKey = resolveTurnstileSiteKey();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -148,6 +150,12 @@ export default function LoginPage() {
             </div>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-6">
+              {isEmailVerified && (
+                <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+                  Email verified. Please sign in again to continue.
+                </div>
+              )}
+
               {error && (
                 <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
                   {error}
@@ -210,6 +218,12 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {isEmailVerified && (
+            <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+              Email verified. Please sign in again to continue.
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg">
               {error}
