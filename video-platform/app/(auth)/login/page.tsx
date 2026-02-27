@@ -4,6 +4,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signIn, resetPasswordForEmail } from '@/lib/supabase/auth';
+import TurnstileWidget from '@/components/TurnstileWidget';
+
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!;
+
+async function verifyTurnstile(token: string): Promise<boolean> {
+  const res = await fetch('/api/verify-turnstile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  const data = await res.json();
+  return data.success === true;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,16 +26,44 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [resetMode, setResetMode] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  const switchToReset = () => {
+    setResetMode(true);
+    setTurnstileToken(null);
+    setError('');
+  };
+
+  const switchToLogin = () => {
+    setResetMode(false);
+    setTurnstileToken(null);
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!turnstileToken) {
+      setError('Please wait for the security check to complete.');
+      return;
+    }
+
     setLoading(true);
+
+    const verified = await verifyTurnstile(turnstileToken);
+    if (!verified) {
+      setError('Security check failed. Please try again.');
+      setTurnstileToken(null);
+      setLoading(false);
+      return;
+    }
 
     const { data, error: signInError } = await signIn({ email, password });
 
     if (signInError) {
       setError(signInError.message || 'Failed to sign in');
+      setTurnstileToken(null);
       setLoading(false);
       return;
     }
@@ -36,12 +77,27 @@ export default function LoginPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!turnstileToken) {
+      setError('Please wait for the security check to complete.');
+      return;
+    }
+
     setLoading(true);
+
+    const verified = await verifyTurnstile(turnstileToken);
+    if (!verified) {
+      setError('Security check failed. Please try again.');
+      setTurnstileToken(null);
+      setLoading(false);
+      return;
+    }
 
     const { error: resetError } = await resetPasswordForEmail(email);
 
     if (resetError) {
       setError(resetError.message || 'Failed to send reset email');
+      setTurnstileToken(null);
       setLoading(false);
       return;
     }
@@ -65,7 +121,7 @@ export default function LoginPage() {
                 Check your email for a password reset link.
               </div>
               <button
-                onClick={() => { setResetMode(false); setResetSent(false); setError(''); }}
+                onClick={() => { switchToLogin(); setResetSent(false); }}
                 className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-white/90 active:scale-98 transition-all duration-200"
               >
                 Back to Sign In
@@ -80,11 +136,11 @@ export default function LoginPage() {
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2">
+                <label htmlFor="reset-email" className="block text-sm font-medium mb-2">
                   Email
                 </label>
                 <input
-                  id="email"
+                  id="reset-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -94,9 +150,16 @@ export default function LoginPage() {
                 />
               </div>
 
+              <TurnstileWidget
+                siteKey={SITE_KEY}
+                onVerify={setTurnstileToken}
+                onExpire={() => setTurnstileToken(null)}
+                theme="dark"
+              />
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !turnstileToken}
                 className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
               >
                 {loading ? 'Sending...' : 'Send Reset Link'}
@@ -107,7 +170,7 @@ export default function LoginPage() {
           {!resetSent && (
             <p className="text-center text-white/60">
               <button
-                onClick={() => { setResetMode(false); setError(''); }}
+                onClick={switchToLogin}
                 className="text-white hover:underline"
               >
                 Back to Sign In
@@ -156,7 +219,7 @@ export default function LoginPage() {
               </label>
               <button
                 type="button"
-                onClick={() => { setResetMode(true); setError(''); }}
+                onClick={switchToReset}
                 className="text-sm text-white/60 hover:text-white hover:underline transition-colors duration-200"
               >
                 Forgot Password?
@@ -173,9 +236,16 @@ export default function LoginPage() {
             />
           </div>
 
+          <TurnstileWidget
+            siteKey={SITE_KEY}
+            onVerify={setTurnstileToken}
+            onExpire={() => setTurnstileToken(null)}
+            theme="dark"
+          />
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !turnstileToken}
             className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
           >
             {loading ? 'Signing in...' : 'Sign In'}

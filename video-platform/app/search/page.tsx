@@ -310,19 +310,47 @@ function SearchContent() {
                   <label className="block text-sm font-medium mb-3">
                     Price Range: ${priceRange[0]} - ${priceRange[1]}
                   </label>
-                  <div className="space-y-2">
-                    <div className="flex gap-4 items-center">
-                      <input type="range" min="0" max="1000" value={priceRange[0]}
-                        onChange={(e) => setPriceRange([Number(e.target.value), priceRange[1]])}
-                        className="flex-1 accent-blue-500" />
-                      <span className="w-12 text-sm text-[var(--muted-foreground)]">${priceRange[0]}</span>
-                    </div>
-                    <div className="flex gap-4 items-center">
-                      <input type="range" min="0" max="1000" value={priceRange[1]}
-                        onChange={(e) => setPriceRange([priceRange[0], Number(e.target.value)])}
-                        className="flex-1 accent-blue-500" />
-                      <span className="w-12 text-sm text-[var(--muted-foreground)]">${priceRange[1]}</span>
-                    </div>
+                  <div className="relative h-6 flex items-center">
+                    {/* Track background */}
+                    <div className="absolute left-0 right-0 h-1.5 rounded-full bg-white/10" />
+                    {/* Active range highlight */}
+                    <div
+                      className="absolute h-1.5 rounded-full bg-blue-500"
+                      style={{
+                        left: `${(priceRange[0] / 1000) * 100}%`,
+                        right: `${100 - (priceRange[1] / 1000) * 100}%`,
+                      }}
+                    />
+                    {/* Min thumb */}
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      value={priceRange[0]}
+                      onChange={(e) => {
+                        const val = Math.min(Number(e.target.value), priceRange[1]);
+                        setPriceRange([val, priceRange[1]]);
+                      }}
+                      className="dual-range-thumb absolute w-full pointer-events-none appearance-none bg-transparent"
+                      style={{ zIndex: priceRange[0] > 900 ? 5 : 3 }}
+                    />
+                    {/* Max thumb */}
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      value={priceRange[1]}
+                      onChange={(e) => {
+                        const val = Math.max(Number(e.target.value), priceRange[0]);
+                        setPriceRange([priceRange[0], val]);
+                      }}
+                      className="dual-range-thumb absolute w-full pointer-events-none appearance-none bg-transparent"
+                      style={{ zIndex: 4 }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-[var(--muted-foreground)] mt-1">
+                    <span>$0</span>
+                    <span>$1000</span>
                   </div>
                 </div>
               </div>

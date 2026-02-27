@@ -4,6 +4,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signUp } from '@/lib/supabase/auth';
+import TurnstileWidget from '@/components/TurnstileWidget';
+
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!;
+
+async function verifyTurnstile(token: string): Promise<boolean> {
+  const res = await fetch('/api/verify-turnstile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  const data = await res.json();
+  return data.success === true;
+}
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -15,6 +28,7 @@ export default function SignUpPage() {
   const [businessType, setBusinessType] = useState<'food' | 'retail' | 'service' | ''>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +39,20 @@ export default function SignUpPage() {
       return;
     }
 
+    if (!turnstileToken) {
+      setError('Please wait for the security check to complete.');
+      return;
+    }
+
     setLoading(true);
+
+    const verified = await verifyTurnstile(turnstileToken);
+    if (!verified) {
+      setError('Security check failed. Please try again.');
+      setTurnstileToken(null);
+      setLoading(false);
+      return;
+    }
 
     const { data, error: signUpError } = await signUp({
       email,
@@ -38,6 +65,7 @@ export default function SignUpPage() {
 
     if (signUpError) {
       setError(signUpError.message || 'Failed to create account');
+      setTurnstileToken(null);
       setLoading(false);
       return;
     }
@@ -176,9 +204,16 @@ export default function SignUpPage() {
             <p className="text-xs text-white/40 mt-1">At least 6 characters</p>
           </div>
 
+          <TurnstileWidget
+            siteKey={SITE_KEY}
+            onVerify={setTurnstileToken}
+            onExpire={() => setTurnstileToken(null)}
+            theme="dark"
+          />
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !turnstileToken}
             className="w-full bg-white text-black font-semibold py-3 rounded-lg disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed hover:bg-white/90 active:scale-98 transition-all duration-200"
           >
             {loading ? 'Creating account...' : 'Sign Up'}
@@ -195,7 +230,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
-
-
-
