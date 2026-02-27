@@ -64,12 +64,28 @@ export async function signUp({ email, password, name, username, accountType, bus
       throw new Error('Business type is required for business accounts');
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const { data: existingProfile, error: existingProfileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', normalizedEmail)
+      .maybeSingle();
+
+    if (existingProfileError) {
+      throw existingProfileError;
+    }
+
+    if (existingProfile) {
+      throw new Error('An account with this email already exists. Please sign in.');
+    }
+
     const emailRedirectTo = typeof window !== 'undefined'
       ? `${window.location.origin}/auth/verified`
       : undefined;
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: {
         emailRedirectTo,
@@ -85,10 +101,18 @@ export async function signUp({ email, password, name, username, accountType, bus
     if (authError) throw authError;
     if (!authData.user) throw new Error('User creation failed');
 
+    const hasNoIdentities =
+      Array.isArray(authData.user.identities) &&
+      authData.user.identities.length === 0;
+
+    if (hasNoIdentities) {
+      throw new Error('An account with this email already exists. Please sign in.');
+    }
+
     if (authData.session) {
       const { error: profileError } = await ensureOwnProfile({
         id: authData.user.id,
-        email,
+        email: normalizedEmail,
         name,
         username,
       });
@@ -117,9 +141,35 @@ export async function signUp({ email, password, name, username, accountType, bus
 /**
  * Sign in existing user
  */
-export async function signIn({ email, password }: SignInData) {
+export async function signIn({ identifier, password }: SignInData) {
+  const normalizedIdentifier = identifier.trim();
+  if (!normalizedIdentifier) {
+    return { data: null, error: new Error('Email or username is required') };
+  }
+
+  let resolvedEmail = normalizedIdentifier.toLowerCase();
+
+  if (!normalizedIdentifier.includes('@')) {
+    const normalizedUsername = normalizedIdentifier.toLowerCase();
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('username', normalizedUsername)
+      .maybeSingle();
+
+    if (profileError) {
+      return { data: null, error: profileError };
+    }
+
+    if (!profile?.email) {
+      return { data: null, error: new Error('Invalid login credentials') };
+    }
+
+    resolvedEmail = profile.email.trim().toLowerCase();
+  }
+
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+    email: resolvedEmail,
     password,
   });
 
@@ -127,7 +177,7 @@ export async function signIn({ email, password }: SignInData) {
     const metadata = (data.user.user_metadata ?? {}) as Record<string, unknown>;
     const { error: profileError } = await ensureOwnProfile({
       id: data.user.id,
-      email: data.user.email ?? email,
+      email: data.user.email ?? resolvedEmail,
       name: (metadata.full_name as string | undefined) ?? null,
       username: (metadata.username as string | undefined) ?? null,
     });

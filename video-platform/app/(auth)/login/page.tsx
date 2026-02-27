@@ -55,7 +55,7 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const isEmailVerified = searchParams.get('verified') === '1';
   const siteKey = resolveTurnstileSiteKey();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -94,7 +94,7 @@ function LoginPageContent() {
       return;
     }
 
-    const { data, error: signInError } = await signIn({ email, password });
+    const { data, error: signInError } = await signIn({ identifier, password });
 
     if (signInError) {
       setError(signInError.message || 'Failed to sign in');
@@ -128,7 +128,15 @@ function LoginPageContent() {
       return;
     }
 
-    const { error: resetError } = await resetPasswordForEmail(email);
+    const normalizedIdentifier = identifier.trim();
+    if (!normalizedIdentifier.includes('@')) {
+      setError('Enter your account email to reset your password.');
+      setTurnstileToken(null);
+      setLoading(false);
+      return;
+    }
+
+    const { error: resetError } = await resetPasswordForEmail(normalizedIdentifier);
 
     if (resetError) {
       setError(resetError.message || 'Failed to send reset email');
@@ -183,8 +191,8 @@ function LoginPageContent() {
                 <input
                   id="reset-email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   required
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-200"
                   placeholder="you@example.com"
@@ -246,16 +254,16 @@ function LoginPageContent() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
+              Email or Username
             </label>
             <input
               id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
               className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-200"
-              placeholder="you@example.com"
+              placeholder="you@example.com or johndoe"
             />
           </div>
 
