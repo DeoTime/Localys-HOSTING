@@ -256,7 +256,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'video.info.more': 'More',
     'video.info.hide': 'Hide',
 
-    // Bookmarks
+    // Bookmarks .
     'bookmarks.no_bookmarks': 'Aún no hay videos marcados',
     'bookmarks.load_error': 'Error al cargar marcadores',
     'bookmarks.error': 'Se produjo un error al cargar los marcadores',
