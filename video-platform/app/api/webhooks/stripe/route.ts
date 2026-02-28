@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { generateToken } from '@/lib/verification';
 
 export async function POST(request: NextRequest) {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -153,12 +154,15 @@ export async function POST(request: NextRequest) {
               discount_percentage: discountPercentage,
             }),
             stripe_session_id: session.id,
-            status: 'completed',
+            status: 'paid',
             purchased_at: new Date().toISOString(),
           };
         });
 
-        const { error } = await supabase.from('item_purchases').insert(purchaseRecords);
+        const { data: inserted, error } = await supabase
+          .from('item_purchases')
+          .insert(purchaseRecords)
+          .select('id');
 
         if (error) {
           console.error('Error recording item purchases:', error);
@@ -166,6 +170,17 @@ export async function POST(request: NextRequest) {
             { error: 'Failed to record purchases' },
             { status: 500 }
           );
+        }
+
+        // Generate and store verification tokens
+        if (inserted) {
+          for (const row of inserted) {
+            const token = generateToken(row.id);
+            await supabase
+              .from('item_purchases')
+              .update({ verification_token: token })
+              .eq('id', row.id);
+          }
         }
 
         const itemNames = items.map(i => i.name).join(', ');
@@ -190,7 +205,7 @@ export async function POST(request: NextRequest) {
         const originalPrice = parseFloat(itemPrice || '0');
         const paidPrice = finalPrice ? parseFloat(finalPrice) : originalPrice;
 
-        const { error } = await supabase.from('item_purchases').insert({
+        const { data: insertedRow, error } = await supabase.from('item_purchases').insert({
           item_id: itemId,
           seller_id: sellerId,
           buyer_id: buyerId,
@@ -202,9 +217,9 @@ export async function POST(request: NextRequest) {
             discount_percentage: parseInt(discountPercentage || '0'),
           }),
           stripe_session_id: session.id,
-          status: 'completed',
+          status: 'paid',
           purchased_at: new Date().toISOString(),
-        });
+        }).select('id').single();
 
         if (error) {
           console.error('Error recording item purchase:', error);
@@ -212,6 +227,15 @@ export async function POST(request: NextRequest) {
             { error: 'Failed to record purchase' },
             { status: 500 }
           );
+        }
+
+        // Generate and store verification token
+        if (insertedRow) {
+          const token = generateToken(insertedRow.id);
+          await supabase
+            .from('item_purchases')
+            .update({ verification_token: token })
+            .eq('id', insertedRow.id);
         }
 
         console.log(`Item purchase recorded: ${itemName} sold by ${sellerId} to ${buyerId}`);

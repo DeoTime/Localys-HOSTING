@@ -17,8 +17,9 @@ export interface ItemPurchase {
   original_price?: number;
   coupon_code?: string;
   discount_percentage?: number;
+  verification_token?: string;
   stripe_session_id?: string;
-  status: 'completed' | 'pending' | 'cancelled';
+  status: 'pending' | 'paid' | 'completed' | 'cancelled' | 'failed';
   purchased_at: string;
 }
 
