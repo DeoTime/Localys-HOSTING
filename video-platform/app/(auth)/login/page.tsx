@@ -274,16 +274,16 @@ function LoginPageContent() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email or Username
+              Email
             </label>
             <input
               id="email"
-              type="text"
+              type="email"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
               className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/40 focus:ring-2 focus:ring-white/20 transition-all duration-200"
-              placeholder="you@example.com or johndoe"
+              placeholder="you@example.com"
             />
           </div>
 

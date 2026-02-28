@@ -32,7 +32,7 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
   useEffect(() => {
     loadPostedVideos();
     if (isOwnProfile) {
-      getUserCoins(userId).then(({ coins }) => setUserCoins(coins ?? 0));
+      getUserCoins(userId).then(({ data }) => setUserCoins(data ?? 0));
     }
   }, [userId, isOwnProfile]);
 

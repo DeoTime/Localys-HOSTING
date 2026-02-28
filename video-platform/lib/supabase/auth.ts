@@ -144,29 +144,10 @@ export async function signUp({ email, password, name, username, accountType, bus
 export async function signIn({ identifier, password }: SignInData) {
   const normalizedIdentifier = identifier.trim();
   if (!normalizedIdentifier) {
-    return { data: null, error: new Error('Email or username is required') };
+    return { data: null, error: new Error('Email is required') };
   }
 
-  let resolvedEmail = normalizedIdentifier.toLowerCase();
-
-  if (!normalizedIdentifier.includes('@')) {
-    const normalizedUsername = normalizedIdentifier.toLowerCase();
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('username', normalizedUsername)
-      .maybeSingle();
-
-    if (profileError) {
-      return { data: null, error: profileError };
-    }
-
-    if (!profile?.email) {
-      return { data: null, error: new Error('Invalid login credentials') };
-    }
-
-    resolvedEmail = profile.email.trim().toLowerCase();
-  }
+  const resolvedEmail = normalizedIdentifier.toLowerCase();
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: resolvedEmail,
