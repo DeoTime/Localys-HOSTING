@@ -44,7 +44,7 @@ function ChatContent() {
   };
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col">
+    <div className="h-screen bg-black text-white flex flex-col pb-16">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-black/80 backdrop-blur-md border-b border-white/10 px-4 py-4">
         <div className="flex items-center gap-4">
