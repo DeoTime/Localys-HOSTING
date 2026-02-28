@@ -877,10 +877,10 @@ function HomeContent() {
                 </div>
               )}
               <div className="max-w-[140px] leading-none">
-                <p className="truncate text-xs font-semibold text-[var(--foreground)]">
+                <p className="mb-0 truncate text-xs font-semibold text-[var(--foreground)]">
                   {headerProfile?.username || headerProfile?.full_name || 'Profile'}
                 </p>
-                <p className="truncate text-[10px] leading-none text-[var(--muted-foreground)]">
+                <p className="mb-0 truncate text-[10px] leading-none text-[var(--muted-foreground)]">
                   @{headerProfile?.username || ''}
                 </p>
               </div>
@@ -999,7 +999,7 @@ function HomeContent() {
         </button>
       </div>
 
-      <div className="absolute left-3 sm:left-4 md:left-6 z-30 bottom-24 md:bottom-6">
+      <div className="absolute left-3 sm:left-4 md:left-6 z-30 bottom-24 md:bottom-24">
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-2 backdrop-blur-md">
           <button
             onClick={togglePlayPause}
