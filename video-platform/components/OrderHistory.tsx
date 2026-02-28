@@ -5,6 +5,32 @@ import { getUserCoinPurchases, getUserItemPurchases, getBusinessItemSales } from
 import type { CoinPurchase, ItemPurchase } from '@/models/Order';
 import { useTranslation } from '@/hooks/useTranslation';
 
+function DiscountBadge({ item }: { item: ItemPurchase }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  if (!item.coupon_code || !item.original_price) return null;
+
+  const discountAmount = item.original_price - item.price;
+
+  return (
+    <span className="relative inline-flex items-center gap-1 text-xs text-green-400">
+      <span>- ${discountAmount.toFixed(2)}</span>
+      <span
+        className="cursor-help inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-white/10 text-[10px] text-white/60"
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        onTouchStart={() => setShowTooltip(v => !v)}
+      >
+        i
+      </span>
+      {showTooltip && (
+        <span className="absolute bottom-full right-0 mb-1 px-2 py-1 rounded bg-gray-800 text-white text-xs whitespace-nowrap z-10 shadow-lg border border-white/10">
+          Coupon: {item.coupon_code} ({item.discount_percentage}% off)
+        </span>
+      )}
+    </span>
+  );
+}
+
 interface OrderHistoryProps {
   userId: string;
   businessId?: string;
@@ -203,13 +229,16 @@ function OrderItem({ order }: { order: CoinPurchase | ItemPurchase }) {
           </div>
         </div>
         <div className="text-right">
-          <p className="font-medium text-blue-400">${item.price.toFixed(2)}</p>
+          <p className="font-medium text-blue-400">
+            {item.original_price ? `$${item.original_price.toFixed(2)}` : `$${item.price.toFixed(2)}`}
+          </p>
+          <DiscountBadge item={item} />
           <p className="text-white/60 text-xs">{formattedDate}</p>
         </div>
       </div>
       <div className="mt-2 flex items-center gap-2">
         <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${
-          item.status === 'completed' 
+          item.status === 'completed'
             ? 'bg-green-500/20 text-green-300'
             : 'bg-yellow-500/20 text-yellow-300'
         }`}>
