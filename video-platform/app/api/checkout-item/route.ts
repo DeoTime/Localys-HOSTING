@@ -8,6 +8,8 @@ interface CheckoutItem {
   itemImage?: string;
   sellerId: string;
   buyerId: string;
+  quantity: number;
+  specialRequests?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -115,7 +117,7 @@ export async function POST(request: NextRequest) {
           },
           unit_amount: priceInCents,
         },
-        quantity: 1,
+        quantity: item.quantity || 1,
       };
     });
 
@@ -125,6 +127,8 @@ export async function POST(request: NextRequest) {
       name: item.itemName,
       sid: item.sellerId,
       price: item.itemPrice,
+      qty: item.quantity || 1,
+      sr: item.specialRequests || '',
     }));
 
     const buyerId = items[0].buyerId;

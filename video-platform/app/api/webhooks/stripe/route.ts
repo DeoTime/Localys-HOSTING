@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ received: true });
         }
 
-        const items = JSON.parse(metadata.items) as { id: string; name: string; sid: string; price: number }[];
+        const items = JSON.parse(metadata.items) as { id: string; name: string; sid: string; price: number; qty?: number; sr?: string }[];
 
         const purchaseRecords = items.map((item) => {
           const originalPrice = item.price;
@@ -148,6 +148,8 @@ export async function POST(request: NextRequest) {
             buyer_id: buyerId,
             item_name: item.name || 'Unknown Item',
             price: paidPrice,
+            quantity: item.qty || 1,
+            ...(item.sr ? { special_requests: item.sr } : {}),
             ...(couponCode && {
               original_price: originalPrice,
               coupon_code: couponCode,

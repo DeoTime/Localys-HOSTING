@@ -9,12 +9,16 @@ export interface CartItem {
   itemImage?: string;
   sellerId: string;
   buyerId: string;
+  quantity: number;
+  specialRequests?: string;
 }
 
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (itemId: string) => void;
+  updateQuantity: (itemId: string, quantity: number) => void;
+  updateSpecialRequests: (itemId: string, specialRequests: string) => void;
   clearCart: () => void;
   getCartCount: () => number;
 }
@@ -47,9 +51,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = useCallback((item: CartItem) => {
     setItems((prev) => {
-      const exists = prev.some((i) => i.itemId === item.itemId);
-      if (exists) return prev;
-      return [...prev, item];
+      const existing = prev.find((i) => i.itemId === item.itemId);
+      if (existing) {
+        return prev.map((i) =>
+          i.itemId === item.itemId
+            ? { ...i, quantity: i.quantity + (item.quantity || 1) }
+            : i
+        );
+      }
+      return [...prev, { ...item, quantity: item.quantity || 1 }];
     });
   }, []);
 
@@ -57,14 +67,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems((prev) => prev.filter((i) => i.itemId !== itemId));
   }, []);
 
+  const updateQuantity = useCallback((itemId: string, quantity: number) => {
+    if (quantity < 1) return;
+    setItems((prev) =>
+      prev.map((i) => (i.itemId === itemId ? { ...i, quantity } : i))
+    );
+  }, []);
+
+  const updateSpecialRequests = useCallback((itemId: string, specialRequests: string) => {
+    setItems((prev) =>
+      prev.map((i) => (i.itemId === itemId ? { ...i, specialRequests } : i))
+    );
+  }, []);
+
   const clearCart = useCallback(() => {
     setItems([]);
   }, []);
 
-  const getCartCount = useCallback(() => items.length, [items]);
+  const getCartCount = useCallback(() => items.reduce((sum, i) => sum + i.quantity, 0), [items]);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart, getCartCount }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, updateSpecialRequests, clearCart, getCartCount }}>
       {children}
     </CartContext.Provider>
   );

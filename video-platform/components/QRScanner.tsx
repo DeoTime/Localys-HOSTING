@@ -136,7 +136,7 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
             />
             {/* Scan overlay */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-64 h-64 border-2 border-white/50 rounded-2xl">
+              <div className="w-120 h-120 border-2 border-white/50 rounded-2xl">
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-400 rounded-tl-2xl" />
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-400 rounded-tr-2xl" />
                 <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-400 rounded-bl-2xl" />

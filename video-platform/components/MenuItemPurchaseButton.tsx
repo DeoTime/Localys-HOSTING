@@ -46,7 +46,7 @@ export function MenuItemPurchaseButton({
   };
 
   const handleAddToCart = () => {
-    addToCart({ itemId, itemName, itemPrice, itemImage, sellerId, buyerId });
+    addToCart({ itemId, itemName, itemPrice, itemImage, sellerId, buyerId, quantity: 1 });
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
   };
