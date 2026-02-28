@@ -1,17 +1,46 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { AppBottomNav } from '@/components/AppBottomNav';
+import { getShopCoupons, Coupon } from '@/lib/supabase/coupons';
 import Link from 'next/link';
 
 export default function CartPage() {
   const { items, removeFromCart, clearCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.itemPrice, 0);
+
+  // Fetch coupons from the sellers of items in the cart
+  useEffect(() => {
+    if (items.length === 0) {
+      setCoupons([]);
+      return;
+    }
+
+    const sellerIds = [...new Set(items.map(i => i.sellerId))];
+
+    const fetchCoupons = async () => {
+      setLoadingCoupons(true);
+      const allCoupons: Coupon[] = [];
+      for (const sellerId of sellerIds) {
+        const { data } = await getShopCoupons(sellerId);
+        if (data) {
+          allCoupons.push(...data);
+        }
+      }
+      setCoupons(allCoupons);
+      setLoadingCoupons(false);
+    };
+
+    fetchCoupons();
+  }, [items]);
 
   const handleCheckout = () => {
     if (!user) {
@@ -78,6 +107,35 @@ export default function CartPage() {
                 </div>
               ))}
             </div>
+
+            {/* Available Coupons */}
+            {!loadingCoupons && coupons.length > 0 && (
+              <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-semibold mb-3">Available Coupons</h2>
+                <p className="text-white/50 text-xs mb-3">Coupons can be applied at checkout</p>
+                <div className="space-y-2">
+                  {coupons.map((coupon) => (
+                    <div
+                      key={coupon.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-green-500/30 bg-green-500/5"
+                    >
+                      <div>
+                        <p className="font-semibold text-green-400">{coupon.code}</p>
+                        <p className="text-white/60 text-sm">{coupon.discount_percentage}% off</p>
+                      </div>
+                      <span className="text-green-400/60 text-xs border border-green-500/30 px-2 py-1 rounded">
+                        Apply at checkout
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {loadingCoupons && (
+              <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6 text-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white/40 mx-auto"></div>
+              </div>
+            )}
 
             {/* Summary */}
             <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-4">
