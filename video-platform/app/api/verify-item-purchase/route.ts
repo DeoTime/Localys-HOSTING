@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
 
     const { itemId, sellerId, buyerId, itemName, itemPrice } = session.metadata;
 
-    // Process purchase in background - return immediately
+    // Process purchase before returning - must await in serverless environment
     if (itemId && sellerId && buyerId && itemName && itemPrice) {
-      processPurchaseInBackground(itemId, sellerId, buyerId, itemName, itemPrice, sessionId);
+      await processPurchase(itemId, sellerId, buyerId, itemName, itemPrice, sessionId);
     }
 
     return NextResponse.json({
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function processPurchaseInBackground(
+async function processPurchase(
   itemId: string,
   sellerId: string,
   buyerId: string,
