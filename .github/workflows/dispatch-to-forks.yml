@@ -1,40 +1,44 @@
-# Upstream: notify configured forks on every push to main via repository_dispatch
-# Add this to the upstream repo (KadenLi6741/Localys).
-# Requires a repo secret FORK_SYNC_TOKEN (a PAT with public_repo or repo scope).
-name: Notify forks of upstream push
+name: Force sync from upstream (overwrite main)
 
 on:
-  push:
-    branches:
-      - main
+  # Triggered by the upstream repo workflow (Option B)
+  repository_dispatch:
+    types: [upstream_push]
+
+  # Optional manual trigger
+  workflow_dispatch:
 
 env:
-  # Comma-separated list of target forks in "owner/repo" format
-  TARGET_FORKS: "DeoTime/Localys-HOSTING"
+  UPSTREAM_REPO: https://github.com/KadenLi6741/Localys.git
+  BRANCH: main
+
+permissions:
+  contents: write
 
 jobs:
-  notify:
+  force-sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Notify target forks
-        env:
-          TOKEN: ${{ secrets.FORK_SYNC_TOKEN }}
-          TARGETS: ${{ env.TARGET_FORKS }}
+      - name: Checkout fork main
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.UPSTREAM_SYNC_PAT }}
+          ref: ${{ env.BRANCH }}
+          fetch-depth: 0
+
+      - name: Configure git
         run: |
-          if [ -z "$TOKEN" ]; then
-            echo "Missing FORK_SYNC_TOKEN secret. Exiting."
-            exit 1
-          fi
-          BODY=$(jq -n --arg ref "${GITHUB_REF}" --arg sha "${GITHUB_SHA}" '{event_type: "upstream_push", client_payload: {ref: $ref, sha: $sha, repository: env.GITHUB_REPOSITORY}}')
-          echo "Dispatch payload: $BODY"
-          IFS=',' read -ra REPOS <<< "$TARGETS"
-          for repo in "${REPOS[@]}"; do
-            repo=$(echo "$repo" | xargs) # trim whitespace
-            echo "Dispatching to $repo"
-            curl -s -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: token $TOKEN" \
-              -d "$BODY" \
-              "https://api.github.com/repos/$repo/dispatches"
-            echo
-          done
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Add upstream and fetch upstream/main
+        run: |
+          git remote add upstream "${{ env.UPSTREAM_REPO }}" || true
+          git fetch upstream ${{ env.BRANCH }} --prune --tags
+      - name: Merge upstream into fork safely
+        run: |
+          git checkout ${{ env.BRANCH }}
+          git merge upstream/${{ env.BRANCH }} --no-edit
+      
+      - name: Push changes
+        run: |
+          git push origin ${{ env.BRANCH }}
