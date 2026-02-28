@@ -139,17 +139,28 @@ export async function validateCoupon(code: string, userId: string) {
 }
 
 /**
- * Get all active coupons for a shop (by seller/creator ID)
+ * Get all active coupons for a shop (by seller/creator ID).
+ * Also includes global coupons (created_by is null).
  */
 export async function getShopCoupons(sellerId: string) {
   try {
-    const { data, error } = await supabase
+    // Fetch shop-specific coupons
+    const { data: shopData, error: shopError } = await supabase
       .from('coupons')
       .select('*')
       .eq('created_by', sellerId)
       .eq('is_active', true);
 
-    if (error) return { data: null, error };
+    // Fetch global coupons (created_by is null)
+    const { data: globalData, error: globalError } = await supabase
+      .from('coupons')
+      .select('*')
+      .is('created_by', null)
+      .eq('is_active', true);
+
+    if (shopError && globalError) return { data: null, error: shopError };
+
+    const data = [...(shopData || []), ...(globalData || [])];
 
     // Filter out expired and maxed-out coupons client-side
     const now = new Date();

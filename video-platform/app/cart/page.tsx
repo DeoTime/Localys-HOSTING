@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { AppBottomNav } from '@/components/AppBottomNav';
 import { getShopCoupons, Coupon } from '@/lib/supabase/coupons';
 import Link from 'next/link';
 
@@ -163,7 +162,6 @@ export default function CartPage() {
           </>
         )}
       </div>
-      <AppBottomNav />
     </div>
   );
 }

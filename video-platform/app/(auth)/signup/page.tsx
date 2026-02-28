@@ -8,6 +8,14 @@ import TurnstileWidget from '@/components/TurnstileWidget';
 
 const DEFAULT_LOCAL_TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
 
+function isTurnstileEnabled(): boolean {
+  if (process.env.NODE_ENV === 'production') {
+    return true;
+  }
+
+  return process.env.NEXT_PUBLIC_TURNSTILE_ENABLED_IN_DEV === 'true';
+}
+
 function resolveTurnstileSiteKey(): string {
   const prodKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
@@ -27,26 +35,18 @@ function resolveTurnstileSiteKey(): string {
 }
 
 async function verifyTurnstile(token: string): Promise<boolean> {
-  try {
-    const res = await fetch('/api/verify-turnstile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-    });
-
-    if (!res.ok) {
-      return false;
-    }
-
-    const data = (await res.json()) as { success?: boolean };
-    return data.success === true;
-  } catch {
-    return false;
-  }
+  const res = await fetch('/api/verify-turnstile', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+  const data = await res.json();
+  return data.success === true;
 }
 
 export default function SignUpPage() {
   const router = useRouter();
+  const turnstileEnabled = isTurnstileEnabled();
   const siteKey = resolveTurnstileSiteKey();
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -74,19 +74,21 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!turnstileToken) {
+    if (turnstileEnabled && !turnstileToken) {
       setError('Please wait for the security check to complete.');
       return;
     }
 
     setLoading(true);
 
-    const verified = await verifyTurnstile(turnstileToken);
-    if (!verified) {
-      setError('Security check failed. Please try again.');
-      resetTurnstile();
-      setLoading(false);
-      return;
+    if (turnstileEnabled) {
+      const verified = await verifyTurnstile(turnstileToken!);
+      if (!verified) {
+        setError('Security check failed. Please try again.');
+        resetTurnstile();
+        setLoading(false);
+        return;
+      }
     }
 
     const { data, error: signUpError } = await signUp({
@@ -255,13 +257,15 @@ export default function SignUpPage() {
             <p className="text-xs text-white/40 mt-1">At least 6 characters</p>
           </div>
 
-          <TurnstileWidget
-            siteKey={siteKey}
-            onVerify={setTurnstileToken}
-            onExpire={() => setTurnstileToken(null)}
-            theme="dark"
-            resetKey={turnstileResetKey}
-          />
+          {turnstileEnabled && (
+            <TurnstileWidget
+              siteKey={siteKey}
+              onVerify={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              theme="dark"
+              resetKey={turnstileResetKey}
+            />
+          )}
 
             <button
               type="submit"

@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { searchVideos, searchBusinesses, SearchFilters, SearchMode } from '@/lib/supabase/search';
 import { haversineDistance } from '@/lib/utils/geo';
-import { AppBottomNav } from '@/components/AppBottomNav';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const CUISINE_TYPES = ['Italian', 'Mexican', 'Chinese', 'Japanese', 'Korean', 'Indian', 'Thai', 'Vietnamese', 'Mediterranean', 'American', 'French', 'Middle Eastern'];
@@ -521,8 +520,6 @@ function SearchContent() {
           </section>
         </div>
       </div>
-
-      <AppBottomNav />
     </div>
   );
 }

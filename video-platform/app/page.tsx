@@ -13,7 +13,6 @@ import { supabase } from '@/lib/supabase/client';
 import { CommentModal } from '@/components/CommentModal';
 import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
-import { AppBottomNav } from '@/components/AppBottomNav';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { haversineDistance } from '@/lib/utils/geo';
 import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/pricing';
@@ -1048,8 +1047,6 @@ function HomeContent() {
           </div>
         </div>
       </div>
-
-      <AppBottomNav />
 
       {/* Comment Modal */}
       <CommentModal

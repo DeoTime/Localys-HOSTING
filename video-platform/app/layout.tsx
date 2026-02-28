@@ -5,7 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CartProvider } from "@/contexts/CartContext";
-import { FloatingCartButton } from "@/components/FloatingCartButton";
+import { AppBottomNav } from "@/components/AppBottomNav";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -39,7 +39,7 @@ export default function RootLayout({
             <LanguageProvider>
               <CartProvider>
                 {children}
-                <FloatingCartButton />
+                <AppBottomNav />
               </CartProvider>
             </LanguageProvider>
           </AuthProvider>
