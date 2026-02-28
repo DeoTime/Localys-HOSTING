@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { AppBottomNav } from "@/components/AppBottomNav";
+import { PersistentVideoFeed } from "@/components/PersistentVideoFeed";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -38,6 +39,7 @@ export default function RootLayout({
           <AuthProvider>
             <LanguageProvider>
               <CartProvider>
+                <PersistentVideoFeed />
                 {children}
                 <AppBottomNav />
               </CartProvider>
