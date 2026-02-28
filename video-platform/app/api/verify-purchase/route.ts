@@ -59,10 +59,9 @@ export async function GET(request: NextRequest) {
     const userId = session.metadata?.userId;
     const coins = parseInt(session.metadata?.coins || '0');
 
-    // Process the order in background
+    // Process the order before returning - must await in serverless environment
     if (userId && coins) {
-      // Don't wait for DB operations, user gets confirmation immediately
-      processOrderInBackground(userId, coins, sessionId);
+      await processOrder(userId, coins, sessionId);
     }
 
     return NextResponse.json({
@@ -81,8 +80,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Process the actual coin addition in background - don't block user response
-async function processOrderInBackground(userId: string, coins: number, sessionId: string) {
+// Process the actual coin addition - must complete before response in serverless env
+async function processOrder(userId: string, coins: number, sessionId: string) {
   try {
     const supabase = getSupabaseAdminClient();
     if (!supabase) {

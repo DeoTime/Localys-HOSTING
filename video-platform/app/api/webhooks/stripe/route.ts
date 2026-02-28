@@ -55,57 +55,107 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ received: true });
       }
 
-      const userId = session.metadata?.userId;
-      const coins = parseInt(session.metadata?.coins || '0');
+      const metadata = session.metadata || {};
 
-      if (!userId || !coins) {
-        console.error('Missing userId or coins in metadata');
-        return NextResponse.json(
-          { error: 'Missing metadata' },
-          { status: 400 }
-        );
+      // Determine if this is a coin purchase or item purchase
+      if (metadata.coins && metadata.userId) {
+        // --- COIN PURCHASE ---
+        const userId = metadata.userId;
+        const coins = parseInt(metadata.coins || '0');
+
+        // Check if already processed (deduplication)
+        const { data: existingCoin } = await supabase
+          .from('coin_purchases')
+          .select('id')
+          .eq('stripe_session_id', session.id)
+          .single();
+
+        if (existingCoin) {
+          console.log(`Coin purchase already processed for session ${session.id}`);
+          return NextResponse.json({ received: true });
+        }
+
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('coin_balance')
+          .eq('id', userId)
+          .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          return NextResponse.json(
+            { error: 'Failed to fetch profile' },
+            { status: 500 }
+          );
+        }
+
+        const newBalance = (profile?.coin_balance || 0) + coins;
+
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ coin_balance: newBalance })
+          .eq('id', userId);
+
+        if (updateError) {
+          console.error('Error updating coin balance:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to update balance' },
+            { status: 500 }
+          );
+        }
+
+        console.log(`Added ${coins} coins to user ${userId}. New balance: ${newBalance}`);
+
+        await supabase.from('coin_purchases').insert({
+          user_id: userId,
+          coins,
+          amount_cents: session.amount_total,
+          stripe_session_id: session.id,
+          created_at: new Date().toISOString(),
+        });
+
+        return NextResponse.json({ success: true });
+      } else if (metadata.itemId && metadata.buyerId && metadata.sellerId) {
+        // --- ITEM PURCHASE ---
+        const { itemId, sellerId, buyerId, itemName, itemPrice } = metadata;
+
+        // Check if already processed (deduplication)
+        const { data: existingItem } = await supabase
+          .from('item_purchases')
+          .select('id')
+          .eq('stripe_session_id', session.id)
+          .single();
+
+        if (existingItem) {
+          console.log(`Item purchase already processed for session ${session.id}`);
+          return NextResponse.json({ received: true });
+        }
+
+        const { error } = await supabase.from('item_purchases').insert({
+          item_id: itemId,
+          seller_id: sellerId,
+          buyer_id: buyerId,
+          item_name: itemName || 'Unknown Item',
+          price: parseFloat(itemPrice || '0'),
+          stripe_session_id: session.id,
+          status: 'completed',
+          purchased_at: new Date().toISOString(),
+        });
+
+        if (error) {
+          console.error('Error recording item purchase:', error);
+          return NextResponse.json(
+            { error: 'Failed to record purchase' },
+            { status: 500 }
+          );
+        }
+
+        console.log(`Item purchase recorded: ${itemName} sold by ${sellerId} to ${buyerId}`);
+        return NextResponse.json({ success: true });
+      } else {
+        console.error('Webhook: unrecognized session metadata', metadata);
+        return NextResponse.json({ received: true });
       }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('coin_balance')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        return NextResponse.json(
-          { error: 'Failed to fetch profile' },
-          { status: 500 }
-        );
-      }
-
-      const newBalance = (profile?.coin_balance || 0) + coins;
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ coin_balance: newBalance })
-        .eq('id', userId);
-
-      if (updateError) {
-        console.error('Error updating coin balance:', updateError);
-        return NextResponse.json(
-          { error: 'Failed to update balance' },
-          { status: 500 }
-        );
-      }
-
-      console.log(`Added ${coins} coins to user ${userId}. New balance: ${newBalance}`);
-
-      await supabase.from('coin_purchases').insert({
-        user_id: userId,
-        coins,
-        amount_cents: session.amount_total,
-        stripe_session_id: session.id,
-        created_at: new Date().toISOString(),
-      });
-
-      return NextResponse.json({ success: true });
     } catch (error) {
       console.error('Error processing webhook:', error);
       return NextResponse.json(
