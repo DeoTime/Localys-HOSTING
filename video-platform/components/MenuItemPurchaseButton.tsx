@@ -1,4 +1,8 @@
+'use client';
+
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
 
 interface MenuItemPurchaseProps {
   itemId: string;
@@ -19,70 +23,54 @@ export function MenuItemPurchaseButton({
   buyerId,
   isOwnBusiness = false,
 }: MenuItemPurchaseProps) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { addToCart } = useCart();
+  const [added, setAdded] = useState(false);
 
   if (isOwnBusiness) {
-    return null; // Don't show buy button for your own items
+    return null;
   }
 
-  const handlePurchase = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/checkout-item', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          itemId,
-          itemName,
-          itemPrice,
-          itemImage,
-          sellerId,
-          buyerId,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setError(data.error);
-        return;
-      }
-
-      if (data.url) {
-        // Redirect to Stripe checkout
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      console.error('Purchase error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to start checkout');
-    } finally {
-      setLoading(false);
+  const handleBuyNow = () => {
+    const params = new URLSearchParams({
+      itemId,
+      itemName,
+      itemPrice: itemPrice.toString(),
+      sellerId,
+      buyerId,
+    });
+    if (itemImage) {
+      params.set('itemImage', itemImage);
     }
+    router.push(`/checkout?${params.toString()}`);
+  };
+
+  const handleAddToCart = () => {
+    addToCart({ itemId, itemName, itemPrice, itemImage, sellerId, buyerId });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
   };
 
   return (
-    <div>
-      {error && (
-        <p className="text-red-400 text-sm mb-2">{error}</p>
-      )}
+    <div className="flex gap-2">
       <button
-        onClick={handlePurchase}
-        disabled={loading}
-        className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        onClick={handleBuyNow}
+        className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
       >
-        {loading ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            Processing...
-          </>
+        <span>Buy Now</span>
+        <span className="text-sm">${itemPrice.toFixed(2)}</span>
+      </button>
+      <button
+        onClick={handleAddToCart}
+        disabled={added}
+        className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white font-semibold py-2 px-3 rounded-lg transition-colors disabled:cursor-default flex items-center justify-center gap-1"
+      >
+        {added ? (
+          <span className="text-sm">Added!</span>
         ) : (
-          <>
-            <span>💳 Buy Now</span>
-            <span className="text-sm">${itemPrice.toFixed(2)}</span>
-          </>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+          </svg>
         )}
       </button>
     </div>

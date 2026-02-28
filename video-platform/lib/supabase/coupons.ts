@@ -139,6 +139,34 @@ export async function validateCoupon(code: string, userId: string) {
 }
 
 /**
+ * Get all active coupons for a shop (by seller/creator ID)
+ */
+export async function getShopCoupons(sellerId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('created_by', sellerId)
+      .eq('is_active', true);
+
+    if (error) return { data: null, error };
+
+    // Filter out expired and maxed-out coupons client-side
+    const now = new Date();
+    const valid = (data || []).filter((c: Coupon) => {
+      if (c.expiry_date && new Date(c.expiry_date) < now) return false;
+      if (c.max_uses && c.used_count >= c.max_uses) return false;
+      return true;
+    });
+
+    return { data: valid, error: null };
+  } catch (error: any) {
+    console.error('Exception in getShopCoupons:', error);
+    return { data: null, error };
+  }
+}
+
+/**
  * Mark a coupon as used
  */
 export async function useCoupon(couponCode: string, userId: string) {
