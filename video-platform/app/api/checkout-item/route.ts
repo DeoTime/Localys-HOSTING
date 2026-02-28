@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+interface CheckoutItem {
+  itemId: string;
+  itemName: string;
+  itemPrice: number;
+  itemImage?: string;
+  sellerId: string;
+  buyerId: string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -14,17 +23,25 @@ export async function POST(request: NextRequest) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const body = await request.json();
-    const { itemId, itemName, itemPrice, sellerId, buyerId, itemImage, couponCode } = body;
+    const { items, couponCode } = body as { items: CheckoutItem[]; couponCode?: string };
 
-    if (!itemId || !itemName || itemPrice === undefined || !sellerId || !buyerId) {
-      console.error('Missing required fields:', { itemId, itemName, itemPrice, sellerId, buyerId });
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'No items provided' },
         { status: 400 }
       );
     }
 
-    let finalPrice = itemPrice;
+    for (const item of items) {
+      if (!item.itemId || !item.itemName || item.itemPrice === undefined || !item.sellerId || !item.buyerId) {
+        console.error('Missing required fields in item:', item);
+        return NextResponse.json(
+          { error: 'Missing required fields' },
+          { status: 400 }
+        );
+      }
+    }
+
     let appliedCouponCode: string | null = null;
     let discountPercentage = 0;
 
@@ -67,8 +84,6 @@ export async function POST(request: NextRequest) {
       }
 
       discountPercentage = coupon.discount_percentage;
-      const discount = finalPrice * (discountPercentage / 100);
-      finalPrice = Math.max(0, finalPrice - discount);
       appliedCouponCode = couponCode.toUpperCase();
 
       // Mark coupon as used and increment count
@@ -78,41 +93,55 @@ export async function POST(request: NextRequest) {
         .eq('id', coupon.id);
     }
 
-    const priceInCents = Math.round(finalPrice * 100);
+    // Build Stripe line items
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => {
+      let unitPrice = item.itemPrice;
+      if (discountPercentage > 0) {
+        unitPrice = Math.max(0, unitPrice - unitPrice * (discountPercentage / 100));
+      }
+      const priceInCents = Math.round(unitPrice * 100);
 
-    const productName = appliedCouponCode
-      ? `${itemName} (${discountPercentage}% off with ${appliedCouponCode})`
-      : itemName;
+      const productName = appliedCouponCode
+        ? `${item.itemName} (${discountPercentage}% off with ${appliedCouponCode})`
+        : item.itemName;
+
+      return {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: productName,
+            description: `Purchase from local business`,
+            images: item.itemImage ? [item.itemImage] : [],
+          },
+          unit_amount: priceInCents,
+        },
+        quantity: 1,
+      };
+    });
+
+    // Store items data in metadata as JSON
+    const itemsMetadata = items.map((item) => ({
+      id: item.itemId,
+      name: item.itemName,
+      sid: item.sellerId,
+      price: item.itemPrice,
+    }));
+
+    const buyerId = items[0].buyerId;
+    const firstSellerId = items[0].sellerId;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: productName,
-              description: `Purchase from local business`,
-              images: itemImage ? [itemImage] : [],
-            },
-            unit_amount: priceInCents,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://localys.xyz'}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://localys.xyz'}/profile/${sellerId}?canceled=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://localys.xyz'}/profile/${firstSellerId}?canceled=true`,
       metadata: {
-        itemId: itemId.toString(),
-        itemName: itemName.toString(),
-        sellerId: sellerId.toString(),
-        buyerId: buyerId.toString(),
-        itemPrice: itemPrice.toString(),
+        buyerId,
+        items: JSON.stringify(itemsMetadata),
         ...(appliedCouponCode && {
           couponCode: appliedCouponCode,
           discountPercentage: discountPercentage.toString(),
-          finalPrice: finalPrice.toString(),
         }),
       },
     });
@@ -124,7 +153,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Checkout session created: ${session.id} for item ${itemName}${appliedCouponCode ? ` with coupon ${appliedCouponCode}` : ''}`);
+    const itemNames = items.map(i => i.itemName).join(', ');
+    console.log(`Checkout session created: ${session.id} for items: ${itemNames}${appliedCouponCode ? ` with coupon ${appliedCouponCode}` : ''}`);
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
