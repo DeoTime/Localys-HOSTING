@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
+import { getVideoAverageRating } from '@/lib/supabase/comments';
+import { getUserCoins } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
 import { CommentModal } from '@/components/CommentModal';
 import { Toast } from '@/components/Toast';
@@ -44,6 +46,12 @@ interface Video {
   like_count?: number;
 }
 
+interface HeaderProfile {
+  full_name: string | null;
+  username: string | null;
+  profile_picture_url: string | null;
+}
+
 export default function Home() {
   return (
     <ProtectedRoute>
@@ -74,6 +82,9 @@ function HomeContent() {
   const [locationsByProfile, setLocationsByProfile] = useState<Record<string, { latitude: number; longitude: number }[]>>({});
   const [priceRanges, setPriceRanges] = useState<Record<string, { min: number; max: number }>>({});
   const [volume, setVolume] = useState(0.5); // Default 50% volume
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [headerProfile, setHeaderProfile] = useState<HeaderProfile | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -138,7 +149,7 @@ function HomeContent() {
           )
         );
         
-        console.log('Video IDs for comment fetch:', videoIds);
+        console.log('Video IDs for rating fetch:', videoIds);
 
         const feedBusinessIds = Array.from(
           new Set(
@@ -194,7 +205,16 @@ function HomeContent() {
           });
         }
 
-        console.log('Skipping comment fetch due to null value issues');
+        // Fetch rating counts for each video
+        for (const videoId of videoIds) {
+          try {
+            const { data: ratingData } = await getVideoAverageRating(videoId);
+            commentCounts[videoId] = ratingData?.total_rated_comments || 0;
+          } catch (err) {
+            console.error(`Error fetching ratings for video ${videoId}:`, err);
+            commentCounts[videoId] = 0;
+          }
+        }
 
        
         const businesses = videosData
@@ -269,7 +289,7 @@ function HomeContent() {
         setCommentCounts(commentCounts);
         if (process.env.NODE_ENV === 'development') {
           console.log('Loaded like counts:', counts);
-          console.log('Loaded comment counts:', commentCounts);
+          console.log('Loaded rating counts:', commentCounts);
         }
       }
     } catch (error) {
@@ -321,11 +341,16 @@ function HomeContent() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('coin_balance, type')
+        .select('coin_balance, type, full_name, username, profile_picture_url')
         .eq('id', user.id)
         .single();
 
       if (!error && data) {
+        setHeaderProfile({
+          full_name: data.full_name || null,
+          username: data.username || null,
+          profile_picture_url: data.profile_picture_url || null,
+        });
         const hasProfileType = data.type !== null;
         setShowCoinBadge(hasProfileType);
         if (hasProfileType) {
@@ -348,11 +373,19 @@ function HomeContent() {
     }
   }, [volume, currentIndex]);
 
+  useEffect(() => {
+    const currentVideo = videoRefs.current[currentIndex];
+    if (currentVideo) {
+      currentVideo.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed, currentIndex]);
+
   // Set volume on video when it's loaded
   useEffect(() => {
     const currentVideo = videoRefs.current[currentIndex];
     if (currentVideo) {
       currentVideo.volume = volume;
+      currentVideo.playbackRate = playbackSpeed;
       const playPromise = currentVideo.play();
       if (playPromise !== undefined) {
         playPromise.catch((error: unknown) => {
@@ -362,6 +395,7 @@ function HomeContent() {
           }
         });
       }
+      setIsPlaying(true);
     }
 
     videoRefs.current.forEach((video, index) => {
@@ -369,7 +403,24 @@ function HomeContent() {
         video.pause();
       }
     });
-  }, [currentIndex, videos]);
+  }, [currentIndex, videos, volume, playbackSpeed]);
+
+  const togglePlayPause = async () => {
+    const currentVideo = videoRefs.current[currentIndex];
+    if (!currentVideo) return;
+
+    if (currentVideo.paused) {
+      try {
+        await currentVideo.play();
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
+    } else {
+      currentVideo.pause();
+      setIsPlaying(false);
+    }
+  };
 
   useEffect(() => {
     if (videos.length > 0 && currentIndex >= 0 && currentIndex < videos.length) {
@@ -529,6 +580,21 @@ function HomeContent() {
     setCommentModalOpen(true);
   };
 
+  const handleCommentAdded = async () => {
+    // Refresh the rating count for the current video
+    if (commentPostId) {
+      try {
+        const { data: ratingData } = await getVideoAverageRating(commentPostId);
+        setCommentCounts(prev => ({
+          ...prev,
+          [commentPostId]: ratingData?.total_rated_comments || 0
+        }));
+      } catch (err) {
+        console.error('Error updating rating count:', err);
+      }
+    }
+  };
+
   const handleShareClick = async (video: Video) => {
     const businessName = video.businesses?.business_name || video.profiles?.full_name || 'Business';
     const url = `${window.location.origin}/video/${video.id}`;
@@ -672,14 +738,14 @@ function HomeContent() {
               ref={(el) => { videoRefs.current[index] = el; }}
               src={video.video_url}
               className="h-full w-full object-contain"
-              controls
+              controls={false}
               loop
               playsInline
               autoPlay={index === currentIndex}
             />
             
             {/* Business Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pb-24">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pb-24 md:pl-72">
               <button
                 onClick={() => handleProfileClick(video.user_id)}
                 onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id))}
@@ -772,43 +838,56 @@ function HomeContent() {
         ))}
       </div>
 
-      {/* Left Side - Logo and Coins */}
-      <div className="absolute top-0 left-0 z-20 p-2 sm:p-3 md:p-4 space-y-2 sm:space-y-3">
-        <div className="rounded-xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-1.5 sm:px-4 sm:py-2 shadow-sm backdrop-blur-md">
-          <h1 className="text-base sm:text-lg md:text-xl font-bold">Localy</h1>
-        </div>
-        <ThemeToggle />
+      {/* Top Header */}
+      <header className="absolute top-0 left-0 right-0 z-30 border-b border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md">
+        <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 md:px-5">
+          <h1 className="text-base sm:text-lg md:text-xl font-bold">Localys</h1>
 
-        {/* Coin Balance */}
-        {showCoinBadge && (
-          <div className="bg-yellow-500/20 backdrop-blur-md border border-yellow-500/50 rounded-lg px-2 py-2 sm:px-4 sm:py-3 flex items-center gap-2">
-            <span className="text-lg sm:text-2xl">🪙</span>
-            <div>
-              <div className="text-[10px] sm:text-xs text-white/70">Coins</div>
-              <div className="text-base sm:text-xl font-bold text-yellow-300">{userCoins}</div>
-            </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+
+            {showCoinBadge && (
+              <Link
+                href="/buy-coins"
+                className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--surface-1)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--surface-2)]"
+                aria-label="Buy coins"
+              >
+                <span>🪙</span>
+                <span>{userCoins}</span>
+              </Link>
+            )}
+
+            <Link
+              href="/profile"
+              className="hidden md:flex items-center gap-2"
+              aria-label="Open profile"
+            >
+              {headerProfile?.profile_picture_url ? (
+                <Image
+                  src={headerProfile.profile_picture_url}
+                  alt={headerProfile.full_name || headerProfile.username || 'Profile'}
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 rounded-full object-cover"
+                  unoptimized
+                />
+              ) : (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--surface-overlay)] text-xs font-semibold text-[var(--foreground)]">
+                  {(headerProfile?.full_name || headerProfile?.username || user?.email || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
+              <div className="max-w-[140px] leading-tight">
+                <p className="truncate text-xs font-semibold text-[var(--foreground)]">
+                  {headerProfile?.username || headerProfile?.full_name || 'Profile'}
+                </p>
+                <p className="truncate text-[10px] text-[var(--muted-foreground)]">
+                  @{headerProfile?.username || ''}
+                </p>
+              </div>
+            </Link>
           </div>
-        )}
-      </div>
-
-      {/* Top Right - Volume Control Bar */}
-      <div className="absolute top-0 right-0 z-20 p-2 sm:p-3 md:p-4">
-        <div className="flex min-w-max items-center gap-2 sm:gap-3 rounded-xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-2 py-2 sm:px-4 sm:py-3 shadow-sm backdrop-blur-md">
-          <svg className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-[var(--foreground)]" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.04v8.05c1.48-.75 2.5-2.27 2.5-4.01zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-          </svg>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={Math.round(volume * 100)}
-            onChange={(e) => setVolume(parseInt(e.target.value) / 100)}
-            className="h-2 w-20 sm:w-28 md:w-40 cursor-pointer rounded-lg bg-[var(--surface-2)] accent-blue-500"
-            aria-label="Volume slider"
-          />
-          <span className="w-8 sm:w-10 text-right text-xs sm:text-sm font-semibold text-[var(--foreground)]">{Math.round(volume * 100)}%</span>
         </div>
-      </div>
+      </header>
 
       {/* Right Side - Interaction Buttons */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
@@ -920,12 +999,65 @@ function HomeContent() {
         </button>
       </div>
 
+      <div className="absolute left-1/2 z-30 -translate-x-1/2 bottom-24 md:bottom-6">
+        <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-2 backdrop-blur-md">
+          <button
+            onClick={togglePlayPause}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--foreground)] transition-transform duration-200 active:scale-95"
+            aria-label={isPlaying ? 'Pause video' : 'Play video'}
+          >
+            {isPlaying ? (
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            )}
+          </button>
+
+          <div className="flex items-center gap-2">
+            <svg className="h-4 w-4 text-[var(--foreground)]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.04v8.05c1.48-.75 2.5-2.27 2.5-4.01z" />
+            </svg>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={Math.round(volume * 100)}
+              onChange={(e) => setVolume(parseInt(e.target.value, 10) / 100)}
+              className="h-2 w-20 sm:w-24 md:w-32 cursor-pointer rounded-lg bg-[var(--surface-2)] accent-blue-500 outline-none"
+              aria-label="Volume slider"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[var(--muted-foreground)]">Speed</span>
+            <select
+              value={playbackSpeed}
+              onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
+              className="rounded-lg border border-[var(--border-color)] bg-[var(--surface-2)] px-2 py-1 text-xs text-[var(--foreground)] outline-none"
+              aria-label="Playback speed"
+            >
+              <option value={0.5}>0.5x</option>
+              <option value={1}>1x</option>
+              <option value={1.5}>1.5x</option>
+              <option value={2}>2x</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <AppBottomNav />
 
       {/* Comment Modal */}
       <CommentModal
         isOpen={commentModalOpen}
-        onClose={() => setCommentModalOpen(false)}
+        onClose={() => {
+          setCommentModalOpen(false);
+          void handleCommentAdded();
+        }}
         postId={commentPostId}
         businessName={currentBusiness?.business_name || currentVideo.profiles?.full_name}
       />

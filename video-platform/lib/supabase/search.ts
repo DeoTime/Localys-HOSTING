@@ -246,7 +246,7 @@ export async function searchVideos(filters: SearchFilters) {
   if (businessIds.length > 0) {
     const { data: businessProfiles } = await supabase
       .from('profiles')
-      .select('id, full_name, username, profile_picture_url, type, category, latitude, longitude, average_rating, total_reviews, price_range_min, price_range_max')
+      .select('id, full_name, username, profile_picture_url, type, latitude, longitude')
       .in('id', businessIds);
 
     if (businessProfiles) {
@@ -273,7 +273,7 @@ export async function searchVideos(filters: SearchFilters) {
       businesses: bizProfile ? {
         id: bizProfile.id,
         business_name: bizProfile.full_name || bizProfile.username,
-        category: bizProfile.type || bizProfile.category,
+        category: bizProfile.type,
         profile_picture_url: bizProfile.profile_picture_url,
         latitude: bizProfile.latitude,
         longitude: bizProfile.longitude,
@@ -350,7 +350,7 @@ export async function searchBusinesses(filters: SearchFilters) {
 
   let query = supabase
     .from('profiles')
-    .select('id, full_name, username, profile_picture_url, type, category, bio, latitude, longitude, average_rating, total_reviews, price_range_min, price_range_max')
+    .select('id, full_name, username, profile_picture_url, type, bio, latitude, longitude')
     .in('type', ['food', 'retail', 'service']);
 
   if (interpretedFilters.query) {
@@ -366,11 +366,12 @@ export async function searchBusinesses(filters: SearchFilters) {
 
   if (error) {
     console.error('Business search error:', error);
+    return { data: [], error };
   }
 
   let filteredResults = (data || []).map((profile: any) => ({
     ...profile,
-    category: profile.type || profile.category,
+    category: profile.type,
     business_name: profile.full_name || profile.username,
     is_profile: true,
     profiles: {
@@ -394,7 +395,7 @@ export async function searchBusinesses(filters: SearchFilters) {
   });
 
   if (interpretedFilters.category) {
-    filteredResults = filteredResults.filter(biz => (biz.type || biz.category) === interpretedFilters.category);
+    filteredResults = filteredResults.filter(biz => biz.type === interpretedFilters.category);
   }
 
   if (interpretedFilters.minRating) {
