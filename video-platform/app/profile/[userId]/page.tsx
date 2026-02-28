@@ -37,13 +37,16 @@ export default function UserProfilePage() {
   );
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function UserProfileContent() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
   const { user } = useAuth();
-  const userId = params.userId as string;
-  
+  const identifier = params.userId as string;
+  const isUUID = UUID_REGEX.test(identifier);
+
   const [profile, setProfile] = useState<Profile | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
   const [businessLocations, setBusinessLocations] = useState<BusinessLocation[]>([]);
@@ -53,10 +56,10 @@ function UserProfileContent() {
   const [messagingLoading, setMessagingLoading] = useState(false);
 
   useEffect(() => {
-    if (userId) {
+    if (identifier) {
       loadProfile();
     }
-  }, [userId]);
+  }, [identifier]);
 
   useEffect(() => {
     if (profile?.type) {
@@ -69,20 +72,29 @@ function UserProfileContent() {
   }, [profile?.type]);
 
   const loadLocations = async () => {
-    const { data } = await getBusinessLocations(userId);
+    if (!profile) return;
+    const { data } = await getBusinessLocations(profile.id);
     setBusinessLocations(data ?? []);
   };
 
   const loadProfile = async () => {
     try {
-      const { data, error } = await supabase
+      const query = supabase
         .from('profiles')
-        .select('id, username, full_name, profile_picture_url, bio, type')
-        .eq('id', userId)
-        .single();
+        .select('id, username, full_name, profile_picture_url, bio, type');
+
+      const { data, error } = isUUID
+        ? await query.eq('id', identifier).single()
+        : await query.eq('username', identifier).single();
 
       if (error) throw error;
       setProfile(data);
+
+      // Redirect UUID URLs to username URLs
+      if (isUUID && data?.username) {
+        router.replace(`/profile/${data.username}`);
+        return;
+      }
     } catch (error) {
       console.error('Error loading profile:', error);
       setError('Failed to load profile');
@@ -93,7 +105,8 @@ function UserProfileContent() {
 
   const loadBusiness = async () => {
     try {
-      const { data, error } = await getUserBusiness(userId);
+      if (!profile) return;
+      const { data, error } = await getUserBusiness(profile.id);
 
       console.log('Business fetch result:', { data, error }); // DEBUG
 
@@ -152,10 +165,10 @@ function UserProfileContent() {
   };
 
   useEffect(() => {
-    if (user && userId === user.id) {
+    if (user && profile && profile.id === user.id) {
       router.push('/profile');
     }
-  }, [user, userId, router]);
+  }, [user, profile, router]);
 
   if (loading) {
     return (
@@ -303,7 +316,7 @@ function UserProfileContent() {
           <div className="mt-8">
             <h3 className="text-xl font-semibold mb-4">⚙️ Services</h3>
             <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-              <MenuList userId={userId} isOwnProfile={false} />
+              <MenuList userId={profile.id} isOwnProfile={false} />
             </div>
           </div>
         )}
@@ -312,7 +325,7 @@ function UserProfileContent() {
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">📹 Videos</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
-            <PostedVideos userId={userId} isOwnProfile={false} />
+            <PostedVideos userId={profile.id} isOwnProfile={false} />
           </div>
         </div>
       </div>

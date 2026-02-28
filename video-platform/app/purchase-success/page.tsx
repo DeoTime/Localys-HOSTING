@@ -3,6 +3,14 @@
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { OrderQRCode } from '@/components/QRCode';
+
+interface OrderInfo {
+  orderId: string;
+  token: string;
+  itemName: string;
+  price: number;
+}
 
 export default function PurchaseSuccessPage() {
   return (
@@ -22,9 +30,14 @@ function PurchaseSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [confirmationNumber, setConfirmationNumber] = useState('');
+  const [orders, setOrders] = useState<OrderInfo[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
 
     const verifyPurchase = async () => {
       try {
@@ -38,9 +51,13 @@ function PurchaseSuccessContent() {
         if (data.confirmationNumber) {
           setConfirmationNumber(data.confirmationNumber);
         }
+        if (data.orders && data.orders.length > 0) {
+          setOrders(data.orders);
+        }
       } catch (err) {
         console.error('Verification error:', err);
-        // Still show success page
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -78,6 +95,30 @@ function PurchaseSuccessContent() {
             </div>
           )}
 
+          {/* QR Codes for pickup */}
+          {loading ? (
+            <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto" />
+              <p className="text-white/40 text-sm mt-3">Generating pickup QR code...</p>
+            </div>
+          ) : orders.length > 0 ? (
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 mb-6">
+              <p className="text-blue-400 font-semibold mb-1">Show this QR code at pickup</p>
+              <p className="text-white/40 text-xs mb-4">
+                The business will scan this to confirm your order
+              </p>
+              <div className="space-y-6">
+                {orders.map((order) => (
+                  <div key={order.orderId} className="flex flex-col items-center">
+                    <OrderQRCode orderId={order.orderId} token={order.token} size={180} />
+                    <p className="text-white text-sm font-medium mt-2">{order.itemName}</p>
+                    <p className="text-white/40 text-xs">${order.price.toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {sessionId && (
             <div className="bg-black/40 rounded-lg p-4 mb-6 text-left">
               <p className="text-white/60 text-xs mb-1">Session ID:</p>
@@ -85,24 +126,18 @@ function PurchaseSuccessContent() {
             </div>
           )}
 
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 mb-6">
-            <p className="text-blue-400 text-sm">
-              ✓ Your order has been confirmed and will be processed shortly
-            </p>
-          </div>
-
           <div className="space-y-3">
             <Link
-              href="/"
-              className="block w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition-colors"
+              href="/profile"
+              className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-colors"
             >
-              Back to Home
+              View Order History
             </Link>
             <Link
-              href="/profile"
+              href="/"
               className="block w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 rounded-lg transition-colors"
             >
-              My Profile
+              Back to Home
             </Link>
           </div>
         </div>

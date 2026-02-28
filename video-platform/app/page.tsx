@@ -566,12 +566,12 @@ function HomeContent() {
     setTimeout(() => setBookmarkAnimating(null), 300);
   };
 
-  const handleProfileClick = (userId?: string) => {
-    if (!userId) {
+  const handleProfileClick = (userId?: string, username?: string) => {
+    if (!userId && !username) {
       console.warn('Profile click: userId is missing');
       return;
     }
-    router.push(`/profile/${userId}`);
+    router.push(`/profile/${username || userId}`);
   };
 
   const handleCommentClick = (postId: string) => {
@@ -746,8 +746,8 @@ function HomeContent() {
             {/* Business Info Overlay */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 pb-24 md:pl-72">
               <button
-                onClick={() => handleProfileClick(video.user_id)}
-                onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id))}
+                onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
+                onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
                 className="text-left focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/80 rounded"
                 aria-label={`View profile of ${feedBusiness?.business_name || video.profiles?.full_name || 'Business'}`}
               >
@@ -819,7 +819,7 @@ function HomeContent() {
                           Directions
                         </a>
                         <Link
-                          href={`/profile/${feedBusiness.id}`}
+                          href={`/profile/${video.profiles?.username || video.user_id}`}
                           className="rounded-lg bg-white/15 border border-white/20 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5"
                         >
                           Menu
@@ -848,7 +848,7 @@ function HomeContent() {
             {showCoinBadge && (
               <Link
                 href="/buy-coins"
-                className="inline-flex items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--surface-1)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--surface-2)]"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--surface-1)] px-3 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--surface-2)]"
                 aria-label="Buy coins"
               >
                 <span>🪙</span>
@@ -877,10 +877,7 @@ function HomeContent() {
               )}
               <div className="max-w-[140px] leading-none">
                 <p className="mb-0 truncate text-xs font-semibold text-[var(--foreground)]">
-                  {headerProfile?.username || headerProfile?.full_name || 'Profile'}
-                </p>
-                <p className="mb-0 truncate text-[10px] leading-none text-[var(--muted-foreground)]">
-                  @{headerProfile?.username || ''}
+                  @{headerProfile?.username || 'profile'}
                 </p>
               </div>
             </Link>
@@ -893,8 +890,8 @@ function HomeContent() {
         {/* Profile Picture */}
         <div className="relative">
           <button
-            onClick={() => handleProfileClick(currentVideo.user_id)}
-            onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(currentVideo.user_id))}
+            onClick={() => handleProfileClick(currentVideo.user_id, currentVideo.profiles?.username)}
+            onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(currentVideo.user_id, currentVideo.profiles?.username))}
             className="rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--foreground)] focus:ring-offset-2 focus:ring-offset-[var(--background)]"
             aria-label={`View profile of ${currentBusiness?.business_name || currentVideo.profiles?.full_name || 'user'}`}
           >
@@ -1002,7 +999,7 @@ function HomeContent() {
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-2 backdrop-blur-md">
           <button
             onClick={togglePlayPause}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white border border-white/30 shadow-lg transition-all duration-200 hover:bg-white/30 active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:bg-blue-600 active:scale-95"
             aria-label={isPlaying ? 'Pause video' : 'Play video'}
           >
             {isPlaying ? (

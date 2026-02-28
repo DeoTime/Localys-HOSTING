@@ -617,7 +617,7 @@ function BusinessResultCard({
 
   const handleClick = () => {
     if (business.id) {
-      router.push(`/profile/${business.id}`);
+      router.push(`/profile/${business.username || business.id}`);
     }
   };
 

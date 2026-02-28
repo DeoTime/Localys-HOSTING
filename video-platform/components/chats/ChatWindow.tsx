@@ -116,8 +116,8 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
           >
             {/* Avatar */}
             {!isOwn && (
-              <Link 
-                href={`/profile/${message.sender_id}`}
+              <Link
+                href={`/profile/${sender?.username || message.sender_id}`}
                 className="flex-shrink-0"
               >
                 <div className="w-8 h-8 rounded-full bg-white/10 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
@@ -141,7 +141,7 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
               <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-xs lg:max-w-md`}>
                 {!isOwn && (
                   <Link 
-                    href={`/profile/${message.sender_id}`}
+                    href={`/profile/${sender?.username || message.sender_id}`}
                     className="text-xs text-white/60 mb-1 px-2 hover:text-white/80 transition-colors"
                   >
                     {senderName}

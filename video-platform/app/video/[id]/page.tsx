@@ -435,7 +435,7 @@ export default function VideoDetailPage() {
                   </a>
 
                   <Link
-                    href={`/profile/${video.businesses.id}`}
+                    href={`/profile/${video.profiles?.username || video.user_id}`}
                     className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition"
                   >
                     {t('video.info.view_menu')}

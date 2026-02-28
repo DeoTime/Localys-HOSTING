@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { getUserCoinPurchases, getUserItemPurchases, getBusinessItemSales } from '@/lib/supabase/profiles';
+import { supabase } from '@/lib/supabase/client';
 import type { CoinPurchase, ItemPurchase } from '@/models/Order';
 import { useTranslation } from '@/hooks/useTranslation';
+import { OrderQRCode } from '@/components/QRCode';
 
 function DiscountBadge({ item }: { item: ItemPurchase }) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -31,6 +33,21 @@ function DiscountBadge({ item }: { item: ItemPurchase }) {
   );
 }
 
+function StatusBadge({ status }: { status: string }) {
+  const styles: Record<string, string> = {
+    paid: 'bg-yellow-500/20 text-yellow-300',
+    completed: 'bg-green-500/20 text-green-300',
+    pending: 'bg-gray-500/20 text-gray-300',
+    failed: 'bg-red-500/20 text-red-300',
+  };
+
+  return (
+    <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${styles[status] || styles.pending}`}>
+      {status}
+    </span>
+  );
+}
+
 interface OrderHistoryProps {
   userId: string;
   businessId?: string;
@@ -50,17 +67,41 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
     loadOrders();
   }, [userId, isBusiness]);
 
+  // Supabase Realtime: listen for status changes on the user's orders
+  useEffect(() => {
+    const channel = supabase
+      .channel('order-status-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'item_purchases',
+          filter: `buyer_id=eq.${userId}`,
+        },
+        (payload) => {
+          const updated = payload.new as ItemPurchase;
+          setItemPurchases(prev =>
+            prev.map(p => p.id === updated.id ? { ...p, status: updated.status } : p)
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
   const loadOrders = async () => {
     setLoading(true);
     try {
-      // Load user's purchases
       const { data: coins } = await getUserCoinPurchases(userId);
       const { data: items } = await getUserItemPurchases(userId);
-      
+
       setCoinPurchases(coins || []);
       setItemPurchases(items || []);
 
-      // Load business sales if applicable
       if (isBusiness) {
         const { data: sales } = await getBusinessItemSales(userId);
         setItemSales(sales || []);
@@ -69,7 +110,6 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
       setTablesExist(true);
     } catch (error) {
       console.error('Error loading orders:', error);
-      // Silently fail - component will show empty state
       setCoinPurchases([]);
       setItemPurchases([]);
       setItemSales([]);
@@ -93,7 +133,6 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
     );
   }
 
-  // If tables don't exist, show a friendly message
   if (!tablesExist) {
     return (
       <div className="text-center py-8 text-white/60">
@@ -102,7 +141,6 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
     );
   }
 
-  // For businesses, show both purchases and sales
   if (isBusiness) {
     const hasPurchases = coinPurchases.length > 0 || itemPurchases.length > 0;
     const hasSales = itemSales.length > 0;
@@ -117,7 +155,6 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
 
     return (
       <div className="space-y-4">
-        {/* Tabs */}
         <div className="flex gap-4 border-b border-white/10">
           <button
             onClick={() => setActiveTab('purchases')}
@@ -141,7 +178,6 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
           </button>
         </div>
 
-        {/* Content */}
         {activeTab === 'purchases' && (
           <div className="space-y-3">
             {allPurchases.length === 0 ? (
@@ -169,7 +205,6 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
     );
   }
 
-  // For regular users, show only purchases
   if (allPurchases.length === 0) {
     return (
       <div className="text-center py-8 text-white/60">
@@ -188,6 +223,7 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
 }
 
 function OrderItem({ order }: { order: CoinPurchase | ItemPurchase }) {
+  const [showQR, setShowQR] = useState(false);
   const isCoinPurchase = 'coins' in order;
   const date = new Date(isCoinPurchase ? order.created_at : order.purchased_at);
   const formattedDate = date.toLocaleDateString('en-US', {
@@ -218,6 +254,8 @@ function OrderItem({ order }: { order: CoinPurchase | ItemPurchase }) {
   }
 
   const item = order as ItemPurchase;
+  const isPaid = item.status === 'paid';
+
   return (
     <div className="bg-white/5 border border-blue-500/30 rounded-lg p-4 hover:bg-white/10 transition-colors">
       <div className="flex justify-between items-start">
@@ -237,14 +275,22 @@ function OrderItem({ order }: { order: CoinPurchase | ItemPurchase }) {
         </div>
       </div>
       <div className="mt-2 flex items-center gap-2">
-        <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${
-          item.status === 'completed'
-            ? 'bg-green-500/20 text-green-300'
-            : 'bg-yellow-500/20 text-yellow-300'
-        }`}>
-          {item.status}
-        </span>
+        <StatusBadge status={item.status} />
+        {isPaid && item.verification_token && (
+          <button
+            onClick={() => setShowQR(!showQR)}
+            className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-colors"
+          >
+            {showQR ? 'Hide QR' : 'Show QR'}
+          </button>
+        )}
       </div>
+      {showQR && isPaid && item.verification_token && (
+        <div className="mt-3 flex flex-col items-center py-3 border-t border-white/10">
+          <p className="text-white/40 text-xs mb-2">Show at pickup</p>
+          <OrderQRCode orderId={item.id} token={item.verification_token} size={160} />
+        </div>
+      )}
     </div>
   );
 }
@@ -273,13 +319,7 @@ function SaleItem({ sale }: { sale: ItemPurchase }) {
         </div>
       </div>
       <div className="mt-2 flex items-center gap-2">
-        <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${
-          sale.status === 'completed' 
-            ? 'bg-green-500/20 text-green-300'
-            : 'bg-yellow-500/20 text-yellow-300'
-        }`}>
-          {sale.status}
-        </span>
+        <StatusBadge status={sale.status} />
       </div>
     </div>
   );
