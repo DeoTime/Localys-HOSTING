@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { PromotionModal } from '@/components/PromotionModal';
+import { getUserCoins } from '@/lib/supabase/profiles';
 
 interface PostedVideo {
   id: string;
@@ -24,10 +26,15 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
   const [videos, setVideos] = useState<PostedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
+  const [promotingVideoId, setPromotingVideoId] = useState<string | null>(null);
+  const [userCoins, setUserCoins] = useState(0);
 
   useEffect(() => {
     loadPostedVideos();
-  }, [userId]);
+    if (isOwnProfile) {
+      getUserCoins(userId).then(({ coins }) => setUserCoins(coins ?? 0));
+    }
+  }, [userId, isOwnProfile]);
 
   const loadPostedVideos = async () => {
     try {
@@ -221,9 +228,16 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
             )}
             </div>
 
-            {/* Delete Button */}
+            {/* Actions */}
             {isOwnProfile && (
-              <div className="flex flex-col justify-center ml-2">
+              <div className="flex flex-col justify-center gap-2 ml-2">
+                <button
+                  onClick={() => setPromotingVideoId(video.id)}
+                  className="text-yellow-400 hover:text-yellow-300 transition-colors text-sm font-medium px-3 py-1.5 rounded hover:bg-yellow-500/10"
+                  title="Boost this video"
+                >
+                  🚀 Boost
+                </button>
                 <button
                   onClick={() => deleteVideo(video.id)}
                   disabled={deletingVideoId === video.id}
@@ -237,6 +251,29 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
           </div>
         </div>
       ))}
+
+      {isOwnProfile && (
+        <PromotionModal
+          isOpen={promotingVideoId !== null}
+          onClose={() => setPromotingVideoId(null)}
+          videoId={promotingVideoId || ''}
+          userCoins={userCoins}
+          onSuccess={(newBoost, coinsSpent, remainingCoins) => {
+            setUserCoins(remainingCoins);
+            setVideos(prev =>
+              prev.map(v =>
+                v.id === promotingVideoId
+                  ? {
+                      ...v,
+                      boost_value: newBoost,
+                      coins_spent_on_promotion: (v.coins_spent_on_promotion || 0) + coinsSpent,
+                    }
+                  : v
+              )
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
