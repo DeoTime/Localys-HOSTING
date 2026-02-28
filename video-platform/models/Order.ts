@@ -14,6 +14,8 @@ export interface ItemPurchase {
   buyer_id: string;
   item_name: string;
   price: number;
+  quantity?: number;
+  special_requests?: string;
   original_price?: number;
   coupon_code?: string;
   discount_percentage?: number;

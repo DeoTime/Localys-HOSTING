@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -84,6 +84,10 @@ function HomeContent() {
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(true);
   const [headerProfile, setHeaderProfile] = useState<HeaderProfile | null>(null);
+  const [islandPos, setIslandPos] = useState<{ x: number; y: number } | null>(null);
+  const isDragging = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const islandRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -420,6 +424,27 @@ function HomeContent() {
       setIsPlaying(false);
     }
   };
+
+  const handleDragStart = useCallback((e: React.PointerEvent) => {
+    isDragging.current = true;
+    const island = islandRef.current;
+    if (!island) return;
+    const rect = island.getBoundingClientRect();
+    dragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, []);
+
+  const handleDragMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    setIslandPos({
+      x: e.clientX - dragOffset.current.x,
+      y: e.clientY - dragOffset.current.y,
+    });
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    isDragging.current = false;
+  }, []);
 
   useEffect(() => {
     if (videos.length > 0 && currentIndex >= 0 && currentIndex < videos.length) {
@@ -995,22 +1020,52 @@ function HomeContent() {
         </button>
       </div>
 
-      <div className="absolute left-3 sm:left-4 md:left-6 z-30 top-26 sm:top-31 md:top-36">
+      <div
+        ref={islandRef}
+        className={islandPos ? 'fixed z-30' : 'absolute left-3 sm:left-4 md:left-6 z-30 top-26 sm:top-31 md:top-36'}
+        style={islandPos ? {
+          left: `${islandPos.x}px`,
+          top: `${islandPos.y}px`,
+        } : undefined}
+      >
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-2 backdrop-blur-md">
+          <div
+            onPointerDown={handleDragStart}
+            onPointerMove={handleDragMove}
+            onPointerUp={handleDragEnd}
+            className="flex cursor-grab items-center justify-center active:cursor-grabbing touch-none select-none"
+            aria-label="Drag to reposition"
+          >
+            <svg className="h-5 w-5 text-[var(--muted-foreground)]" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="3" r="1.5" />
+              <circle cx="11" cy="3" r="1.5" />
+              <circle cx="5" cy="8" r="1.5" />
+              <circle cx="11" cy="8" r="1.5" />
+              <circle cx="5" cy="13" r="1.5" />
+              <circle cx="11" cy="13" r="1.5" />
+            </svg>
+          </div>
           <button
             onClick={togglePlayPause}
-            className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:bg-blue-600 active:scale-95"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 shadow-lg shadow-blue-500/30 transition-all duration-200 hover:bg-blue-600 active:scale-95"
             aria-label={isPlaying ? 'Pause video' : 'Play video'}
           >
-            {isPlaying ? (
-              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-              </svg>
-            ) : (
-              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
+            <span
+              className="block box-border w-0 transition-all duration-150 will-change-[border-width]"
+              style={isPlaying ? {
+                height: '20px',
+                borderStyle: 'double',
+                borderWidth: '0px 0px 0px 20px',
+                borderColor: 'transparent transparent transparent white',
+                marginLeft: '2px',
+              } : {
+                height: '20px',
+                borderStyle: 'solid',
+                borderWidth: '10px 0px 10px 18px',
+                borderColor: 'transparent transparent transparent white',
+                marginLeft: '4px',
+              }}
+            />
           </button>
 
           <div className="flex items-center gap-2">

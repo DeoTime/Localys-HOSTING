@@ -285,7 +285,12 @@ function OrderCard({ order, variant }: { order: ItemPurchase; variant: 'pending'
     <div className={`bg-white/5 border ${borderColor} rounded-lg p-4`}>
       <div className="flex justify-between items-start">
         <div>
-          <p className="font-medium text-white">{order.item_name}</p>
+          <p className="font-medium text-white">
+            {order.item_name}
+            {order.quantity && order.quantity > 1 && (
+              <span className="text-white/50 font-normal"> x{order.quantity}</span>
+            )}
+          </p>
           <p className="text-white/40 text-xs mt-0.5">
             Order #{order.id.substring(0, 8)} &middot; {formattedDate} {formattedTime}
           </p>
@@ -297,6 +302,12 @@ function OrderCard({ order, variant }: { order: ItemPurchase; variant: 'pending'
           </span>
         </div>
       </div>
+      {order.special_requests && (
+        <div className="mt-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md px-3 py-2">
+          <p className="text-yellow-300 text-xs font-medium">Special Request</p>
+          <p className="text-white/80 text-sm">{order.special_requests}</p>
+        </div>
+      )}
     </div>
   );
 }

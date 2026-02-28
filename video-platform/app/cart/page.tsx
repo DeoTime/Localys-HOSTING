@@ -8,13 +8,13 @@ import { getShopCoupons, Coupon } from '@/lib/supabase/coupons';
 import Link from 'next/link';
 
 export default function CartPage() {
-  const { items, removeFromCart, clearCart } = useCart();
+  const { items, removeFromCart, updateQuantity, updateSpecialRequests, clearCart } = useCart();
   const { user } = useAuth();
   const router = useRouter();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
 
-  const total = items.reduce((sum, item) => sum + item.itemPrice, 0);
+  const total = items.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0);
 
   // Fetch coupons from the sellers of items in the cart
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function CartPage() {
           </Link>
           <h1 className="text-2xl font-bold">Shopping Cart</h1>
           {items.length > 0 && (
-            <p className="text-white/60 text-sm mt-1">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+            <p className="text-white/60 text-sm mt-1">{items.reduce((s, i) => s + i.quantity, 0)} item{items.reduce((s, i) => s + i.quantity, 0) !== 1 ? 's' : ''}</p>
           )}
         </div>
 
@@ -81,28 +81,67 @@ export default function CartPage() {
               {items.map((item) => (
                 <div
                   key={item.itemId}
-                  className="bg-white/5 border border-white/10 rounded-lg p-4 flex gap-3"
+                  className="bg-white/5 border border-white/10 rounded-lg p-4"
                 >
-                  {item.itemImage && (
-                    <img
-                      src={item.itemImage}
-                      alt={item.itemName}
-                      className="w-16 h-16 rounded-lg object-cover border border-white/20 flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-white font-semibold truncate">{item.itemName}</h3>
-                    <p className="text-yellow-400 font-bold">${item.itemPrice.toFixed(2)}</p>
+                  <div className="flex gap-3">
+                    {item.itemImage && (
+                      <img
+                        src={item.itemImage}
+                        alt={item.itemName}
+                        className="w-16 h-16 rounded-lg object-cover border border-white/20 flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-white font-semibold truncate">{item.itemName}</h3>
+                      <p className="text-yellow-400 font-bold">${(item.itemPrice * item.quantity).toFixed(2)}</p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.itemId)}
+                      className="text-red-400 hover:text-red-300 p-1 self-start"
+                      title="Remove"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => removeFromCart(item.itemId)}
-                    className="text-red-400 hover:text-red-300 p-1 self-start"
-                    title="Remove"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+
+                  {/* Quantity controls */}
+                  <div className="flex items-center gap-3 mt-3">
+                    <span className="text-white/60 text-sm">Qty:</span>
+                    <div className="flex items-center gap-0 bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => updateQuantity(item.itemId, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
+                        className="px-3 py-1.5 text-white hover:bg-white/10 disabled:text-white/20 disabled:hover:bg-transparent transition-colors"
+                      >
+                        -
+                      </button>
+                      <span className="px-3 py-1.5 text-white font-medium min-w-[2rem] text-center border-x border-white/10">
+                        {item.quantity}
+                      </span>
+                      <button
+                        onClick={() => updateQuantity(item.itemId, item.quantity + 1)}
+                        className="px-3 py-1.5 text-white hover:bg-white/10 transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                    {item.quantity > 1 && (
+                      <span className="text-white/40 text-xs">${item.itemPrice.toFixed(2)} each</span>
+                    )}
+                  </div>
+
+                  {/* Special requests */}
+                  <div className="mt-3">
+                    <input
+                      type="text"
+                      placeholder="Special requests (e.g. no onions, extra sauce...)"
+                      value={item.specialRequests || ''}
+                      onChange={(e) => updateSpecialRequests(item.itemId, e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-white/30 transition-colors"
+                    />
+                  </div>
                 </div>
               ))}
             </div>

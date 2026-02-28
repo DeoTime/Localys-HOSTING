@@ -48,6 +48,7 @@ function CheckoutContent() {
           itemImage,
           sellerId,
           buyerId,
+          quantity: 1,
         }]);
       }
     }
@@ -74,7 +75,7 @@ function CheckoutContent() {
     fetchCoupons();
   }, [checkoutItems]);
 
-  const subtotal = checkoutItems.reduce((sum, item) => sum + item.itemPrice, 0);
+  const subtotal = checkoutItems.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0);
 
   const discountAmount = selectedCoupon
     ? Math.round(subtotal * (selectedCoupon.discount_percentage / 100) * 100) / 100
@@ -100,6 +101,8 @@ function CheckoutContent() {
             itemImage: item.itemImage,
             sellerId: item.sellerId,
             buyerId: item.buyerId,
+            quantity: item.quantity,
+            specialRequests: item.specialRequests,
           })),
           couponCode: selectedCoupon?.code || null,
         }),
@@ -174,8 +177,14 @@ function CheckoutContent() {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-medium truncate">{item.itemName}</p>
+                  {item.quantity > 1 && (
+                    <p className="text-white/40 text-xs">x{item.quantity} @ ${item.itemPrice.toFixed(2)}</p>
+                  )}
+                  {item.specialRequests && (
+                    <p className="text-yellow-400/70 text-xs mt-0.5">Note: {item.specialRequests}</p>
+                  )}
                 </div>
-                <p className="text-yellow-400 font-bold">${item.itemPrice.toFixed(2)}</p>
+                <p className="text-yellow-400 font-bold">${(item.itemPrice * item.quantity).toFixed(2)}</p>
               </div>
             ))}
           </div>
