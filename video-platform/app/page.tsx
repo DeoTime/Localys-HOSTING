@@ -998,19 +998,19 @@ function HomeContent() {
         </button>
       </div>
 
-      <div className="absolute left-3 sm:left-4 md:left-6 z-30 bottom-24 md:bottom-24">
+      <div className="absolute left-3 sm:left-4 md:left-6 z-30 top-26 sm:top-31 md:top-36">
         <div className="flex items-center gap-3 rounded-2xl border border-[var(--border-color)] bg-[var(--surface-overlay)] px-3 py-2 backdrop-blur-md">
           <button
             onClick={togglePlayPause}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--foreground)] transition-transform duration-200 active:scale-95"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white border border-white/30 shadow-lg transition-all duration-200 hover:bg-white/30 active:scale-95"
             aria-label={isPlaying ? 'Pause video' : 'Play video'}
           >
             {isPlaying ? (
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
               </svg>
             ) : (
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
             )}
@@ -1040,6 +1040,7 @@ function HomeContent() {
               aria-label="Playback speed"
             >
               <option value={0.5}>0.5x</option>
+              <option value={0.75}>0.75x</option>
               <option value={1}>1x</option>
               <option value={1.5}>1.5x</option>
               <option value={2}>2x</option>
