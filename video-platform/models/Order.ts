@@ -14,6 +14,9 @@ export interface ItemPurchase {
   buyer_id: string;
   item_name: string;
   price: number;
+  original_price?: number;
+  coupon_code?: string;
+  discount_percentage?: number;
   stripe_session_id?: string;
   status: 'completed' | 'pending' | 'cancelled';
   purchased_at: string;

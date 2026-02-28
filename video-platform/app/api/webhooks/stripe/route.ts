@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
       } else if (metadata.itemId && metadata.buyerId && metadata.sellerId) {
         // --- ITEM PURCHASE ---
-        const { itemId, sellerId, buyerId, itemName, itemPrice } = metadata;
+        const { itemId, sellerId, buyerId, itemName, itemPrice, couponCode, discountPercentage, finalPrice } = metadata;
 
         // Check if already processed (deduplication)
         const { data: existingItem } = await supabase
@@ -131,12 +131,20 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ received: true });
         }
 
+        const originalPrice = parseFloat(itemPrice || '0');
+        const paidPrice = finalPrice ? parseFloat(finalPrice) : originalPrice;
+
         const { error } = await supabase.from('item_purchases').insert({
           item_id: itemId,
           seller_id: sellerId,
           buyer_id: buyerId,
           item_name: itemName || 'Unknown Item',
-          price: parseFloat(itemPrice || '0'),
+          price: paidPrice,
+          ...(couponCode && {
+            original_price: originalPrice,
+            coupon_code: couponCode,
+            discount_percentage: parseInt(discountPercentage || '0'),
+          }),
           stripe_session_id: session.id,
           status: 'completed',
           purchased_at: new Date().toISOString(),
