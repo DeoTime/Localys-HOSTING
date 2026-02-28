@@ -32,6 +32,10 @@ export function AppBottomNav() {
     checkBusiness();
   }, [user]);
 
+  if (pathname === '/login' || pathname === '/signup' || pathname === '/reset-password') {
+    return null;
+  }
+
   const isActive = (href: string) => {
     if (href === '/') {
       return pathname === '/';
