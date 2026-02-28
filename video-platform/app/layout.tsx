@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { CartProvider } from "@/contexts/CartContext";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -35,7 +36,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <LanguageProvider>
-              {children}
+              <CartProvider>
+                {children}
+              </CartProvider>
             </LanguageProvider>
           </AuthProvider>
         </ThemeProvider>

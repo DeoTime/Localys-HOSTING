@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const body = await request.json();
-    const { itemId, itemName, itemPrice, sellerId, buyerId, itemImage } = body;
+    const { itemId, itemName, itemPrice, sellerId, buyerId, itemImage, couponCode } = body;
 
     if (!itemId || !itemName || itemPrice === undefined || !sellerId || !buyerId) {
       console.error('Missing required fields:', { itemId, itemName, itemPrice, sellerId, buyerId });
@@ -24,7 +24,65 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const priceInCents = Math.round(itemPrice * 100); // Convert to cents
+    let finalPrice = itemPrice;
+    let appliedCouponCode: string | null = null;
+    let discountPercentage = 0;
+
+    // Validate and apply coupon if provided
+    if (couponCode) {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const { data: coupon, error: couponError } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+      if (couponError || !coupon) {
+        return NextResponse.json(
+          { error: 'Invalid or expired coupon' },
+          { status: 400 }
+        );
+      }
+
+      // Check expiry
+      if (coupon.expiry_date && new Date(coupon.expiry_date) < new Date()) {
+        return NextResponse.json(
+          { error: 'Coupon has expired' },
+          { status: 400 }
+        );
+      }
+
+      // Check max uses
+      if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+        return NextResponse.json(
+          { error: 'Coupon has reached maximum uses' },
+          { status: 400 }
+        );
+      }
+
+      discountPercentage = coupon.discount_percentage;
+      const discount = finalPrice * (discountPercentage / 100);
+      finalPrice = Math.max(0, finalPrice - discount);
+      appliedCouponCode = couponCode.toUpperCase();
+
+      // Mark coupon as used and increment count
+      await supabase
+        .from('coupons')
+        .update({ used_count: coupon.used_count + 1 })
+        .eq('id', coupon.id);
+    }
+
+    const priceInCents = Math.round(finalPrice * 100);
+
+    const productName = appliedCouponCode
+      ? `${itemName} (${discountPercentage}% off with ${appliedCouponCode})`
+      : itemName;
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -33,7 +91,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: itemName,
+              name: productName,
               description: `Purchase from local business`,
               images: itemImage ? [itemImage] : [],
             },
@@ -51,6 +109,11 @@ export async function POST(request: NextRequest) {
         sellerId: sellerId.toString(),
         buyerId: buyerId.toString(),
         itemPrice: itemPrice.toString(),
+        ...(appliedCouponCode && {
+          couponCode: appliedCouponCode,
+          discountPercentage: discountPercentage.toString(),
+          finalPrice: finalPrice.toString(),
+        }),
       },
     });
 
@@ -61,7 +124,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Checkout session created: ${session.id} for item ${itemName}`);
+    console.log(`Checkout session created: ${session.id} for item ${itemName}${appliedCouponCode ? ` with coupon ${appliedCouponCode}` : ''}`);
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
