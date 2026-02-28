@@ -226,3 +226,7 @@ button:active, a:active {
   pointer-events: all;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
+
+div#devtools-indicator.nextjs-toast {
+  display: none !important;
+}
