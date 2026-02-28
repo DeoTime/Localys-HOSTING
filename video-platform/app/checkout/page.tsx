@@ -89,20 +89,18 @@ function CheckoutContent() {
     setError(null);
 
     try {
-      // For now, process items one at a time (each creates a Stripe session)
-      // Use the first item for single-item checkout
-      const item = checkoutItems[0];
-
       const response = await fetch('/api/checkout-item', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          itemId: item.itemId,
-          itemName: item.itemName,
-          itemPrice: item.itemPrice,
-          itemImage: item.itemImage,
-          sellerId: item.sellerId,
-          buyerId: item.buyerId,
+          items: checkoutItems.map((item) => ({
+            itemId: item.itemId,
+            itemName: item.itemName,
+            itemPrice: item.itemPrice,
+            itemImage: item.itemImage,
+            sellerId: item.sellerId,
+            buyerId: item.buyerId,
+          })),
           couponCode: selectedCoupon?.code || null,
         }),
       });

@@ -115,6 +115,62 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({ success: true });
+      } else if (metadata.items && metadata.buyerId) {
+        // --- ITEM PURCHASE (multi-item) ---
+        const buyerId = metadata.buyerId;
+        const couponCode = metadata.couponCode || null;
+        const discountPercentage = parseInt(metadata.discountPercentage || '0');
+
+        // Check if already processed (deduplication)
+        const { data: existingItem } = await supabase
+          .from('item_purchases')
+          .select('id')
+          .eq('stripe_session_id', session.id)
+          .limit(1);
+
+        if (existingItem && existingItem.length > 0) {
+          console.log(`Item purchase already processed for session ${session.id}`);
+          return NextResponse.json({ received: true });
+        }
+
+        const items = JSON.parse(metadata.items) as { id: string; name: string; sid: string; price: number }[];
+
+        const purchaseRecords = items.map((item) => {
+          const originalPrice = item.price;
+          const paidPrice = discountPercentage > 0
+            ? Math.max(0, originalPrice - originalPrice * (discountPercentage / 100))
+            : originalPrice;
+
+          return {
+            item_id: item.id,
+            seller_id: item.sid,
+            buyer_id: buyerId,
+            item_name: item.name || 'Unknown Item',
+            price: paidPrice,
+            ...(couponCode && {
+              original_price: originalPrice,
+              coupon_code: couponCode,
+              discount_percentage: discountPercentage,
+            }),
+            stripe_session_id: session.id,
+            status: 'completed',
+            purchased_at: new Date().toISOString(),
+          };
+        });
+
+        const { error } = await supabase.from('item_purchases').insert(purchaseRecords);
+
+        if (error) {
+          console.error('Error recording item purchases:', error);
+          return NextResponse.json(
+            { error: 'Failed to record purchases' },
+            { status: 500 }
+          );
+        }
+
+        const itemNames = items.map(i => i.name).join(', ');
+        console.log(`Item purchases recorded: ${itemNames} bought by ${buyerId}`);
+        return NextResponse.json({ success: true });
       } else if (metadata.itemId && metadata.buyerId && metadata.sellerId) {
         // --- ITEM PURCHASE ---
         const { itemId, sellerId, buyerId, itemName, itemPrice, couponCode, discountPercentage, finalPrice } = metadata;

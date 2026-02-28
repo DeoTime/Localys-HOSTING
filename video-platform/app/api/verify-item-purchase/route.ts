@@ -57,6 +57,28 @@ export async function POST(request: NextRequest) {
 
     const { itemId, sellerId, buyerId, itemName, itemPrice } = session.metadata;
 
+    // Handle new multi-item format
+    if (session.metadata.items && session.metadata.buyerId) {
+      const items = JSON.parse(session.metadata.items) as { id: string; name: string; sid: string; price: number }[];
+      const mBuyerId = session.metadata.buyerId;
+
+      for (const item of items) {
+        await processPurchase(item.id, item.sid, mBuyerId, item.name, item.price.toString(), sessionId);
+      }
+
+      const totalPrice = items.reduce((sum, i) => sum + i.price, 0);
+      return NextResponse.json({
+        success: true,
+        confirmationNumber,
+        message: 'Purchase confirmed',
+        purchase: {
+          item_name: items.map(i => i.name).join(', '),
+          price: totalPrice,
+        },
+      });
+    }
+
+    // Legacy single-item format
     // Process purchase before returning - must await in serverless environment
     if (itemId && sellerId && buyerId && itemName && itemPrice) {
       await processPurchase(itemId, sellerId, buyerId, itemName, itemPrice, sessionId);
