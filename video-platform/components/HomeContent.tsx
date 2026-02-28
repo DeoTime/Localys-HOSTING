@@ -886,7 +886,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
       {/* Top Header */}
       <header className="absolute top-0 left-0 right-0 z-30 border-b border-[var(--border-color)] bg-[var(--surface-overlay)] backdrop-blur-md">
         <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 md:px-5">
-          <h1 className="text-base sm:text-lg md:text-xl font-bold">Localys</h1>
+          <h1 className="text-base sm:text-lg md:text-xl font-bold">Localy</h1>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
