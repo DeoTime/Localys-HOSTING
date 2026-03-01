@@ -127,23 +127,30 @@ export function HomeContent({ isActive }: HomeContentProps) {
   // Pause video when navigating away, resume when coming back
   useEffect(() => {
     const currentVideo = videoRefs.current[currentIndex];
+    if (!isActive) {
+      videoRefs.current.forEach((video) => {
+        if (video) {
+          video.muted = true;
+          video.pause();
+        }
+      });
+      setCommentModalOpen(false);
+      return;
+    }
+
     if (!currentVideo) return;
 
-    if (isActive) {
-      if (isPlaying) {
-        const playPromise = currentVideo.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((error: unknown) => {
-            const mediaError = error as { name?: string };
-            if (mediaError.name !== 'AbortError' && mediaError.name !== 'NotAllowedError') {
-              console.error('Video resume error:', error);
-            }
-          });
-        }
+    currentVideo.muted = false;
+    if (isPlaying) {
+      const playPromise = currentVideo.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((error: unknown) => {
+          const mediaError = error as { name?: string };
+          if (mediaError.name !== 'AbortError' && mediaError.name !== 'NotAllowedError') {
+            console.error('Video resume error:', error);
+          }
+        });
       }
-    } else {
-      currentVideo.pause();
-      setCommentModalOpen(false);
     }
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -407,6 +414,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
     const currentVideo = videoRefs.current[currentIndex];
     if (currentVideo) {
+      currentVideo.muted = false;
       currentVideo.volume = volume;
       currentVideo.playbackRate = playbackSpeed;
       const playPromise = currentVideo.play();
@@ -423,6 +431,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
     videoRefs.current.forEach((video, index) => {
       if (video && index !== currentIndex) {
+        video.muted = true;
         video.pause();
       }
     });
@@ -786,6 +795,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               controls={false}
               loop
               playsInline
+              muted={!isActive || index !== currentIndex}
               autoPlay={index === currentIndex}
             />
 
