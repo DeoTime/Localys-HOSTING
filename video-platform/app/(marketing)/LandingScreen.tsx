@@ -72,7 +72,7 @@ export default function LandingScreen() {
             <div className="relative flex items-center justify-center gap-2 px-4 py-2.5 text-sm">
               <span className="text-accent">&#9670;</span>
               <span className="font-semibold">Now available:</span>
-              <span className="text-muted-foreground">Trusted By over 1000+ business&nbsp;</span>
+              <span className="text-muted-foreground">Trusted by over 1,000+ businesses&nbsp;</span>
               <a href="#" className="font-semibold underline-offset-4 hover:underline">
                 Learn More
               </a>
@@ -121,7 +121,7 @@ export default function LandingScreen() {
             <nav className="flex items-center gap-2 text-sm font-medium">
               <Link
                 href="/login"
-                className="rounded-full bg-primary px-5 py-2 text-primary-foreground transition hover:bg-primary/90"
+                className="rounded-full bg-primary px-5 py-2 text-black transition hover:bg-primary/90"
               >
                 Sign in
               </Link>
@@ -132,7 +132,7 @@ export default function LandingScreen() {
                 Create account
               </Link>
               <Link href="/onboarding" className="hidden px-3 text-primary/80 hover:text-primary sm:inline">
-                For Small Buisnesses
+                For Small Businesses
               </Link>
             </nav>
           </div>
@@ -161,7 +161,7 @@ export default function LandingScreen() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/upload"
-                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]"
+                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02]"
                   >
                     Upload
                   </Link>
@@ -169,7 +169,7 @@ export default function LandingScreen() {
                     href="/feed"
                     className="rounded-full bg-transparent px-6 py-2.5 text-sm font-semibold text-primary ring-1 ring-white/40 transition hover:bg-white/10"
                   >
-                    Explore Go+
+                    Explore
                   </Link>
                 </div>
               </motion.div>
@@ -257,9 +257,9 @@ export default function LandingScreen() {
         <div className="mt-10 text-center">
           <Link
             href="/feed"
-            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]"
+            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02]"
           >
-            Explore small buisnesses
+            Explore small businesses
           </Link>
         </div>
       </section>
@@ -331,7 +331,7 @@ export default function LandingScreen() {
           <h2 className="font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl">
             CALLING ALL
             <br />
-            SMALL BUISNESSES
+            SMALL BUSINESSES
           </h2>
           <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
             Discover hidden local businesses, connect directly with owners, and support the communities around you.
@@ -339,7 +339,7 @@ export default function LandingScreen() {
           </p>
           <Link
             href="/onboarding"
-            className="mt-7 inline-flex rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]"
+            className="mt-7 inline-flex rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02]"
           >
             Find out more
           </Link>
@@ -349,14 +349,14 @@ export default function LandingScreen() {
       {/* Footer */}
       <footer className="mx-auto mt-28 max-w-6xl px-6 pb-12">
         <div className="flex flex-wrap justify-center gap-7 text-muted-foreground">
-          {[Twitter, Music2, Music2, Youtube, Facebook, Instagram].map((Icon, i) => (
+          {[Twitter, Music2, Youtube, Facebook, Instagram].map((Icon, i) => (
             <a key={i} href="#" className="transition hover:text-foreground">
               <Icon size={18} />
             </a>
           ))}
         </div>
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} LOCALY. All rights reserved.
+          &copy; {new Date().getFullYear()} Localy. All rights reserved.
         </p>
       </footer>
     </div>
