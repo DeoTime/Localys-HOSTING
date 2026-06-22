@@ -227,7 +227,7 @@ export default function LandingScreen() {
 
       {/* Trending - sliding right-to-left */}
       <section className="mt-20 overflow-hidden">
-        <h2 className="mb-8 text-center font-display text-2xl tracking-wide">See What&apos;s In Your Area</h2>
+        <h2 className="mb-12 text-center font-display text-2xl tracking-wide sm:mb-14">See What&apos;s In Your Area</h2>
         <div className="group relative">
           <motion.div
             className="flex w-max gap-5 px-6"
