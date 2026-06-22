@@ -121,7 +121,7 @@ export default function LandingScreen() {
             <nav className="flex items-center gap-2 text-sm font-medium">
               <Link
                 href="/login"
-                className="rounded-full bg-primary px-5 py-2 text-black transition hover:bg-primary/90"
+                className="rounded-full bg-primary px-5 py-2 !text-black transition hover:bg-primary/90"
               >
                 Sign in
               </Link>
@@ -161,7 +161,7 @@ export default function LandingScreen() {
                 <div className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/upload"
-                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02]"
+                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold !text-black transition hover:scale-[1.02]"
                   >
                     Upload
                   </Link>
@@ -218,7 +218,7 @@ export default function LandingScreen() {
           <div className="mt-6 text-sm font-semibold text-white">or</div>
           <Link
             href="/upload"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-black transition hover:scale-[1.02]"
+            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold !text-black transition hover:scale-[1.02]"
           >
             <Upload size={16} /> Upload your own
           </Link>
@@ -257,7 +257,7 @@ export default function LandingScreen() {
         <div className="mt-10 text-center">
           <Link
             href="/feed"
-            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02]"
+            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold !text-black transition hover:scale-[1.02]"
           >
             Explore small businesses
           </Link>
@@ -339,7 +339,7 @@ export default function LandingScreen() {
           </p>
           <Link
             href="/onboarding"
-            className="mt-7 inline-flex rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-black transition hover:scale-[1.02]"
+            className="mt-7 inline-flex rounded-full bg-primary px-6 py-2.5 text-sm font-semibold !text-black transition hover:scale-[1.02]"
           >
             Find out more
           </Link>
