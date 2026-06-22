@@ -257,7 +257,7 @@ export default function LandingScreen() {
         <div className="mt-10 text-center">
           <Link
             href="/feed"
-            className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold !text-black transition hover:scale-[1.02]"
+            className="inline-flex max-w-[calc(100vw-2rem)] items-center justify-center rounded-full bg-primary px-5 py-2.5 text-center text-sm font-semibold leading-tight !text-black transition hover:scale-[1.02] sm:px-6"
           >
             Explore small businesses
           </Link>
