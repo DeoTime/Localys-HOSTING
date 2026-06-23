@@ -1,363 +1,368 @@
-"use client";
-
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Search,
-  Upload,
-  Play,
-  X,
-  Twitter,
-  Music2,
-  Youtube,
-  Facebook,
-  Instagram,
-  MapPin,
-} from "lucide-react";
-
-const slides = [
-  {
-    image: "/landing/hero-food.png",
-    title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
-    artist: "Pho Shop",
-    role: "5051 Yonge St Unit #2",
-  },
-  {
-    image: "/landing/hero-restaurant.png",
-    title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
-    artist: "Andy's Pho",
-    role: "5051 Yonge St Unit #2",
-  },
-  {
-    image: "/landing/hero-flowers.png",
-    title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
-    artist: "Dream Rose Florist",
-    role: "14 Levendale Rd, Richmond Hill",
-  },
-];
-
-const trending = [
-  { img: "/landing/biz-ana-pastry.png", title: "Ana Pastry", artist: "26 Church St S" },
-  { img: "/landing/biz-aneals.png", title: "Aneal's Taste of the Islands", artist: "10220 Yonge St" },
-  { img: "/landing/biz-advanced-printing.png", title: "Advanced Printing", artist: "10330 Yonge St" },
-  { img: "/landing/biz-align.png", title: "Align Health & Wellness", artist: "22 Richmond St" },
-  { img: "/landing/biz-acuvega.png", title: "Acuvega Wellness Center", artist: "207-22 Richmond St" },
-  { img: "/landing/biz-arnold.png", title: "Arnold Crescent Animal Hospital", artist: "26 Arnold Cres" },
-];
+import "./landing-v3.css";
 
 export default function LandingScreen() {
-  const [banner, setBanner] = useState(true);
-  const [slide, setSlide] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => setSlide((s) => (s + 1) % slides.length), 6000);
-    return () => clearInterval(id);
-  }, []);
-
-  const current = slides[slide];
-
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground">
-      {/* Promo banner */}
-      <AnimatePresence>
-        {banner && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-b border-border bg-secondary"
-          >
-            <div className="relative flex items-center justify-center gap-2 px-4 py-2.5 text-sm">
-              <span className="text-accent">&#9670;</span>
-              <span className="font-semibold">Now available:</span>
-              <span className="text-muted-foreground">Trusted by over 1,000+ businesses&nbsp;</span>
-              <a href="#" className="font-semibold underline-offset-4 hover:underline">
-                Learn More
-              </a>
-              <button
-                onClick={() => setBanner(false)}
-                aria-label="Dismiss"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-0 text-muted-foreground hover:-translate-y-1/2 hover:scale-100 hover:text-foreground active:-translate-y-1/2 active:scale-100"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Hero */}
-      <section className="px-3 pt-3">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-card">
-          <AnimatePresence mode="sync">
-            <motion.div
-              key={slide}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 1.1, ease: [0.65, 0, 0.35, 1] }}
-              className="absolute inset-0"
-            >
-              <Image
-                src={current.image}
-                alt=""
-                fill
-                priority={slide === 0}
-                sizes="100vw"
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-black/30" />
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Nav */}
-          <div className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
-            <Link href="/" className="flex items-center gap-2 text-primary">
-              <MapPin className="h-7 w-7 fill-primary" strokeWidth={1.5} />
-              <span className="font-display text-xl tracking-wide">Localy</span>
-            </Link>
-            <nav className="flex items-center gap-2 text-sm font-medium">
-              <Link
-                href="/login"
-                className="rounded-full bg-primary px-5 py-2 !text-black transition hover:bg-primary/90"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/signup"
-                className="rounded-full bg-black px-5 py-2 text-primary ring-1 ring-white/20 transition hover:bg-white/10"
-              >
-                Create account
-              </Link>
-              <Link href="/onboarding" className="hidden px-3 text-primary/80 hover:text-primary sm:inline">
-                For Small Businesses
-              </Link>
-            </nav>
-          </div>
-
-          {/* Hero content */}
-          <div className="relative z-10 grid min-h-[520px] grid-rows-[1fr_auto] px-6 pb-10 sm:min-h-[600px] sm:px-12 sm:pb-14">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={slide}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.7, delay: 0.4 }}
-                className="max-w-2xl pt-8"
-              >
-                <h1 className="font-display text-5xl uppercase leading-[0.95] tracking-tight text-primary sm:text-7xl">
-                  {current.title[0]}
-                  <br />
-                  {current.title[1]}
-                </h1>
-                <p className="mt-5 max-w-lg text-sm leading-relaxed text-primary/85 sm:text-base">
-                  Discover your community&apos;s largest collection of local businesses: popular spots you already know,
-                  plus hidden gems, family-owned shops, exclusive deals, and services you won&apos;t find on major
-                  platforms.
-                </p>
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <Link
-                    href="/upload"
-                    className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold !text-black transition hover:scale-[1.02]"
-                  >
-                    Upload
-                  </Link>
-                  <Link
-                    href="/feed"
-                    className="rounded-full bg-transparent px-6 py-2.5 text-sm font-semibold text-primary ring-1 ring-white/40 transition hover:bg-white/10"
-                  >
-                    Explore
-                  </Link>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            <div className="relative flex items-end justify-center">
-              <div className="flex items-center gap-2">
-                {slides.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSlide(i)}
-                    aria-label={`Slide ${i + 1}`}
-                    className={`h-2 rounded-full p-0 transition-all hover:scale-100 active:scale-100 ${i === slide ? "w-6 bg-primary" : "w-2 bg-primary/40"}`}
-                  />
-                ))}
-              </div>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={slide}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="absolute right-0 bottom-0 text-right text-primary"
-                >
-                  <div className="font-display text-lg tracking-wide">{current.artist}</div>
-                  <div className="text-xs text-primary/70">{current.role}</div>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Search */}
-      <section className="mt-16 bg-black px-6 py-14 text-center">
-        <div className="mx-auto max-w-2xl">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-white/50" size={18} />
-            <input
-              type="search"
-              placeholder="Search for businesses, restaurants, services, deals"
-              className="h-14 w-full rounded-full bg-white/10 pl-12 pr-5 text-base text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
-            />
-          </div>
-          <div className="mt-6 text-sm font-semibold text-white">or</div>
-          <Link
-            href="/upload"
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold !text-black transition hover:scale-[1.02]"
-          >
-            <Upload size={16} /> Upload your own
+    <div className="lv3">
+      <header className="topbar">
+        <div className="bar container">
+          <Link className="logo" href="/">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--tang)">
+              <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
+            </svg>
+            <span>Localy</span>
           </Link>
-        </div>
-      </section>
-
-      {/* Trending - sliding right-to-left */}
-      <section className="mt-20 overflow-hidden">
-        <h2 className="mb-12 text-center font-display text-2xl tracking-wide sm:mb-14">See What&apos;s In Your Area</h2>
-        <div className="group relative">
-          <motion.div
-            className="flex w-max gap-5 px-6"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 45, ease: "linear", repeat: Infinity }}
-          >
-            {[...trending, ...trending].map((t, i) => (
-              <div key={`${t.title}-${i}`} className="w-44 shrink-0 sm:w-52">
-                <div className="group/card relative aspect-square overflow-hidden rounded-md bg-muted">
-                  <Image
-                    src={t.img}
-                    alt={t.title}
-                    fill
-                    sizes="(min-width: 640px) 13rem, 11rem"
-                    className="object-cover transition duration-500 group-hover/card:scale-105"
-                  />
-                  <button className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-accent p-0 text-accent-foreground opacity-0 shadow-lg transition group-hover/card:opacity-100">
-                    <Play size={16} className="ml-0.5 fill-current" />
-                  </button>
-                </div>
-                <div className="mt-3 truncate text-sm font-semibold">{t.title}</div>
-                <div className="truncate text-xs text-muted-foreground">{t.artist}</div>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-        <div className="mt-10 text-center">
-          <Link
-            href="/feed"
-            className="inline-flex max-w-[calc(100vw-2rem)] items-center justify-center rounded-full bg-primary px-5 py-2.5 text-center text-sm font-semibold leading-tight !text-black transition hover:scale-[1.02] sm:px-6"
-          >
-            Explore small businesses
-          </Link>
-        </div>
-      </section>
-
-      {/* Never Stop Listening */}
-      <section className="mx-auto mt-32 grid max-w-6xl gap-10 px-6 md:grid-cols-2 md:items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <h2 className="font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl">
-            NEVER STOP
-            <br />
-            DISCOVERING
-          </h2>
-          <div className="mt-8 flex items-center gap-5">
-            <div className="relative grid h-28 w-28 place-items-center rounded-md bg-white p-1.5">
-              <Image src="/landing/qr-code.png" alt="Scan QR code" width={1011} height={1024} className="h-full w-full object-contain" />
-            </div>
-            <p className="max-w-xs text-sm text-muted-foreground">
-              Scan to grab the app. Unlimited discounts, new places, your choice &mdash; wherever you go.
-            </p>
+          <nav className="links">
+            <a href="#near">Explore</a>
+            <a href="#how">How it works</a>
+            <a href="#owners">For businesses</a>
+          </nav>
+          <div className="bar-cta">
+            <Link className="textlink" href="/login">Sign in</Link>
+            <Link className="sticker sticker-tang" href="/feed">Browse local</Link>
           </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, rotate: -6 }}
-          whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="flex justify-center"
-        >
-          <Image
-            src="/landing/listening-phone-v3.png"
-            alt="Restaurant interior"
-            width={543}
-            height={433}
-            loading="lazy"
-            className="w-full max-w-md rounded-lg"
-          />
-        </motion.div>
-      </section>
+        </div>
+      </header>
 
-      {/* Calling All Creators */}
-      <section className="mx-auto mt-28 grid max-w-6xl gap-10 px-6 md:grid-cols-2 md:items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -60 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="overflow-hidden rounded-md"
-        >
-          <Image
-            src="/landing/creator-dining.jpg"
-            alt="Friends dining at a local restaurant"
-            width={1920}
-            height={1280}
-            loading="lazy"
-            className="aspect-[4/3] w-full object-cover"
-          />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 60 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <h2 className="font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl">
-            CALLING ALL
-            <br />
-            SMALL BUSINESSES
-          </h2>
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Discover hidden local businesses, connect directly with owners, and support the communities around you.
-            Explore authentic products, services, and experiences&mdash;all in one place.
+      <section className="hero container reveal">
+        <div className="hero-copy">
+          <span className="eyebrow">
+            <span className="star">★</span> 4.8 · 2,300+ locals exploring nearby
+          </span>
+          <h1 className="display hero-title">
+            The small shops near you,{" "}
+            <span className="mark"><span>on video.</span></span>
+          </h1>
+          <p className="lead">
+            Scroll real clips from the businesses around the corner — find hidden gems, today&apos;s deals, and the spots your neighbours swear by.
           </p>
-          <Link
-            href="/onboarding"
-            className="mt-7 inline-flex rounded-full bg-primary px-6 py-2.5 text-sm font-semibold !text-black transition hover:scale-[1.02]"
-          >
-            Find out more
-          </Link>
-        </motion.div>
+          <div className="cta-row">
+            <Link className="sticker sticker-tang big" href="/feed">Browse local</Link>
+            <Link className="sticker sticker-ghost big" href="#owners">List your business</Link>
+          </div>
+          <p className="microtrust">
+            <b>Free.</b> No download needed to browse · 25 neighbourhoods · 1,000+ businesses
+          </p>
+        </div>
+
+        <div className="stage">
+          <div className="phone">
+            <div className="notch"></div>
+            <div className="screen">
+              <div className="feed">
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-deal">20% off</span>
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Pho Shop</b><span>Willowdale · 0.3km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Dream Rose Florist</b><span>Richmond Hill · 0.6km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-deal">BOGO</span>
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Ana Pastry</b><span>Downtown · 1.1km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Align Wellness</b><span>Midtown · 0.9km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1521123845560-14093637aa24?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-deal">New</span>
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Corner Books</b><span>Old Town · 0.4km</span></div>
+                </article>
+                {/* duplicated for seamless loop */}
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-deal">20% off</span>
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Pho Shop</b><span>Willowdale · 0.3km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Dream Rose Florist</b><span>Richmond Hill · 0.6km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-deal">BOGO</span>
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Ana Pastry</b><span>Downtown · 1.1km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Align Wellness</b><span>Midtown · 0.9km</span></div>
+                </article>
+                <article className="vid">
+                  <img src="https://images.unsplash.com/photo-1521123845560-14093637aa24?q=80&w=600&auto=format&fit=crop" alt="" />
+                  <span className="vid-deal">New</span>
+                  <span className="vid-play">▶</span>
+                  <div className="vid-meta"><b>Corner Books</b><span>Old Town · 0.4km</span></div>
+                </article>
+              </div>
+            </div>
+          </div>
+          <span className="badge b1">🍜 Pho Shop · 0.3km</span>
+          <span className="badge b2">20% off today</span>
+          <span className="badge b3">💐 New near you</span>
+        </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mx-auto mt-28 max-w-6xl px-6 pb-12">
-        <div className="flex flex-wrap justify-center gap-7 text-muted-foreground">
-          {[Twitter, Music2, Youtube, Facebook, Instagram].map((Icon, i) => (
-            <a key={i} href="#" className="transition hover:text-foreground">
-              <Icon size={18} />
-            </a>
-          ))}
+      <div className="marquee" aria-hidden="true">
+        <div className="track">
+          <span className="mpill t">🍜 Food &amp; Drink</span>
+          <span className="mpill">☕ Cafés</span>
+          <span className="mpill a">🛍️ Retail</span>
+          <span className="mpill">💐 Florists</span>
+          <span className="mpill g">💇 Barbers</span>
+          <span className="mpill">🧘 Wellness</span>
+          <span className="mpill a">📚 Bookshops</span>
+          <span className="mpill">🎨 Makers</span>
+          <span className="mpill t">🍜 Food &amp; Drink</span>
+          <span className="mpill">☕ Cafés</span>
+          <span className="mpill a">🛍️ Retail</span>
+          <span className="mpill">💐 Florists</span>
+          <span className="mpill g">💇 Barbers</span>
+          <span className="mpill">🧘 Wellness</span>
+          <span className="mpill a">📚 Bookshops</span>
+          <span className="mpill">🎨 Makers</span>
         </div>
-        <p className="mt-8 text-center text-xs text-muted-foreground">
-          &copy; {new Date().getFullYear()} Localy. All rights reserved.
-        </p>
+      </div>
+      <div className="marquee tight" aria-hidden="true">
+        <div className="track rev">
+          <span className="mpill">🔧 Services</span>
+          <span className="mpill g">🐾 Pet shops</span>
+          <span className="mpill">🍰 Bakeries</span>
+          <span className="mpill t">💅 Beauty</span>
+          <span className="mpill">🍷 Wine &amp; spirits</span>
+          <span className="mpill a">🏋️ Fitness</span>
+          <span className="mpill">🌿 Garden</span>
+          <span className="mpill t">🎸 Music</span>
+          <span className="mpill">🔧 Services</span>
+          <span className="mpill g">🐾 Pet shops</span>
+          <span className="mpill">🍰 Bakeries</span>
+          <span className="mpill t">💅 Beauty</span>
+          <span className="mpill">🍷 Wine &amp; spirits</span>
+          <span className="mpill a">🏋️ Fitness</span>
+          <span className="mpill">🌿 Garden</span>
+          <span className="mpill t">🎸 Music</span>
+        </div>
+      </div>
+
+      <section id="near" className="container section reveal">
+        <div className="sec-head">
+          <h2 className="display">
+            What&apos;s <span className="mark mark-teal"><span>near you</span></span>
+          </h2>
+          <p>Tap a clip to watch. Tap a deal to claim. No account needed to start.</p>
+        </div>
+        <div className="bento">
+          <article className="tile t-lg">
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=900&auto=format&fit=crop" alt="" />
+            <span className="deal">Chef&apos;s special</span>
+            <span className="play">▶</span>
+            <div className="ov"><b>The Corner Kitchen</b><span>Willowdale · Food &amp; Drink</span></div>
+          </article>
+          <article className="tile">
+            <img src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=600&auto=format&fit=crop" alt="" />
+            <span className="play">▶</span>
+            <div className="ov"><b>Dream Rose Florist</b><span>Richmond Hill</span></div>
+          </article>
+          <article className="tile t-tall">
+            <img src="https://images.unsplash.com/photo-1521334884684-d80222895322?q=80&w=600&auto=format&fit=crop" alt="" />
+            <span className="deal">New-customer</span>
+            <span className="play">▶</span>
+            <div className="ov"><b>Fade &amp; Co. Barbers</b><span>Downtown · Beauty</span></div>
+          </article>
+          <article className="tile">
+            <img src="https://images.unsplash.com/photo-1453614512568-c4024d13c247?q=80&w=600&auto=format&fit=crop" alt="" />
+            <span className="deal">BOGO</span>
+            <span className="play">▶</span>
+            <div className="ov"><b>Ana Pastry</b><span>Old Town</span></div>
+          </article>
+          <article className="tile t-wide">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=900&auto=format&fit=crop" alt="" />
+            <span className="play">▶</span>
+            <div className="ov"><b>Maple &amp; Thread</b><span>Midtown · Retail</span></div>
+          </article>
+          <article className="tile">
+            <img src="https://images.unsplash.com/photo-1556228578-8c89e6adf883?q=80&w=600&auto=format&fit=crop" alt="" />
+            <span className="play">▶</span>
+            <div className="ov"><b>Align Wellness</b><span>Midtown</span></div>
+          </article>
+          <article className="tile">
+            <img src="https://images.unsplash.com/photo-1521123845560-14093637aa24?q=80&w=600&auto=format&fit=crop" alt="" />
+            <span className="deal">20% off</span>
+            <span className="play">▶</span>
+            <div className="ov"><b>Corner Books</b><span>Old Town</span></div>
+          </article>
+        </div>
+        <div className="center-cta">
+          <Link className="sticker sticker-tang big" href="/feed">See all near you →</Link>
+        </div>
+      </section>
+
+      <section id="how" className="container section reveal">
+        <h2 className="display center" style={{ marginBottom: "36px" }}>
+          Three taps to <span className="mark"><span>shop local</span></span>
+        </h2>
+        <div className="steps">
+          <div className="step">
+            <div className="num">1</div>
+            <h3>Browse</h3>
+            <p>Scroll short videos from the small businesses right around you — no app download required.</p>
+          </div>
+          <div className="step">
+            <div className="num">2</div>
+            <h3>Find</h3>
+            <p>Catch today&apos;s deals, hours, and the story behind each spot, all in one swipe.</p>
+          </div>
+          <div className="step">
+            <div className="num">3</div>
+            <h3>Support</h3>
+            <p>Walk in, shop, and keep your neighbourhood thriving — one local visit at a time.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="container section reveal">
+        <div className="mapwrap">
+          <div className="map-copy">
+            <h2 className="display">
+              A living map of <span className="mark mark-teal"><span>your area</span></span>
+            </h2>
+            <p>Pick a neighbourhood or let us use your location — then watch the block come to life, business by business.</p>
+            <div className="nbhd-chips">
+              <a className="chip" href="#">Willowdale</a>
+              <a className="chip" href="#">Richmond Hill</a>
+              <a className="chip" href="#">Downtown</a>
+              <a className="chip" href="#">Old Town</a>
+              <a className="chip" href="#">Midtown</a>
+            </div>
+            <Link className="sticker sticker-ink big" href="/feed">📍 Use my location</Link>
+          </div>
+          <div className="map-grid" aria-hidden="true">
+            <div className="blk"></div><div className="blk road"></div><div className="blk"></div><div className="blk park"></div><div className="blk"></div><div className="blk"></div>
+            <div className="blk road"></div><div className="blk road"></div><div className="blk road"></div><div className="blk road"></div><div className="blk road"></div><div className="blk road"></div>
+            <div className="blk"></div><div className="blk"></div><div className="blk tang"></div><div className="blk"></div><div className="blk road"></div><div className="blk"></div>
+            <div className="blk park"></div><div className="blk"></div><div className="blk road"></div><div className="blk"></div><div className="blk"></div><div className="blk tang"></div>
+            <div className="blk"></div><div className="blk road"></div><div className="blk"></div><div className="blk"></div><div className="blk road"></div><div className="blk"></div>
+            <span className="pin p1">📍</span><span className="pin p2">📍</span><span className="pin p3">📍</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="owners" className="owners-band reveal">
+        <div className="container owners-inner">
+          <div>
+            <span className="kicker">For business owners</span>
+            <h2 className="display">Get found by the locals next door.</h2>
+            <p>List free, post short videos, and run deals that bring people through your door. No commission, no catch.</p>
+            <ul className="owner-points">
+              <li>✓ Free listing</li>
+              <li>✓ Reach nearby customers</li>
+              <li>✓ Videos &amp; deals built in</li>
+            </ul>
+          </div>
+          <div className="owners-cta">
+            <Link className="sticker sticker-tang big" href="/onboarding">List your business</Link>
+            <span className="muted">Takes about 5 minutes</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="container section proof reveal">
+        <div className="stats">
+          <div className="stat"><div className="n">1,000+</div><div className="l">local businesses</div></div>
+          <div className="stat"><div className="n">25</div><div className="l">neighbourhoods</div></div>
+          <div className="stat"><div className="n">4.8★</div><div className="l">average rating</div></div>
+        </div>
+        <div className="notes">
+          <blockquote className="note">
+            &ldquo;I found three new spots on my own street I never knew existed.&rdquo;
+            <cite>— Priya, Willowdale</cite>
+          </blockquote>
+          <blockquote className="note">
+            &ldquo;Listed my bakery in five minutes and had walk-ins from it the same week.&rdquo;
+            <cite>— Marco, Ana Pastry</cite>
+          </blockquote>
+          <blockquote className="note">
+            &ldquo;It&apos;s like TikTok, but everything is within walking distance. Obsessed.&rdquo;
+            <cite>— Dee, Old Town</cite>
+          </blockquote>
+        </div>
+      </section>
+
+      <footer className="footer">
+        <div className="container foot-inner">
+          <div className="foot-brand">
+            <Link className="logo" href="/">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="var(--tang)">
+                <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
+              </svg>
+              <span>Localy</span>
+            </Link>
+            <p className="foot-tag">Discover and support the small businesses around you — one short video at a time.</p>
+          </div>
+          <div className="foot-cols">
+            <div>
+              <h4>Discover</h4>
+              <a href="#near">Browse local</a>
+              <a href="#">Deals near you</a>
+              <a href="#">Neighbourhoods</a>
+              <a href="#how">How it works</a>
+            </div>
+            <div>
+              <h4>Business</h4>
+              <a href="#owners">List your business</a>
+              <a href="#">Pricing</a>
+              <a href="#">Success stories</a>
+              <a href="#">Help centre</a>
+            </div>
+            <div>
+              <h4>Company</h4>
+              <a href="#">About</a>
+              <a href="#">Careers</a>
+              <a href="#">Privacy</a>
+              <a href="#">Contact</a>
+            </div>
+          </div>
+        </div>
+        <div className="container foot-bottom">
+          <div className="socials">
+            <a href="#" aria-label="X">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2H21l-6.56 7.5L22 22h-6.4l-4.7-6.1L5.4 22H2.6l7.02-8.02L2 2h6.56l4.24 5.6L18.244 2Z" />
+              </svg>
+            </a>
+            <a href="#" aria-label="Instagram">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+              </svg>
+            </a>
+            <a href="#" aria-label="YouTube">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12ZM10 15V9l5 3-5 3Z" />
+              </svg>
+            </a>
+            <a href="#" aria-label="TikTok">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 3c.3 2.1 1.5 3.6 3.6 3.9v2.6c-1.3 0-2.5-.4-3.6-1v6.1A5.6 5.6 0 1 1 10.4 9v2.7a2.9 2.9 0 1 0 2 2.8V3H16Z" />
+              </svg>
+            </a>
+          </div>
+          <span className="copy">© 2026 Localy. All rights reserved.</span>
+        </div>
       </footer>
     </div>
   );

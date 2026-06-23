@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import LandingScreen from "./LandingScreen";
 
 export const metadata: Metadata = {
-  title: "Localy - Discover local. Support local.",
+  title: "Localy — The shops near you, on video",
   description:
     "Discover your community's largest collection of local businesses: popular spots, hidden gems, family-owned shops, exclusive deals, and services you won't find on major platforms.",
   openGraph: {
