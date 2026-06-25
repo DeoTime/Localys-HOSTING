@@ -104,14 +104,14 @@ export default function LandingScreen() {
               <span className="font-display text-xl tracking-wide">Localy</span>
             </Link>
             <nav className="flex items-center gap-2 text-lg font-medium">
-              <Link href="/login" className="rounded-full bg-primary px-11 py-3.5 text-primary-foreground transition hover:bg-primary/90">Sign in</Link>
-              <Link href="/signup" className="rounded-full bg-white/15 px-11 py-3.5 text-white ring-1 ring-white/40 transition hover:bg-white/25">Create account</Link>
+              <Link href="/login" className="rounded-full bg-primary px-11 py-3.5 text-primary-foreground transition hover:text-primary-foreground/70">Sign in</Link>
+              <Link href="/signup" className="rounded-full bg-white/15 px-11 py-3.5 text-white ring-1 ring-white/40 transition hover:text-white/70">Create account</Link>
               <Link href="/onboarding" className="hidden px-3 text-white/80 hover:text-white sm:inline">For Small Businesses</Link>
             </nav>
           </div>
 
           {/* Hero content */}
-          <div className="relative z-10 grid min-h-[340px] grid-rows-[1fr_auto] px-6 pb-4 sm:min-h-[370px] sm:px-12 sm:pb-4">
+          <div className="relative z-10 grid min-h-[460px] grid-rows-[1fr_auto] px-6 pb-4 sm:min-h-[492px] sm:px-12 sm:pb-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={slide}
@@ -121,10 +121,10 @@ export default function LandingScreen() {
                 transition={{ duration: 0.7, delay: 0.4 }}
                 className="max-w-6xl pt-4"
               >
-                <h1 className="font-display text-6xl uppercase leading-[0.92] tracking-tight text-primary sm:text-[7.5rem]">
+                <h1 className="font-display text-6xl uppercase leading-[1.0] tracking-tight text-primary sm:text-[7.5rem]">
                   {current.title[0]}<br />{current.title[1]}
                 </h1>
-                <p className="mt-5 max-w-xl text-base leading-relaxed text-primary/85 sm:text-lg">
+                <p className="mt-6 max-w-xl text-base leading-relaxed text-primary/85 sm:text-lg">
                   Discover your community&apos;s largest collection of local businesses: popular spots you already know, plus hidden gems, family-owned shops, exclusive deals, and services you won&apos;t find on major platforms.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-4">
@@ -164,7 +164,7 @@ export default function LandingScreen() {
       </section>
 
       {/* Search */}
-      <section className="mt-4 bg-black px-6 py-8 text-center">
+      <section className="mt-2 bg-black px-6 py-6 text-center">
         <div className="mx-auto max-w-[946px]">
           <div className="relative">
             <Search className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-white/50" size={22} />
@@ -175,8 +175,8 @@ export default function LandingScreen() {
             />
           </div>
           <div className="mt-6 text-base font-semibold text-white">or</div>
-          <Link href="/feed" className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-14 py-5 text-lg font-semibold text-black transition hover:scale-[1.02]">
-            Browse all businesses
+          <Link href="/onboarding" className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-14 py-5 text-lg font-semibold text-black transition hover:text-black/70">
+            Create a business
           </Link>
         </div>
       </section>
@@ -185,15 +185,11 @@ export default function LandingScreen() {
       <section className="mt-20 overflow-hidden">
         <h2 className="mb-8 text-center font-display text-2xl tracking-wide">See What&apos;s In Your Area</h2>
         <div className="group relative">
-          <motion.div
-            className="flex w-max gap-6 px-6"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 45, ease: "linear", repeat: Infinity }}
-          >
+          <div className="animate-marquee-x flex w-max">
             {[...trending, ...trending].map((t, i) => (
-              <div key={i} className="w-64 shrink-0 sm:w-72">
+              <div key={i} className="mr-7 w-64 shrink-0 sm:w-72">
                 <div className="group/card relative aspect-square overflow-hidden rounded-md bg-muted">
-                  <img src={t.img} alt={t.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105" />
+                  <img src={t.img} alt={t.title} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105" />
                   <button className="absolute bottom-3 right-3 grid h-12 w-12 place-items-center rounded-full bg-accent text-accent-foreground opacity-0 shadow-lg transition group-hover/card:opacity-100">
                     <Play size={18} className="ml-0.5 fill-current" />
                   </button>
@@ -202,7 +198,7 @@ export default function LandingScreen() {
                 <div className="truncate text-sm text-muted-foreground">{t.artist}</div>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
         <div className="mt-10 text-center">
           <Link href="/feed" className="inline-block whitespace-nowrap rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition hover:scale-[1.02]">See all near you</Link>

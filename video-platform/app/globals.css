@@ -3168,3 +3168,15 @@ html {
 .animate-video-exit {
   animation: fadeIn 0.2s ease-in reverse;
 }
+
+/* Landing marquee ("See What's In Your Area") — seamless infinite loop */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee-x {
+  animation: marquee-x 56s linear infinite;
+}
+.group:hover .animate-marquee-x {
+  animation-play-state: paused;
+}
