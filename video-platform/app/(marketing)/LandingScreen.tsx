@@ -103,15 +103,15 @@ export default function LandingScreen() {
               <MapPin className="h-7 w-7 fill-primary" strokeWidth={1.5} />
               <span className="font-display text-xl tracking-wide">Localy</span>
             </Link>
-            <nav className="flex items-center gap-2 text-sm font-medium">
-              <Link href="/login" className="rounded-full bg-primary px-5 py-2 text-primary-foreground transition hover:bg-primary/90">Sign in</Link>
-              <Link href="/signup" className="rounded-full bg-white/15 px-5 py-2 text-white ring-1 ring-white/40 transition hover:bg-white/25">Create account</Link>
+            <nav className="flex items-center gap-2 text-lg font-medium">
+              <Link href="/login" className="rounded-full bg-primary px-11 py-3.5 text-primary-foreground transition hover:bg-primary/90">Sign in</Link>
+              <Link href="/signup" className="rounded-full bg-white/15 px-11 py-3.5 text-white ring-1 ring-white/40 transition hover:bg-white/25">Create account</Link>
               <Link href="/onboarding" className="hidden px-3 text-white/80 hover:text-white sm:inline">For Small Businesses</Link>
             </nav>
           </div>
 
           {/* Hero content */}
-          <div className="relative z-10 grid min-h-[520px] grid-rows-[1fr_auto] px-6 pb-10 sm:min-h-[600px] sm:px-12 sm:pb-14">
+          <div className="relative z-10 grid min-h-[340px] grid-rows-[1fr_auto] px-6 pb-4 sm:min-h-[370px] sm:px-12 sm:pb-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={slide}
@@ -119,17 +119,17 @@ export default function LandingScreen() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.7, delay: 0.4 }}
-                className="max-w-2xl pt-8"
+                className="max-w-6xl pt-4"
               >
-                <h1 className="font-display text-5xl uppercase leading-[0.95] tracking-tight text-primary sm:text-7xl">
+                <h1 className="font-display text-6xl uppercase leading-[0.92] tracking-tight text-primary sm:text-[7.5rem]">
                   {current.title[0]}<br />{current.title[1]}
                 </h1>
-                <p className="mt-10 max-w-lg text-sm leading-relaxed text-primary/85 sm:text-base">
+                <p className="mt-5 max-w-xl text-base leading-relaxed text-primary/85 sm:text-lg">
                   Discover your community&apos;s largest collection of local businesses: popular spots you already know, plus hidden gems, family-owned shops, exclusive deals, and services you won&apos;t find on major platforms.
                 </p>
-                <div className="mt-7 flex flex-wrap gap-3">
-                  <Link href="/feed" className="rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]">Browse local</Link>
-                  <Link href="/onboarding" className="rounded-full bg-transparent px-6 py-2.5 text-sm font-semibold text-white ring-1 ring-white/40 transition hover:bg-white/10">List your business</Link>
+                <div className="mt-6 flex flex-wrap gap-4">
+                  <Link href="/feed" className="rounded-full bg-primary px-12 py-4 text-lg font-semibold text-primary-foreground transition hover:scale-[1.02]">Browse local</Link>
+                  <Link href="/onboarding" className="rounded-full bg-transparent px-12 py-4 text-lg font-semibold text-white ring-1 ring-white/40 transition hover:bg-white/10">List your business</Link>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -164,18 +164,18 @@ export default function LandingScreen() {
       </section>
 
       {/* Search */}
-      <section className="mt-16 bg-black px-6 py-14 text-center">
-        <div className="mx-auto max-w-2xl">
+      <section className="mt-4 bg-black px-6 py-8 text-center">
+        <div className="mx-auto max-w-[946px]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-white/50" size={18} />
+            <Search className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 text-white/50" size={22} />
             <input
               type="search"
               placeholder="Search for businesses, restaurants, services, deals"
-              className="h-14 w-full rounded-full bg-white/10 pl-12 pr-5 text-base text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
+              className="h-[72px] w-full rounded-full bg-white/10 pl-14 pr-6 text-lg text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-white/30"
             />
           </div>
-          <div className="mt-6 text-sm font-semibold text-white">or</div>
-          <Link href="/feed" className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-black transition hover:scale-[1.02]">
+          <div className="mt-6 text-base font-semibold text-white">or</div>
+          <Link href="/feed" className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-14 py-5 text-lg font-semibold text-black transition hover:scale-[1.02]">
             Browse all businesses
           </Link>
         </div>
@@ -186,38 +186,38 @@ export default function LandingScreen() {
         <h2 className="mb-8 text-center font-display text-2xl tracking-wide">See What&apos;s In Your Area</h2>
         <div className="group relative">
           <motion.div
-            className="flex w-max gap-5 px-6"
+            className="flex w-max gap-6 px-6"
             animate={{ x: ["0%", "-50%"] }}
             transition={{ duration: 45, ease: "linear", repeat: Infinity }}
           >
             {[...trending, ...trending].map((t, i) => (
-              <div key={i} className="w-44 shrink-0 sm:w-52">
+              <div key={i} className="w-64 shrink-0 sm:w-72">
                 <div className="group/card relative aspect-square overflow-hidden rounded-md bg-muted">
                   <img src={t.img} alt={t.title} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105" />
-                  <button className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-accent text-accent-foreground opacity-0 shadow-lg transition group-hover/card:opacity-100">
-                    <Play size={16} className="ml-0.5 fill-current" />
+                  <button className="absolute bottom-3 right-3 grid h-12 w-12 place-items-center rounded-full bg-accent text-accent-foreground opacity-0 shadow-lg transition group-hover/card:opacity-100">
+                    <Play size={18} className="ml-0.5 fill-current" />
                   </button>
                 </div>
-                <div className="mt-3 truncate text-sm font-semibold">{t.title}</div>
-                <div className="truncate text-xs text-muted-foreground">{t.artist}</div>
+                <div className="mt-3 truncate text-base font-semibold">{t.title}</div>
+                <div className="truncate text-sm text-muted-foreground">{t.artist}</div>
               </div>
             ))}
           </motion.div>
         </div>
         <div className="mt-10 text-center">
-          <Link href="/feed" className="inline-block whitespace-nowrap rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]">See all near you</Link>
+          <Link href="/feed" className="inline-block whitespace-nowrap rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition hover:scale-[1.02]">See all near you</Link>
         </div>
       </section>
 
       {/* Never Stop Discovering */}
-      <section className="mx-auto mt-32 grid max-w-6xl gap-10 px-6 md:grid-cols-2 md:items-center">
+      <section className="mx-auto mt-40 grid max-w-7xl gap-10 px-6 md:grid-cols-2 md:items-center">
         <motion.div
           initial={{ opacity: 0, x: -40 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
         >
-          <h2 className="font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl">
+          <h2 className="font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl">
             NEVER STOP<br />DISCOVERING
           </h2>
           <div className="mt-8 flex items-center gap-5">
@@ -241,7 +241,7 @@ export default function LandingScreen() {
       </section>
 
       {/* Calling All Small Businesses */}
-      <section className="mx-auto mt-28 grid max-w-6xl gap-10 px-6 md:grid-cols-2 md:items-center">
+      <section className="mx-auto mt-36 grid max-w-7xl gap-10 px-6 md:grid-cols-2 md:items-center">
         <motion.div
           initial={{ opacity: 0, x: -60 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -257,20 +257,20 @@ export default function LandingScreen() {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h2 className="font-display text-5xl uppercase leading-[0.95] tracking-tight sm:text-6xl">
+          <h2 className="font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl">
             CALLING ALL<br />SMALL BUSINESSES
           </h2>
           <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
             Discover hidden local businesses, connect directly with owners, and support the communities around you. Explore authentic products, services, and experiences—all in one place.
           </p>
-          <Link href="/onboarding" className="mt-7 inline-block whitespace-nowrap rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition hover:scale-[1.02]">
+          <Link href="/onboarding" className="mt-8 inline-block whitespace-nowrap rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition hover:scale-[1.02]">
             List your business — it&apos;s free
           </Link>
         </motion.div>
       </section>
 
       {/* Footer */}
-      <footer className="mx-auto mt-28 max-w-6xl px-6 pb-12">
+      <footer className="mx-auto mt-32 max-w-6xl px-6 pb-12">
         <div className="flex flex-wrap justify-center gap-7 text-muted-foreground">
           <a href="#" className="transition hover:text-foreground"><Twitter size={18} /></a>
           <a href="#" className="transition hover:text-foreground"><Youtube size={18} /></a>
