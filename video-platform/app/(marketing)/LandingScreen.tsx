@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Twitter, Youtube, Facebook, Instagram, MapPin, Video, MessagesSquare, ShoppingBag, Coins, Store, MessageCircle, BadgePercent, BarChart3, ChevronDown, Globe } from "lucide-react";
+import { Search, X, Twitter, Youtube, Facebook, Instagram, MapPin, ChevronDown, Globe } from "lucide-react";
 
 const slides = [
   {
@@ -36,24 +36,10 @@ const trending = [
 ];
 
 // ----- Bottom-of-page content (edit these freely) -----
-const valueProps = [
-  { icon: Video, title: "Discover through video", desc: "Short clips from real shops, cafés, and services near you." },
-  { icon: MessagesSquare, title: "Real community reviews", desc: "Honest reviews and threads from people in your neighbourhood." },
-  { icon: ShoppingBag, title: "Order pickup or book a service", desc: "Add to cart for pickup, or book a service that comes to you." },
-  { icon: Coins, title: "Earn while you support local", desc: "Collect coins, unlock deals, and get rewarded for shopping local." },
-];
-
 const stats = [
   { value: "11+", label: "categories of local businesses" },
   { value: "100%", label: "independent & locally owned" },
   { value: "Free", label: "to join as a shopper" },
-];
-
-const bizFeatures = [
-  { icon: Store, title: "Localys Manager", desc: "Run your storefront, menu, and orders from one dashboard." },
-  { icon: MessageCircle, title: "Reviews & feedback", desc: "See what customers say and reply to them directly." },
-  { icon: BadgePercent, title: "Deals & coupons", desc: "Promote exclusive offers to nearby shoppers." },
-  { icon: BarChart3, title: "Insights", desc: "Track views, orders, and engagement at a glance." },
 ];
 
 const faqs = [
@@ -262,67 +248,45 @@ export default function LandingScreen() {
         </div>
       </section>
 
-      {/* Value props */}
-      <section className="mx-auto mt-28 max-w-6xl px-6">
-        <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">Everything local, in one place</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-base text-muted-foreground">
-          Discover, review, order, and get rewarded — every small business near you, in one app.
-        </p>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {valueProps.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:border-white/20">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10 text-accent">
-                <Icon className="h-6 w-6" aria-hidden />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-foreground">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
-            </div>
-          ))}
-        </div>
-        <figure className="mx-auto mt-12 max-w-2xl text-center">
-          <blockquote className="text-lg font-medium italic text-foreground/90">
-            &ldquo;I found three new spots within a block of my place in one night.&rdquo;
-          </blockquote>
-          <figcaption className="mt-3 text-sm text-muted-foreground">
-            Maya R. — Localys shopper <span className="text-muted-foreground/70">(sample)</span>
-          </figcaption>
-        </figure>
+      {/* Calling All Small Businesses */}
+      <section className="mx-auto mt-28 grid max-w-7xl gap-10 px-6 md:grid-cols-2 md:items-center">
+        <motion.div
+          initial={{ opacity: 0, x: -60 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+          className="overflow-hidden rounded-md"
+        >
+          <img src="/landing/creator-dining.jpg" alt="Friends dining at a local restaurant" loading="lazy" className="aspect-[4/3] w-full object-cover" />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, x: 60 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <h2 className="font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl">
+            CALLING ALL<br />SMALL BUSINESSES
+          </h2>
+          <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Discover hidden local businesses, connect directly with owners, and support the communities around you. Explore authentic products, services, and experiences—all in one place.
+          </p>
+          <Link href="/onboarding" className="mt-8 inline-block whitespace-nowrap rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition hover:scale-[1.02]">
+            List your business — it&apos;s free
+          </Link>
+        </motion.div>
       </section>
 
       {/* Stats strip */}
-      <section className="mt-24 border-y border-border bg-white/[0.03]">
-        <div className="mx-auto max-w-6xl px-6 py-16">
-          <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">Built to grow local</h2>
-          <div className="mt-12 grid grid-cols-1 gap-10 sm:grid-cols-3">
-            {stats.map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <div className="font-display text-6xl text-accent sm:text-7xl">{value}</div>
-                <div className="mt-3 text-sm text-muted-foreground">{label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* For local businesses */}
       <section className="mx-auto mt-24 max-w-6xl px-6">
-        <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">For local businesses</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-center text-base text-muted-foreground">
-          Localys keeps just <span className="font-semibold text-accent">5%</span> — the other <span className="font-semibold text-accent">95%</span> stays with the business.
-        </p>
-        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {bizFeatures.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:border-white/20">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10 text-accent">
-                <Icon className="h-6 w-6" aria-hidden />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold text-foreground">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+        <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">Built to grow local</h2>
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          {stats.map(({ value, label }) => (
+            <div key={label} className="rounded-2xl bg-white/[0.06] px-8 py-10">
+              <div className="font-sans text-5xl font-semibold tracking-tight text-foreground sm:text-6xl">{value}</div>
+              <div className="mt-3 text-sm text-muted-foreground">{label}</div>
             </div>
           ))}
-        </div>
-        <div className="mt-10 text-center">
-          <Link href="/onboarding" className="inline-block whitespace-nowrap rounded-full bg-transparent px-8 py-4 text-base font-semibold text-foreground ring-1 ring-white/30 transition hover:bg-white/10">List your business</Link>
         </div>
       </section>
 
