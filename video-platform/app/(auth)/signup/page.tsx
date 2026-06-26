@@ -7,7 +7,7 @@ import { signUp, signInWithGoogle } from '@/lib/supabase/auth';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import AuthSplitLayout from '@/components/auth/AuthSplitLayout';
 
-const ACCENT = '#F5A623';
+const ORANGE = '#f97316';
 const DEFAULT_LOCAL_TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
 
 function isTurnstileEnabled(): boolean {
@@ -32,7 +32,7 @@ function resolveTurnstileSiteKey(): string {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition-all duration-200 focus:border-[#F5A623]/60 focus:outline-none focus:ring-2 focus:ring-[#F5A623]/25';
+  'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/15';
 
 function GoogleIcon() {
   return (
@@ -127,40 +127,38 @@ export default function SignUpPage() {
       <div className="space-y-6 text-white">
         {/* Top row */}
         <div className="flex items-center justify-end gap-3 text-sm">
-          <span className="text-white/60">Already have an account?</span>
-          <Link href="/login" className="rounded-full border border-white/20 px-4 py-1.5 font-medium text-white transition hover:bg-white/10">
+          <span className="text-white/70">Already have an account?</span>
+          <Link href="/login" className="rounded-md border border-white/20 px-4 py-1.5 font-medium text-white transition hover:bg-white/10">
             Sign in
           </Link>
         </div>
 
         {/* Heading */}
-        <div>
-          <h1 className="text-3xl font-bold sm:text-4xl">
-            Join <span style={{ color: ACCENT }}>Localys</span>
-          </h1>
-          <p className="mt-2 text-white/60">Create your account to discover and support local.</p>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold sm:text-3xl">Join Localys</h1>
+          <p className="mt-2 text-sm text-white/70">Create your account to discover and support local.</p>
         </div>
 
         {verificationEmail ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-green-500/40 bg-green-500/15 px-4 py-3 text-green-200">
-              Account created. Check <span className="font-semibold">{verificationEmail}</span> to verify your account before signing in.
+            <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white/80">
+              Account created. Check <span className="font-semibold text-white">{verificationEmail}</span> to verify your account before signing in.
             </div>
-            <p className="text-sm text-white/70">If you don&apos;t see the email, check spam/junk and try again in a minute.</p>
-            <Link href="/login" className="inline-block text-sm text-white/80 underline transition hover:text-white">
+            <p className="text-sm text-white/60">If you don&apos;t see the email, check spam/junk and try again in a minute.</p>
+            <Link href="/login" className="inline-block text-sm text-white underline transition hover:opacity-80">
               Back to Sign in
             </Link>
           </div>
         ) : (
           <>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="rounded-lg border border-red-500/40 bg-red-500/15 px-4 py-3 text-red-200">{error}</div>
+                <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white">{error}</div>
               )}
 
               {/* Account type */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-white/80">Account type</label>
+                <label className="mb-2 block text-sm text-white/80">Account type</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['user', 'business'] as const).map((type) => (
                     <button
@@ -170,10 +168,10 @@ export default function SignUpPage() {
                         setAccountType(type);
                         if (type === 'user') setBusinessType('');
                       }}
-                      className="rounded-xl px-3 py-2.5 text-sm font-medium transition-all"
+                      className="rounded-lg px-3 py-2.5 text-sm font-medium transition-all"
                       style={
                         accountType === type
-                          ? { backgroundColor: ACCENT, color: '#1A1A18' }
+                          ? { backgroundColor: ORANGE, color: '#ffffff' }
                           : { backgroundColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)' }
                       }
                     >
@@ -185,7 +183,7 @@ export default function SignUpPage() {
 
               {accountType === 'business' && (
                 <div>
-                  <label htmlFor="businessType" className="mb-2 block text-sm font-medium text-white/80">Business type</label>
+                  <label htmlFor="businessType" className="mb-2 block text-sm text-white/80">Business type</label>
                   <select
                     id="businessType"
                     value={businessType}
@@ -202,24 +200,23 @@ export default function SignUpPage() {
               )}
 
               <div>
-                <label htmlFor="name" className="mb-2 block text-sm font-medium text-white/80">Full name</label>
-                <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} placeholder="John Doe" />
+                <label htmlFor="name" className="sr-only">Full name</label>
+                <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} placeholder="Full Name" />
               </div>
 
               <div>
-                <label htmlFor="username" className="mb-2 block text-sm font-medium text-white/80">Username</label>
-                <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} required className={inputClass} placeholder="johndoe" />
+                <label htmlFor="username" className="sr-only">Username</label>
+                <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} required className={inputClass} placeholder="Username" />
               </div>
 
               <div>
-                <label htmlFor="email" className="mb-2 block text-sm font-medium text-white/80">Email address</label>
-                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} placeholder="you@example.com" />
+                <label htmlFor="email" className="sr-only">Email address</label>
+                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} placeholder="Email Address" />
               </div>
 
               <div>
-                <label htmlFor="password" className="mb-2 block text-sm font-medium text-white/80">Password</label>
-                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className={inputClass} placeholder="••••••••" />
-                <p className="mt-1 text-xs text-white/40">At least 6 characters</p>
+                <label htmlFor="password" className="sr-only">Password</label>
+                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className={inputClass} placeholder="Password (min 6 characters)" />
               </div>
 
               {turnstileEnabled && (
@@ -229,8 +226,8 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full py-3.5 font-semibold text-[#1A1A18] transition hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: ACCENT }}
+                className="w-full rounded-lg py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: ORANGE }}
               >
                 {loading ? 'Creating account…' : 'Create account'}
               </button>
@@ -239,7 +236,7 @@ export default function SignUpPage() {
             {/* OR divider */}
             <div className="flex items-center gap-4">
               <div className="h-px flex-1 bg-white/15" />
-              <span className="text-xs font-medium text-white/40">OR</span>
+              <span className="text-xs font-medium text-white/50">OR</span>
               <div className="h-px flex-1 bg-white/15" />
             </div>
 
@@ -248,7 +245,7 @@ export default function SignUpPage() {
               type="button"
               onClick={handleGoogle}
               disabled={googleLoading}
-              className="flex w-full items-center justify-center gap-3 rounded-full bg-white py-3 font-semibold text-[#1A1A18] transition hover:bg-white/90 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-lg bg-white py-3 font-semibold text-[#1A1A18] transition hover:bg-white/90 disabled:opacity-60"
             >
               <GoogleIcon />
               {googleLoading ? 'Opening Google…' : 'Sign up with Google'}

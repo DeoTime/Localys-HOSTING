@@ -1,7 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Gift } from 'lucide-react';
-
-const ACCENT = '#F5A623';
+import { MapPin } from 'lucide-react';
 
 // Two vertically-scrolling columns of local-business / community photos.
 const colA = [
@@ -47,31 +45,17 @@ export default function AuthSplitLayout({ children }: { children: React.ReactNod
         </div>
 
         {/* legibility overlay */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1A1A18] via-[#1A1A18]/30 to-[#1A1A18]/60" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/50" />
 
         {/* brand wordmark */}
         <Link href="/" className="absolute left-8 top-8 z-10 flex items-center gap-2 text-white">
-          <MapPin className="h-6 w-6" style={{ color: ACCENT, fill: ACCENT }} strokeWidth={1.5} />
-          <span className="text-xl font-bold tracking-wide">Localys</span>
+          <MapPin className="h-6 w-6" strokeWidth={1.5} />
+          <span className="text-xl font-semibold tracking-wide">Localys</span>
         </Link>
-
-        {/* stat callout cards */}
-        <div className="absolute left-8 top-1/3 z-10 max-w-[210px] rounded-2xl border border-white/10 bg-[#242420]/85 p-4 shadow-xl backdrop-blur-md">
-          <div className="text-3xl font-bold" style={{ color: ACCENT }}>100%</div>
-          <div className="mt-1 text-sm text-white/80">local &amp; independent businesses</div>
-        </div>
-
-        <div className="absolute bottom-16 right-8 z-10 max-w-[230px] rounded-2xl border border-white/10 bg-[#242420]/85 p-4 shadow-xl backdrop-blur-md">
-          <div className="flex items-center gap-2" style={{ color: ACCENT }}>
-            <Gift className="h-5 w-5" />
-            <span className="text-sm font-semibold">Support local, earn rewards</span>
-          </div>
-          <div className="mt-1 text-xs text-white/70">Coins &amp; deals every time you shop local.</div>
-        </div>
       </div>
 
       {/* RIGHT — form */}
-      <div className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
+      <div className="flex w-full items-center justify-center bg-black px-6 py-12 lg:w-1/2">
         <div className="w-full max-w-md">{children}</div>
       </div>
     </div>

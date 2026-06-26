@@ -7,7 +7,7 @@ import { signIn, resetPasswordForEmail, signInWithGoogle } from '@/lib/supabase/
 import TurnstileWidget from '@/components/TurnstileWidget';
 import AuthSplitLayout from '@/components/auth/AuthSplitLayout';
 
-const ACCENT = '#F5A623';
+const ORANGE = '#f97316';
 const DEFAULT_LOCAL_TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
 
 function isTurnstileEnabled(): boolean {
@@ -32,7 +32,7 @@ function resolveTurnstileSiteKey(): string {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition-all duration-200 focus:border-[#F5A623]/60 focus:outline-none focus:ring-2 focus:ring-[#F5A623]/25';
+  'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/15';
 
 function GoogleIcon() {
   return (
@@ -99,7 +99,6 @@ function LoginPageContent() {
       setError(googleError.message || 'Google sign-in failed');
       setGoogleLoading(false);
     }
-    // On success the browser is redirected to Google, so no further action.
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -172,19 +171,20 @@ function LoginPageContent() {
     return (
       <AuthSplitLayout>
         <div className="space-y-6 text-white">
-          <div>
-            <h1 className="text-3xl font-bold">Reset your password</h1>
-            <p className="mt-2 text-white/60">Enter your email and we&apos;ll send you a reset link.</p>
+          <div className="text-center">
+            <h1 className="text-2xl font-semibold sm:text-3xl">Reset your password</h1>
+            <p className="mt-2 text-sm text-white/70">Enter your email and we&apos;ll send you a reset link.</p>
           </div>
 
           {resetSent ? (
             <div className="space-y-6">
-              <div className="rounded-lg border border-green-500/40 bg-green-500/15 px-4 py-3 text-green-200">
+              <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-white/80">
                 Check your email for a password reset link.
               </div>
               <button
                 onClick={() => { switchToLogin(); setResetSent(false); }}
-                className="w-full rounded-full bg-white py-3.5 font-semibold text-[#1A1A18] transition hover:bg-white/90"
+                className="w-full rounded-lg py-3 font-semibold text-white transition hover:opacity-90"
+                style={{ backgroundColor: ORANGE }}
               >
                 Back to Sign in
               </button>
@@ -192,11 +192,11 @@ function LoginPageContent() {
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-5">
               {error && (
-                <div className="rounded-lg border border-red-500/40 bg-red-500/15 px-4 py-3 text-red-200">{error}</div>
+                <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white">{error}</div>
               )}
               <div>
-                <label htmlFor="reset-email" className="mb-2 block text-sm font-medium text-white/80">Email address</label>
-                <input id="reset-email" type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className={inputClass} placeholder="you@example.com" />
+                <label htmlFor="reset-email" className="sr-only">Email address</label>
+                <input id="reset-email" type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className={inputClass} placeholder="Email Address" />
               </div>
 
               {turnstileEnabled && (
@@ -206,13 +206,13 @@ function LoginPageContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-full py-3.5 font-semibold text-[#1A1A18] transition hover:opacity-90 disabled:opacity-50"
-                style={{ backgroundColor: ACCENT }}
+                className="w-full rounded-lg py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+                style={{ backgroundColor: ORANGE }}
               >
                 {loading ? 'Sending…' : 'Send reset link'}
               </button>
 
-              <button type="button" onClick={switchToLogin} className="w-full text-center text-sm text-white/60 transition hover:text-white">
+              <button type="button" onClick={switchToLogin} className="block w-full text-center text-sm text-white/70 transition hover:text-white">
                 Back to Sign in
               </button>
             </form>
@@ -228,43 +228,42 @@ function LoginPageContent() {
       <div className="space-y-6 text-white">
         {/* Top row */}
         <div className="flex items-center justify-end gap-3 text-sm">
-          <span className="text-white/60">Don&apos;t have an account?</span>
-          <Link href="/signup" className="rounded-full border border-white/20 px-4 py-1.5 font-medium text-white transition hover:bg-white/10">
+          <span className="text-white/70">Don&apos;t have an account?</span>
+          <Link href="/signup" className="rounded-md border border-white/20 px-4 py-1.5 font-medium text-white transition hover:bg-white/10">
             Sign up
           </Link>
         </div>
 
         {/* Heading */}
-        <div>
-          <h1 className="text-3xl font-bold sm:text-4xl">
-            Sign in to <span style={{ color: ACCENT }}>Localys</span>
-          </h1>
-          <p className="mt-2 text-white/60">Welcome back — enter your details to continue.</p>
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold sm:text-3xl">Sign in to Localys</h1>
+          <p className="mt-2 text-sm text-white/70">Welcome back — enter your details to continue.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {isEmailVerified && (
-            <div className="rounded-lg border border-green-500/40 bg-green-500/15 px-4 py-3 text-green-200">
+            <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-white/80">
               Email verified. Please sign in to continue.
             </div>
           )}
           {error && (
-            <div className="rounded-lg border border-red-500/40 bg-red-500/15 px-4 py-3 text-red-200">{error}</div>
+            <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white">{error}</div>
           )}
 
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-white/80">Email address</label>
-            <input id="email" type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className={inputClass} placeholder="you@example.com" />
+            <label htmlFor="email" className="sr-only">Email address</label>
+            <input id="email" type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className={inputClass} placeholder="Email Address" />
           </div>
 
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-medium text-white/80">Password</label>
-            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClass} placeholder="••••••••" />
-            <div className="mt-2 text-right">
-              <button type="button" onClick={switchToReset} className="text-sm text-white/60 transition hover:text-white hover:underline">
-                Forgot the password?
-              </button>
-            </div>
+            <label htmlFor="password" className="sr-only">Password</label>
+            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClass} placeholder="Password" />
+          </div>
+
+          <div className="text-center">
+            <button type="button" onClick={switchToReset} className="text-sm font-medium transition hover:opacity-80" style={{ color: ORANGE }}>
+              Forgot the password?
+            </button>
           </div>
 
           {turnstileEnabled && (
@@ -274,8 +273,8 @@ function LoginPageContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-full py-3.5 font-semibold text-[#1A1A18] transition hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: ACCENT }}
+            className="w-full rounded-lg py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-50"
+            style={{ backgroundColor: ORANGE }}
           >
             {loading ? 'Signing in…' : 'Login'}
           </button>
@@ -284,7 +283,7 @@ function LoginPageContent() {
         {/* OR divider */}
         <div className="flex items-center gap-4">
           <div className="h-px flex-1 bg-white/15" />
-          <span className="text-xs font-medium text-white/40">OR</span>
+          <span className="text-xs font-medium text-white/50">OR</span>
           <div className="h-px flex-1 bg-white/15" />
         </div>
 
@@ -293,7 +292,7 @@ function LoginPageContent() {
           type="button"
           onClick={handleGoogle}
           disabled={googleLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-full bg-white py-3 font-semibold text-[#1A1A18] transition hover:bg-white/90 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-3 rounded-lg bg-white py-3 font-semibold text-[#1A1A18] transition hover:bg-white/90 disabled:opacity-60"
         >
           <GoogleIcon />
           {googleLoading ? 'Opening Google…' : 'Sign in with Google'}
