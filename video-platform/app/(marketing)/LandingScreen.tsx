@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Twitter, Youtube, Facebook, Instagram, MapPin } from "lucide-react";
+import { Search, X, Twitter, Youtube, Facebook, Instagram, MapPin, Video, MessagesSquare, ShoppingBag, Coins, Store, MessageCircle, BadgePercent, BarChart3, ChevronDown, Globe } from "lucide-react";
 
 const slides = [
   {
@@ -34,6 +34,66 @@ const trending = [
   { img: "/landing/biz-acuvega.png", title: "Acuvega Wellness Center", artist: "207-22 Richmond St" },
   { img: "/landing/biz-arnold.png", title: "Arnold Crescent Animal Hospital", artist: "26 Arnold Cres" },
 ];
+
+// ----- Bottom-of-page content (edit these freely) -----
+const valueProps = [
+  { icon: Video, title: "Discover through video", desc: "Short clips from real shops, cafés, and services near you." },
+  { icon: MessagesSquare, title: "Real community reviews", desc: "Honest reviews and threads from people in your neighbourhood." },
+  { icon: ShoppingBag, title: "Order pickup or book a service", desc: "Add to cart for pickup, or book a service that comes to you." },
+  { icon: Coins, title: "Earn while you support local", desc: "Collect coins, unlock deals, and get rewarded for shopping local." },
+];
+
+const stats = [
+  { value: "11+", label: "categories of local businesses" },
+  { value: "100%", label: "independent & locally owned" },
+  { value: "Free", label: "to join as a shopper" },
+];
+
+const bizFeatures = [
+  { icon: Store, title: "Localys Manager", desc: "Run your storefront, menu, and orders from one dashboard." },
+  { icon: MessageCircle, title: "Reviews & feedback", desc: "See what customers say and reply to them directly." },
+  { icon: BadgePercent, title: "Deals & coupons", desc: "Promote exclusive offers to nearby shoppers." },
+  { icon: BarChart3, title: "Insights", desc: "Track views, orders, and engagement at a glance." },
+];
+
+const faqs = [
+  { q: "How do I find local businesses near me?", a: "Open Localys and your feed fills with shops, cafés, and services near your location. Browse by video, or search by name and category to jump straight to a spot." },
+  { q: "Is Localys free to use?", a: "Yes. Creating an account and browsing is completely free for shoppers — and you collect coins as you order, review, and engage." },
+  { q: "How do I order — pickup or a service?", a: "Add items to your cart for pickup, or book a service appointment right from a business's page. You'll get updates as your order or booking is confirmed." },
+  { q: "How do coins and rewards work?", a: "You earn coins for ordering, leaving reviews, and engaging with the community. Redeem them for deals and perks at participating local businesses." },
+  { q: "How do I list my business on Localys?", a: "Tap “List your business” to set up your storefront in Localys Manager — add your menu, photos, and start taking orders and bookings." },
+  { q: "What makes Localys different?", a: "Localys blends video discovery, community reviews, and ordering in one app — and keeps just 5%, so far more stays with the local owners you support." },
+];
+
+function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
+  const [open, setOpen] = useState(false);
+  const panelId = `faq-panel-${index}`;
+  const btnId = `faq-btn-${index}`;
+  return (
+    <div className="border-b border-border">
+      <button
+        id={btnId}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-4 py-5 text-left text-base font-semibold text-foreground transition hover:text-foreground/70"
+      >
+        <span>{q}</span>
+        <ChevronDown aria-hidden className={`h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div
+        id={panelId}
+        role="region"
+        aria-labelledby={btnId}
+        className={`grid overflow-hidden transition-all duration-200 ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      >
+        <div className="min-h-0">
+          <p className="max-w-2xl pb-5 text-sm leading-relaxed text-muted-foreground">{a}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function LandingScreen() {
   const [banner, setBanner] = useState(true);
@@ -202,75 +262,148 @@ export default function LandingScreen() {
         </div>
       </section>
 
-      {/* Never Stop Discovering */}
-      <section className="mx-auto mt-40 grid max-w-7xl gap-10 px-6 md:grid-cols-2 md:items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <h2 className="font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl">
-            NEVER STOP<br />DISCOVERING
-          </h2>
-          <div className="mt-8 flex items-center gap-5">
-            <div className="grid h-28 w-28 place-items-center rounded-md bg-white p-1.5">
-              <img src="/landing/qr-code.png" alt="Scan QR code" className="h-full w-full object-contain" />
+      {/* Value props */}
+      <section className="mx-auto mt-28 max-w-6xl px-6">
+        <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">Everything local, in one place</h2>
+        <p className="mx-auto mt-4 max-w-2xl text-center text-base text-muted-foreground">
+          Discover, review, order, and get rewarded — every small business near you, in one app.
+        </p>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {valueProps.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:border-white/20">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10 text-accent">
+                <Icon className="h-6 w-6" aria-hidden />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold text-foreground">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
             </div>
-            <p className="max-w-xs text-sm text-muted-foreground">
-              Scan to grab the app. Unlimited discounts, new places, your choice — wherever you go.
-            </p>
-          </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, rotate: -6 }}
-          whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-          className="flex justify-center"
-        >
-          <img src="/landing/listening-phone-v3.png" alt="App on phone" loading="lazy" className="w-full max-w-md rounded-lg" />
-        </motion.div>
+          ))}
+        </div>
+        <figure className="mx-auto mt-12 max-w-2xl text-center">
+          <blockquote className="text-lg font-medium italic text-foreground/90">
+            &ldquo;I found three new spots within a block of my place in one night.&rdquo;
+          </blockquote>
+          <figcaption className="mt-3 text-sm text-muted-foreground">
+            Maya R. — Localys shopper <span className="text-muted-foreground/70">(sample)</span>
+          </figcaption>
+        </figure>
       </section>
 
-      {/* Calling All Small Businesses */}
-      <section className="mx-auto mt-36 grid max-w-7xl gap-10 px-6 md:grid-cols-2 md:items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -60 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          className="overflow-hidden rounded-md"
-        >
-          <img src="/landing/creator-dining.jpg" alt="Friends dining at a local restaurant" loading="lazy" className="aspect-[4/3] w-full object-cover" />
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, x: 60 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <h2 className="font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl">
-            CALLING ALL<br />SMALL BUSINESSES
+      {/* Stats strip */}
+      <section className="mt-24 border-y border-border bg-white/[0.03]">
+        <div className="mx-auto max-w-6xl px-6 py-16">
+          <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">Built to grow local</h2>
+          <div className="mt-12 grid grid-cols-1 gap-10 sm:grid-cols-3">
+            {stats.map(({ value, label }) => (
+              <div key={label} className="text-center">
+                <div className="font-display text-6xl text-accent sm:text-7xl">{value}</div>
+                <div className="mt-3 text-sm text-muted-foreground">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* For local businesses */}
+      <section className="mx-auto mt-24 max-w-6xl px-6">
+        <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">For local businesses</h2>
+        <p className="mx-auto mt-4 max-w-2xl text-center text-base text-muted-foreground">
+          Localys keeps just <span className="font-semibold text-accent">5%</span> — the other <span className="font-semibold text-accent">95%</span> stays with the business.
+        </p>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {bizFeatures.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:border-white/20">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-accent/10 text-accent">
+                <Icon className="h-6 w-6" aria-hidden />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold text-foreground">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-10 text-center">
+          <Link href="/onboarding" className="inline-block whitespace-nowrap rounded-full bg-transparent px-8 py-4 text-base font-semibold text-foreground ring-1 ring-white/30 transition hover:bg-white/10">List your business</Link>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="mx-auto mt-24 max-w-3xl px-6">
+        <h2 className="text-center font-display text-4xl uppercase tracking-tight sm:text-5xl">Frequently asked questions</h2>
+        <div className="mt-10 border-t border-border">
+          {faqs.map((f, i) => (
+            <FaqItem key={f.q} q={f.q} a={f.a} index={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="mx-auto mt-24 max-w-6xl px-6">
+        <div className="rounded-3xl border border-border bg-white/[0.03] px-6 py-16 text-center sm:px-12">
+          <h2 className="font-display text-4xl uppercase leading-[1.0] tracking-tight sm:text-6xl">
+            Support local.<br />Starting today.
           </h2>
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Discover hidden local businesses, connect directly with owners, and support the communities around you. Explore authentic products, services, and experiences—all in one place.
+          <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground">
+            Discover the businesses that make your neighbourhood yours — and get rewarded for it.
           </p>
-          <Link href="/onboarding" className="mt-8 inline-block whitespace-nowrap rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition hover:scale-[1.02]">
-            List your business — it&apos;s free
-          </Link>
-        </motion.div>
+          <form action="/signup" className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
+            <label htmlFor="cta-email" className="sr-only">Email address</label>
+            <input
+              id="cta-email"
+              type="email"
+              name="email"
+              placeholder="you@email.com"
+              className="h-12 w-full rounded-full border border-border bg-background px-5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/30"
+            />
+            <button type="submit" className="h-12 shrink-0 whitespace-nowrap rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition hover:text-primary-foreground/70">
+              Get started
+            </button>
+          </form>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer className="mx-auto mt-32 max-w-6xl px-6 pb-12">
-        <div className="flex flex-wrap justify-center gap-7 text-muted-foreground">
-          <a href="#" className="transition hover:text-foreground"><Twitter size={18} /></a>
-          <a href="#" className="transition hover:text-foreground"><Youtube size={18} /></a>
-          <a href="#" className="transition hover:text-foreground"><Facebook size={18} /></a>
-          <a href="#" className="transition hover:text-foreground"><Instagram size={18} /></a>
+      <footer className="mt-24 border-t border-border">
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <div className="flex flex-col gap-10 md:flex-row md:justify-between">
+            <div className="max-w-xs">
+              <div className="flex items-center gap-2 text-foreground">
+                <MapPin className="h-6 w-6 fill-foreground" strokeWidth={1.5} />
+                <span className="font-display text-xl tracking-wide">Localys</span>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">Discover and support the small local businesses around you.</p>
+              <button className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground">
+                <Globe className="h-4 w-4" aria-hidden /> Canada | English
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-10">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Explore</h3>
+                <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                  <li><Link href="/about" className="transition hover:text-foreground">About</Link></li>
+                  <li><Link href="/onboarding" className="transition hover:text-foreground">For Businesses</Link></li>
+                  <li><Link href="/contact" className="transition hover:text-foreground">Contact</Link></li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">Legal</h3>
+                <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                  <li><Link href="/terms" className="transition hover:text-foreground">Terms of Service</Link></li>
+                  <li><Link href="/privacy" className="transition hover:text-foreground">Privacy Policy</Link></li>
+                  <li><Link href="/sitemap" className="transition hover:text-foreground">Sitemap</Link></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-border pt-8 sm:flex-row">
+            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Localys. All rights reserved.</p>
+            <div className="flex gap-6 text-muted-foreground">
+              <a href="#" aria-label="Twitter" className="transition hover:text-foreground"><Twitter size={18} /></a>
+              <a href="#" aria-label="YouTube" className="transition hover:text-foreground"><Youtube size={18} /></a>
+              <a href="#" aria-label="Facebook" className="transition hover:text-foreground"><Facebook size={18} /></a>
+              <a href="#" aria-label="Instagram" className="transition hover:text-foreground"><Instagram size={18} /></a>
+            </div>
+          </div>
         </div>
-        <p className="mt-8 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} LOCALY. All rights reserved.</p>
       </footer>
     </div>
   );
