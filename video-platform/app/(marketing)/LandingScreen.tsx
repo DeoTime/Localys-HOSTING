@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Play, X, Twitter, Youtube, Facebook, Instagram, MapPin } from "lucide-react";
+import { Search, X, Twitter, Youtube, Facebook, Instagram, MapPin } from "lucide-react";
 
 const slides = [
   {
-    image: "/landing/hero-food.png",
+    image: "/landing/hero-food.jpeg",
     title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
     artist: "Pho Shop",
     role: "5051 Yonge St Unit #2",
@@ -19,7 +19,7 @@ const slides = [
     role: "5051 Yonge St Unit #2",
   },
   {
-    image: "/landing/hero-flowers.png",
+    image: "/landing/hero-flowers.jpg",
     title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
     artist: "Dream Rose Florist",
     role: "14 Levendale Rd, Richmond Hill",
@@ -111,7 +111,7 @@ export default function LandingScreen() {
           </div>
 
           {/* Hero content */}
-          <div className="relative z-10 grid min-h-[460px] grid-rows-[1fr_auto] px-6 pb-4 sm:min-h-[492px] sm:px-12 sm:pb-4">
+          <div className="relative z-10 grid min-h-[578px] grid-rows-[1fr_auto] px-6 pb-4 sm:min-h-[610px] sm:px-12 sm:pb-4">
             <AnimatePresence mode="wait">
               <motion.div
                 key={slide}
@@ -184,15 +184,12 @@ export default function LandingScreen() {
       {/* Trending — sliding right-to-left */}
       <section className="mt-20 overflow-hidden">
         <h2 className="mb-8 text-center font-display text-2xl tracking-wide">See What&apos;s In Your Area</h2>
-        <div className="group relative">
+        <div className="group relative [mask-image:linear-gradient(to_right,transparent,#000_14%,#000_86%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_14%,#000_86%,transparent)]">
           <div className="animate-marquee-x flex w-max">
             {[...trending, ...trending].map((t, i) => (
               <div key={i} className="mr-7 w-64 shrink-0 sm:w-72">
-                <div className="group/card relative aspect-square overflow-hidden rounded-md bg-muted">
+                <div className="group/card relative aspect-[8/7] overflow-hidden rounded-md bg-muted">
                   <img src={t.img} alt={t.title} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105" />
-                  <button className="absolute bottom-3 right-3 grid h-12 w-12 place-items-center rounded-full bg-accent text-accent-foreground opacity-0 shadow-lg transition group-hover/card:opacity-100">
-                    <Play size={18} className="ml-0.5 fill-current" />
-                  </button>
                 </div>
                 <div className="mt-3 truncate text-base font-semibold">{t.title}</div>
                 <div className="truncate text-sm text-muted-foreground">{t.artist}</div>
