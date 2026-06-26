@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Twitter, Youtube, Facebook, Instagram, MapPin, ChevronDown, Globe } from "lucide-react";
+import { Search, X, Twitter, Youtube, Facebook, Instagram, ChevronDown, Globe } from "lucide-react";
+import { Logo } from "@/components/Logo";
 
 const slides = [
   {
@@ -152,10 +153,7 @@ export default function LandingScreen() {
 
           {/* Nav */}
           <div className="relative z-10 flex items-center justify-between px-6 py-5 sm:px-10">
-            <Link href="/" className="flex items-center gap-2 text-primary">
-              <MapPin className="h-7 w-7 fill-primary" strokeWidth={1.5} />
-              <span className="font-display text-xl tracking-wide">Localy</span>
-            </Link>
+            <Logo href="/" className="text-primary" iconClassName="h-7 w-7" textClassName="text-xl" />
             <nav className="flex items-center gap-2 text-lg font-medium">
               <Link href="/login" className="rounded-full bg-primary px-11 py-3.5 text-primary-foreground transition hover:text-primary-foreground/70">Sign in</Link>
               <Link href="/signup" className="rounded-full bg-white/15 px-11 py-3.5 text-white ring-1 ring-white/40 transition hover:text-white/70">Create account</Link>
@@ -337,10 +335,7 @@ export default function LandingScreen() {
         <div className="mx-auto max-w-6xl px-6 py-12">
           <div className="flex flex-col gap-10 md:flex-row md:justify-between">
             <div className="max-w-xs">
-              <div className="flex items-center gap-2 text-foreground">
-                <MapPin className="h-6 w-6 fill-foreground" strokeWidth={1.5} />
-                <span className="font-display text-xl tracking-wide">Localys</span>
-              </div>
+              <Logo href="/" className="text-foreground" iconClassName="h-6 w-6" textClassName="text-xl" />
               <p className="mt-3 text-sm text-muted-foreground">Discover and support the small local businesses around you.</p>
               <button className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground">
                 <Globe className="h-4 w-4" aria-hidden /> Canada | English

@@ -1,20 +1,15 @@
-import Link from 'next/link';
-import { MapPin } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 // Two vertically-scrolling columns of local-business / community photos.
 const colA = [
-  '/landing/biz-ana-pastry.png',
   '/landing/hero-food.jpeg',
-  '/landing/biz-align.png',
   '/landing/creator-dining.jpg',
-  '/landing/biz-arnold.png',
+  '/landing/biz-advanced-printing.webp',
 ];
 const colB = [
-  '/landing/biz-aneals.png',
   '/landing/hero-flowers.jpg',
-  '/landing/biz-acuvega.png',
+  '/landing/biz-acuvega.jpg',
   '/landing/hero-restaurant.png',
-  '/landing/biz-advanced-printing.png',
 ];
 
 function Column({ images, className }: { images: string[]; className: string }) {
@@ -48,10 +43,7 @@ export default function AuthSplitLayout({ children }: { children: React.ReactNod
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/50" />
 
         {/* brand wordmark */}
-        <Link href="/" className="absolute left-8 top-8 z-10 flex items-center gap-2 text-white">
-          <MapPin className="h-6 w-6" strokeWidth={1.5} />
-          <span className="text-xl font-semibold tracking-wide">Localys</span>
-        </Link>
+        <Logo href="/" className="absolute left-8 top-8 z-10 text-white" />
       </div>
 
       {/* RIGHT — form */}

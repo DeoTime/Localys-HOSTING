@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Logo } from '@/components/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
@@ -1099,7 +1100,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
       {/* Top Header */}
       <header className="absolute top-0 left-0 right-0 z-30 border-b border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 md:px-5">
-          <h1 className="text-base sm:text-lg md:text-xl font-bold text-[#F5F0E8]">Localy</h1>
+          <Logo href="/feed" className="text-[#F5F0E8]" iconClassName="h-5 w-5 sm:h-6 sm:w-6" textClassName="text-base sm:text-lg md:text-xl" />
 
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Volume Dropdown */}
