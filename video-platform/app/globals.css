@@ -3180,3 +3180,15 @@ html {
 .group:hover .animate-marquee-x {
   animation-play-state: paused;
 }
+
+/* Auth split-layout collage — vertical seamless scroll (same technique as marquee-x) */
+@keyframes marquee-y {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+.animate-marquee-y {
+  animation: marquee-y 40s linear infinite;
+}
+.animate-marquee-y-rev {
+  animation: marquee-y 52s linear infinite reverse;
+}
