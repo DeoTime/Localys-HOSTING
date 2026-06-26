@@ -26,13 +26,20 @@ const slides = [
   },
 ];
 
+// Every image in public/landing EXCEPT hero-restaurant and the two login-only photos.
 const trending = [
   { img: "/landing/biz-ana-pastry.png", title: "Ana Pastry", artist: "26 Church St S" },
   { img: "/landing/biz-aneals.png", title: "Aneal's Taste of the Islands", artist: "10220 Yonge St" },
-  { img: "/landing/biz-advanced-printing.png", title: "Advanced Printing", artist: "10330 Yonge St" },
+  { img: "/landing/biz-advanced-printing.webp", title: "Advanced Printing", artist: "10330 Yonge St" },
   { img: "/landing/biz-align.png", title: "Align Health & Wellness", artist: "22 Richmond St" },
-  { img: "/landing/biz-acuvega.png", title: "Acuvega Wellness Center", artist: "207-22 Richmond St" },
+  { img: "/landing/biz-acuvega.jpg", title: "Acuvega Wellness Center", artist: "207-22 Richmond St" },
   { img: "/landing/biz-arnold.png", title: "Arnold Crescent Animal Hospital", artist: "26 Arnold Cres" },
+  { img: "/landing/Bookstore.webp", title: "Local Bookstore", artist: "Local & independent" },
+  { img: "/landing/catering buisness.jpg", title: "Catering Co.", artist: "Local & independent" },
+  { img: "/landing/landscaping company.webp", title: "Landscaping", artist: "Local & independent" },
+  { img: "/landing/hero-flowers.jpg", title: "Dream Rose Florist", artist: "14 Levendale Rd" },
+  { img: "/landing/hero-food.jpeg", title: "Pho Shop", artist: "5051 Yonge St" },
+  { img: "/landing/creator-dining.jpg", title: "Local Dining", artist: "Food & drink" },
 ];
 
 // ----- Bottom-of-page content (edit these freely) -----
@@ -170,8 +177,8 @@ export default function LandingScreen() {
                 <h1 className="font-display text-6xl uppercase leading-[1.0] tracking-tight text-primary sm:text-[7.5rem]">
                   {current.title[0]}<br />{current.title[1]}
                 </h1>
-                <p className="mt-6 max-w-xl text-base leading-relaxed text-primary/85 sm:text-lg">
-                  Discover your community&apos;s largest collection of local businesses: popular spots you already know, plus hidden gems, family-owned shops, exclusive deals, and services you won&apos;t find on major platforms.
+                <p className="mt-8 max-w-xl text-base leading-loose text-primary/85 [word-spacing:0.08em] sm:text-lg">
+                  Discover and support your community&apos;s collection of local businesses: popular spots, hidden gems, and exclusive deals you won&apos;t find anywhere else.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-4">
                   <Link href="/feed" className="rounded-full bg-primary px-12 py-4 text-lg font-semibold text-primary-foreground transition hover:scale-[1.02]">Browse local</Link>
@@ -230,7 +237,7 @@ export default function LandingScreen() {
       {/* Trending — sliding right-to-left */}
       <section className="mt-20 overflow-hidden">
         <h2 className="mb-8 text-center font-display text-2xl tracking-wide">See What&apos;s In Your Area</h2>
-        <div className="group relative [mask-image:linear-gradient(to_right,transparent,#000_14%,#000_86%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_14%,#000_86%,transparent)]">
+        <div className="group relative [mask-image:linear-gradient(to_right,transparent,#000_24%,#000_76%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_24%,#000_76%,transparent)]">
           <div className="animate-marquee-x flex w-max">
             {[...trending, ...trending].map((t, i) => (
               <div key={i} className="mr-7 w-64 shrink-0 sm:w-72">
@@ -268,8 +275,8 @@ export default function LandingScreen() {
           <h2 className="font-display text-6xl uppercase leading-[0.95] tracking-tight sm:text-8xl">
             CALLING ALL<br />SMALL BUSINESSES
           </h2>
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Discover hidden local businesses, connect directly with owners, and support the communities around you. Explore authentic products, services, and experiences—all in one place.
+          <p className="mt-6 max-w-md text-sm leading-loose text-muted-foreground [word-spacing:0.08em]">
+            Discover local businesses, connect with owners, and support your community — products, services, and experiences all in one place.
           </p>
           <Link href="/onboarding" className="mt-8 inline-block whitespace-nowrap rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground transition hover:scale-[1.02]">
             List your business — it&apos;s free
@@ -302,23 +309,23 @@ export default function LandingScreen() {
 
       {/* Final CTA */}
       <section className="mx-auto mt-24 max-w-6xl px-6">
-        <div className="rounded-3xl border border-border bg-white/[0.03] px-6 py-16 text-center sm:px-12">
-          <h2 className="font-display text-4xl uppercase leading-[1.0] tracking-tight sm:text-6xl">
+        <div className="flex flex-col items-center rounded-3xl border border-border bg-white/[0.03] px-6 py-16 text-center sm:px-12">
+          <h2 className="font-display text-4xl uppercase leading-[1.05] tracking-tight sm:text-6xl">
             Support local.<br />Starting today.
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground">
+          <p className="mt-6 max-w-lg text-base leading-loose text-muted-foreground [word-spacing:0.08em]">
             Discover the businesses that make your neighbourhood yours — and get rewarded for it.
           </p>
-          <form action="/signup" className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row">
+          <form action="/signup" className="mt-8 flex w-full max-w-lg flex-col items-center gap-3 sm:flex-row">
             <label htmlFor="cta-email" className="sr-only">Email address</label>
             <input
               id="cta-email"
               type="email"
               name="email"
               placeholder="you@email.com"
-              className="h-12 w-full rounded-full border border-border bg-background px-5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/30"
+              className="h-12 w-full flex-1 rounded-full border border-border bg-background px-5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/30"
             />
-            <button type="submit" className="h-12 shrink-0 whitespace-nowrap rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition hover:text-primary-foreground/70">
+            <button type="submit" className="h-12 w-full shrink-0 whitespace-nowrap rounded-full bg-primary px-8 text-base font-semibold text-primary-foreground transition hover:text-primary-foreground/70 sm:w-auto">
               Get started
             </button>
           </form>

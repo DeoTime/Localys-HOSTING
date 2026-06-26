@@ -24,15 +24,21 @@ function CallbackInner() {
       }
 
       try {
-        // The browser client may auto-handle the redirect (detectSessionInUrl).
+        // detectSessionInUrl may have already exchanged the code during client init.
         let { data: { session } } = await supabase.auth.getSession();
 
-        // Otherwise finish the PKCE exchange with the same browser client
-        // that started it (the code_verifier lives in this client's storage).
+        // Otherwise finish the PKCE exchange with the same browser client that
+        // started it (the code_verifier lives in this client's localStorage).
         if (!session && code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
-          session = data.session;
+          if (error) {
+            // The code may already have been consumed by detectSessionInUrl — re-check.
+            const retry = await supabase.auth.getSession();
+            session = retry.data.session;
+            if (!session) throw error;
+          } else {
+            session = data.session;
+          }
         }
 
         if (!session) {
