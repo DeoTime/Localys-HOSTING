@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Anton, Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
@@ -36,6 +36,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Localy - Small Business Discovery",
   description: "Discover local small businesses through TikTok-style video scrolling",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Localys",
+  },
+};
+
+// Black mobile/PWA status bar (OS clock/battery area). The in-app header stays white.
+export const viewport: Viewport = {
+  themeColor: "#000000",
 };
 
 export default function RootLayout({

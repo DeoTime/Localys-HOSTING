@@ -4,7 +4,8 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Logo } from '@/components/Logo';
+import { Star, Coins, Check, Plus } from 'lucide-react';
+import { MenuPopup } from '@/components/feed/MenuPopup';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
@@ -952,7 +953,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
           100% { transform: translate(-50%, 0) scale(1); }
         }
       `}</style>
-      <div className="home-content-root fixed top-0 left-0 right-0 bottom-0 lg:left-60 z-10 overflow-hidden overscroll-none bg-[#1A1A18] text-foreground">
+      <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-black text-foreground">
       {/* Ambient Particle Background - CSS shimmer effect */}
       <div className="home-feed-particles" aria-hidden="true" />
 
@@ -982,17 +983,33 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
               return (
                 <>
-            <video
-              ref={(el) => { videoRefs.current[index] = el; }}
-              src={video.video_url}
-              className="h-full w-full object-contain cursor-pointer"
-              controls={false}
-              loop
-              playsInline
-              muted={!isActive || index !== currentIndex}
-              autoPlay={index === currentIndex}
-              onClick={index === currentIndex ? togglePlayPause : undefined}
-            />
+            {/* Ambient blurred backdrop fills the sides (active slide only) — no black bars */}
+            {index === currentIndex && (
+              <video
+                src={video.video_url}
+                aria-hidden
+                muted
+                loop
+                playsInline
+                autoPlay
+                className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
+              />
+            )}
+
+            {/* Main video — centered vertical column, fills with object-cover */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <video
+                ref={(el) => { videoRefs.current[index] = el; }}
+                src={video.video_url}
+                className="h-full w-full max-w-[min(100%,calc((100vh-112px)*9/16))] object-cover cursor-pointer"
+                controls={false}
+                loop
+                playsInline
+                muted={!isActive || index !== currentIndex}
+                autoPlay={index === currentIndex}
+                onClick={index === currentIndex ? togglePlayPause : undefined}
+              />
+            </div>
 
             {/* Centered Play Icon - shown when paused */}
             {index === currentIndex && !isPlaying && (
@@ -1003,90 +1020,48 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             )}
 
-            {/* Business Info Overlay - Enhanced Glassmorphism */}
-            <div className="video-overlay-glass absolute bottom-0 left-0 right-0 px-4 pt-6 pb-3 border-t border-[#3A3A34]">
+            {/* Business Info Overlay — clean hierarchy, constrained to the video column */}
+            <div className="video-overlay-glass absolute bottom-3 left-1/2 z-20 w-[min(94vw,460px)] -translate-x-1/2 rounded-2xl px-4 py-3">
               <button
                 onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
                 onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
-                className="text-left focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:ring-offset-2 focus:ring-offset-[#1A1A18] rounded"
+                className="rounded text-left focus:outline-none focus:ring-2 focus:ring-[#F5A623]"
                 aria-label={`View profile of ${feedBusiness?.business_name || video.profiles?.full_name || 'Business'}`}
               >
-                <h2 className="text-2xl font-bold text-[#F5F0E8] mb-2 hover:underline">
+                <h2 className="text-xl font-bold text-white hover:underline">
                   {feedBusiness?.business_name || video.profiles?.full_name || 'Business'}
                 </h2>
               </button>
-              <p className="text-[#F5F0E8]/80 text-sm mb-2">{video.caption || ''}</p>
-              <div className="flex items-center gap-4 text-[#F5F0E8]/90 text-sm">
-                {feedBusiness?.average_rating && (
-                  <>
-                    <span>⭐ {feedBusiness.average_rating.toFixed(1)}</span>
-                    <span>•</span>
-                  </>
-                )}
+              {video.caption ? (
+                <p className="mt-1 line-clamp-2 text-sm text-white">{video.caption}</p>
+              ) : null}
+              <div className="mt-2 flex items-center gap-2 text-sm text-white">
+                {feedBusiness?.average_rating ? (
+                  <span className="inline-flex items-center gap-1 font-semibold">
+                    <Star className="h-4 w-4 fill-[#f97316] text-[#f97316]" />
+                    {feedBusiness.average_rating.toFixed(1)}
+                  </span>
+                ) : null}
+                <span aria-hidden>·</span>
                 <span>{commentCounts[video.id] || 0} reviews</span>
-                {feedDistanceLabel && (
+                {feedDistanceLabel ? (
                   <>
-                    <span>•</span>
+                    <span aria-hidden>·</span>
                     <span>{feedDistanceLabel} away</span>
                   </>
-                )}
+                ) : null}
               </div>
-
             </div>
 
+            {/* Left menu pop-up — view the business menu while watching */}
             {feedBusiness && (
-              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2 pl-2 sm:pl-3 lg:left-60">
-                <div className="group flex items-center">
-                  <div className="rounded-r-xl border border-[#3A3A34] bg-[#1A1A18]/85 p-2 sm:p-3 backdrop-blur-xl">
-                    <span className="text-base sm:text-xl" aria-hidden="true">📍</span>
-                    <span className="sr-only">Business quick info</span>
-                  </div>
-
-                  <div className="ml-1 sm:ml-2 w-0 overflow-hidden rounded-xl border border-[#3A3A34] bg-[#242420]/85 opacity-0 backdrop-blur-xl transition-all duration-300 group-hover:w-[220px] group-hover:opacity-100 group-focus-within:w-[220px] group-focus-within:opacity-100 sm:group-hover:w-[260px] sm:group-focus-within:w-[260px]">
-                    <div className="p-2 sm:p-3">
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
-                        <div className="rounded-lg bg-[#3A3A34]/50 px-2 py-2">
-                          <p className="text-[#9E9A90]">Avg Price</p>
-                          <p className="text-[#F5F0E8] font-semibold">
-                            {feedBusiness.id && priceRanges[feedBusiness.id]
-                              ? (() => {
-                                  const avgPrice = computeAveragePrice(priceRanges[feedBusiness.id]);
-                                  return avgPrice ? `~$${avgPrice}` : '—';
-                                })()
-                              : '—'}
-                          </p>
-                        </div>
-                        <div className="rounded-lg bg-[#3A3A34]/50 px-2 py-2">
-                          <p className="text-[#9E9A90]">Distance</p>
-                          <p className="text-[#F5F0E8] font-semibold">{feedDistanceLabel || 'Use GPS'}</p>
-                        </div>
-                        <div className="rounded-lg bg-[#3A3A34]/50 px-2 py-2">
-                          <p className="text-[#9E9A90]">ETA</p>
-                          <p className="text-[#F5F0E8] font-semibold">{feedEta !== null ? `${feedEta} min` : '—'}</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-1.5 sm:mt-2 flex gap-1.5 sm:gap-2">
-                        <a
-                          href={feedNearestLocation
-                            ? `https://www.google.com/maps/dir/?api=1&destination=${feedNearestLocation.latitude},${feedNearestLocation.longitude}`
-                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feedBusiness.business_name)}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-lg bg-[#F5A623] text-black text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 hover:bg-[#F5A623]/90 transition-all"
-                        >
-                          Directions
-                        </a>
-                        <Link
-                          href={`/profile/${video.profiles?.username || video.user_id}`}
-                          className="rounded-lg bg-[#3A3A34]/50 border border-[#3A3A34] text-[#F5F0E8] text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 hover:bg-[#3A3A34]/80 transition-all"
-                        >
-                          Menu
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
+              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2">
+                <div className="relative">
+                  <MenuPopup
+                    userId={video.user_id || ''}
+                    businessId={feedBusiness.id || ''}
+                    businessName={feedBusiness.business_name || video.profiles?.full_name || 'Business'}
+                  />
                 </div>
               </div>
             )}
@@ -1097,12 +1072,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
         ))}
       </div>
 
-      {/* Top Header */}
-      <header className="absolute top-0 left-0 right-0 z-30 border-b border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 md:px-5">
-          <Logo href="/feed" className="text-[#F5F0E8]" iconClassName="h-5 w-5 sm:h-6 sm:w-6" textClassName="text-base sm:text-lg md:text-xl" />
-
-          <div className="flex items-center gap-2 sm:gap-3">
+      {/* Floating feed controls — the global header already provides logo/nav */}
+      <div className="absolute right-3 top-3 z-30">
+          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-2 py-1.5 backdrop-blur-xl sm:gap-3">
             {/* Volume Dropdown */}
             <div
               className="relative"
@@ -1158,7 +1130,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
                 className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#3A3A34] bg-[#242420] px-3 py-2 text-sm font-medium text-[#F5F0E8] transition-colors hover:bg-[#2E2E28]"
                 aria-label="Buy coins"
               >
-                <span>🪙</span>
+                <Coins className="h-4 w-4" />
                 <span>{userCoins}</span>
               </Link>
             )}
@@ -1189,8 +1161,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             </Link>
           </div>
-        </div>
-      </header>
+      </div>
 
       {/* Right Side - Interaction Buttons */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
@@ -1224,7 +1195,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
                   ? 'bg-[#F5A623] text-[#1A1A18]'
                   : 'border border-[#F5F0E8] bg-[#1A1A18]/80 text-[#F5F0E8]'
               }`}>
-                {followedUsers.has(currentVideo.user_id!) ? '✓' : '+'}
+                {followedUsers.has(currentVideo.user_id!) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
               </div>
             </button>
           )}
@@ -1344,7 +1315,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
       {/* Admin Mode Badge */}
       {adminMode && (
         <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#F5A623]/90 px-2.5 py-1 text-[11px] font-semibold text-[#1A1A18] backdrop-blur-sm">
-          ⚡ Admin
+          Admin
         </div>
       )}
     </div>

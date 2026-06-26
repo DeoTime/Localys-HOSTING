@@ -36,13 +36,13 @@ function DiscountBadge({ item }: { item: ItemPurchase }) {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, { bg: string; text: string; icon: string }> = {
-    paid: { bg: 'bg-[#F5A623]/15 border border-[#F5A623]/40', text: 'text-[#F5A623]', icon: '💳' },
-    completed: { bg: 'bg-[#6BAF7A]/15 border border-[#6BAF7A]/40', text: 'text-[#6BAF7A]', icon: '✓' },
-    delivered: { bg: 'bg-[#6BAF7A]/15 border border-[#6BAF7A]/40', text: 'text-[#6BAF7A]', icon: '📦' },
-    pending: { bg: 'bg-[#F5A623]/15 border border-[#F5A623]/40', text: 'text-[#F5A623]', icon: '⏳' },
-    shipped: { bg: 'bg-[#F5A623]/15 border border-[#F5A623]/40', text: 'text-[#F5A623]', icon: '🚚' },
-    failed: { bg: 'bg-[#E05C3A]/15 border border-[#E05C3A]/40', text: 'text-[#E05C3A]', icon: '✕' },
-    cancelled: { bg: 'bg-[#E05C3A]/15 border border-[#E05C3A]/40', text: 'text-[#E05C3A]', icon: '✕' },
+    paid: { bg: 'bg-[#F5A623]/15 border border-[#F5A623]/40', text: 'text-[#F5A623]', icon: '' },
+    completed: { bg: 'bg-[#6BAF7A]/15 border border-[#6BAF7A]/40', text: 'text-[#6BAF7A]', icon: '' },
+    delivered: { bg: 'bg-[#6BAF7A]/15 border border-[#6BAF7A]/40', text: 'text-[#6BAF7A]', icon: '' },
+    pending: { bg: 'bg-[#F5A623]/15 border border-[#F5A623]/40', text: 'text-[#F5A623]', icon: '' },
+    shipped: { bg: 'bg-[#F5A623]/15 border border-[#F5A623]/40', text: 'text-[#F5A623]', icon: '' },
+    failed: { bg: 'bg-[#E05C3A]/15 border border-[#E05C3A]/40', text: 'text-[#E05C3A]', icon: '' },
+    cancelled: { bg: 'bg-[#E05C3A]/15 border border-[#E05C3A]/40', text: 'text-[#E05C3A]', icon: '' },
   };
 
   const style = styles[status] || styles.pending;
@@ -251,14 +251,14 @@ function OrderItem({ order }: { order: CoinPurchase | ItemPurchase }) {
       <div className="bg-[#242420] border border-[#F5A623]/30 rounded-2xl p-4 hover:bg-[#2E2E28] hover:border-[#F5A623]/40 hover:shadow-lg hover:shadow-[#F5A623]/20 transition-all duration-200">
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3 flex-1">
-            <div className="text-2xl">🪙</div>
+            <div className="text-2xl"></div>
             <div>
               <p className="font-medium text-[#F5F0E8]">Coin Purchase</p>
               <p className="text-[#9E9A90] text-sm">{coins.coins} coins</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="font-medium text-[#F5A623]">{coins.coins}x 🪙</p>
+            <p className="font-medium text-[#F5A623]">{coins.coins}x </p>
             <p className="text-[#9E9A90] text-xs">{formattedDate}</p>
           </div>
         </div>
@@ -273,7 +273,7 @@ function OrderItem({ order }: { order: CoinPurchase | ItemPurchase }) {
     <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-4 hover:bg-[#2E2E28] hover:border-[#F5A623]/40 hover:shadow-lg hover:shadow-[#F5A623]/20 transition-all duration-200 active:scale-95">
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-3 flex-1">
-          <div className="text-2xl">🛍️</div>
+          <div className="text-2xl"></div>
           <div>
             <p className="font-semibold text-[#F5F0E8]">{item.item_name}</p>
             <p className="text-[#9E9A90] text-sm">Order #{item.id.substring(0, 8)}</p>
@@ -320,7 +320,7 @@ function SaleItem({ sale }: { sale: ItemPurchase }) {
     <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-4 hover:bg-[#2E2E28] hover:border-[#6BAF7A]/40 hover:shadow-lg hover:shadow-[#6BAF7A]/20 transition-all duration-200 active:scale-95">
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-3 flex-1">
-          <div className="text-2xl">📦</div>
+          <div className="text-2xl"></div>
           <div>
             <p className="font-semibold text-[#F5F0E8]">{sale.item_name}</p>
             <p className="text-[#9E9A90] text-sm">Order #{sale.id.substring(0, 8)}</p>

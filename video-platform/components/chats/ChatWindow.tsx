@@ -218,7 +218,7 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-[#F5F0E8] hover:bg-[#2E2E28] flex items-center gap-2 hover:text-[#F5A623] transition-colors"
                       >
-                        ✏️ Edit
+                        Edit
                       </button>
                       <button
                         onClick={() => {
@@ -227,7 +227,7 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-[#F5F0E8] hover:bg-[#2E2E28] flex items-center gap-2 hover:text-[#E05C3A] transition-colors border-t border-[#3A3A34]"
                       >
-                        🗑️ Delete
+                        Delete
                       </button>
                     </div>
                   )}

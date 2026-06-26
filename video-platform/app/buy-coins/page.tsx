@@ -181,7 +181,7 @@ export default function BuyCoinsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 text-sm">Current Balance</p>
-                <p className="text-3xl font-bold">🪙 {coinBalance.toLocaleString()}</p>
+                <p className="text-3xl font-bold">{coinBalance.toLocaleString()}</p>
               </div>
               <div className="text-right">
                 <p className="text-white/60 text-sm mb-2">Need coins?</p>
@@ -195,7 +195,7 @@ export default function BuyCoinsPage() {
         {!stripeConfigured && (
           <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-8">
             <p className="text-yellow-400 text-sm">
-              ⚠️ <strong>Payment system not configured.</strong> The administrator needs to set up Stripe API keys.
+              <strong>Payment system not configured.</strong> The administrator needs to set up Stripe API keys.
             </p>
           </div>
         )}
@@ -203,7 +203,7 @@ export default function BuyCoinsPage() {
         {/* Available Coupons */}
         {availableCoupons.length > 0 && (
           <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold mb-4">🎉 Available Coupons</h3>
+            <h3 className="text-lg font-semibold mb-4">Available Coupons</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {availableCoupons.map((coupon) => {
                 const couponData = (coupon.coupon as any);
@@ -224,7 +224,7 @@ export default function BuyCoinsPage() {
                         <p className="text-white/60 text-sm">{couponData.discount_percentage}% Off</p>
                       </div>
                       {isSelected && (
-                        <span className="text-green-400 text-lg">✓</span>
+                        <span className="text-green-400 text-lg"></span>
                       )}
                     </div>
                   </button>
@@ -238,7 +238,7 @@ export default function BuyCoinsPage() {
         {selectedCoupon && (
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-8">
             <p className="text-blue-400 text-sm">
-              ✓ Coupon applied! You'll save ${discountAmount} on your purchase.
+              Coupon applied! You'll save ${discountAmount} on your purchase.
             </p>
           </div>
         )}
@@ -247,7 +247,7 @@ export default function BuyCoinsPage() {
         {error && (
           <div className="fixed inset-0 bg-[#1A1A18]/60 flex items-center justify-center p-4 z-50">
             <div className="bg-white/10 backdrop-blur-sm border border-red-500/50 rounded-lg p-8 max-w-sm w-full text-center">
-              <div className="text-4xl mb-4">⚠️</div>
+              <div className="text-4xl mb-4"></div>
               <h2 className="text-xl font-bold mb-2">Currently This Option Is Not Available</h2>
               <p className="text-white/60 mb-6 text-sm">{error}</p>
               <button
@@ -282,7 +282,7 @@ export default function BuyCoinsPage() {
               <div className="p-8 pt-10">
                 {/* Coins */}
                 <div className="text-center mb-4">
-                  <div className="text-5xl font-bold mb-2">🪙</div>
+                  <div className="text-5xl font-bold mb-2"></div>
                   <p className="text-3xl font-bold text-yellow-400">{pkg.coins.toLocaleString()}</p>
                   <p className="text-white/60 text-sm mt-2">{pkg.description}</p>
                 </div>
@@ -317,9 +317,9 @@ export default function BuyCoinsPage() {
 
                 {/* Benefits */}
                 <div className="mt-6 space-y-2 text-sm">
-                  <p className="text-white/60">✓ Instant delivery</p>
-                  <p className="text-white/60">✓ Secure payment</p>
-                  <p className="text-white/60">✓ Use anytime</p>
+                  <p className="text-white/60">Instant delivery</p>
+                  <p className="text-white/60">Secure payment</p>
+                  <p className="text-white/60">Use anytime</p>
                 </div>
               </div>
             </div>

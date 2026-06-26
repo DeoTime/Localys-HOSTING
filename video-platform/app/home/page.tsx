@@ -10,7 +10,7 @@ import { dealsAndMore, trendingArea, otherBusinesses } from '@/lib/home-data';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-[#1A1A18] dark:text-white">
+    <div className="min-h-screen bg-gray-50 text-black dark:bg-[#1A1A18] dark:text-white">
       <div className="mx-auto w-full max-w-7xl space-y-10 px-4 py-6 sm:px-6">
       {/* (A) Top deals marquee + challenges */}
       <DealsHero />

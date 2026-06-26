@@ -557,17 +557,17 @@ function UserProfileContent() {
           {/* Business Info */}
           {business && (
             <div className="flex items-center gap-2 flex-wrap justify-center mb-2">
-              <p className="text-[#F5A623] text-sm">🏪 {business.business_name}</p>
+              <p className="text-[#F5A623] text-sm">{business.business_name}</p>
               {business.business_type && (
                 <span className="bg-[#F5A623]/20 text-[#F5A623] text-xs px-2 py-1 rounded-full capitalize">
-                  {business.business_type === 'hybrid' ? '📦 Pickup & Delivery' : `🏷️ ${business.business_type}`}
+                  {business.business_type === 'hybrid' ? 'Pickup & Delivery' : `${business.business_type}`}
                 </span>
               )}
               <button
                 onClick={() => setShowBusinessHours(!showBusinessHours)}
                 className="bg-[#F5A623]/20 text-[#F5A623] text-xs px-2 py-1 rounded-full hover:bg-[#F5A623]/30 transition-colors"
               >
-                {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
+                {showBusinessHours ? 'Hide Hours' : 'Show Hours'}
               </button>
             </div>
           )}
@@ -575,7 +575,7 @@ function UserProfileContent() {
           {/* Average Rating */}
           {avgRating !== null && (
             <p className="text-[#F5F0E8] text-sm mb-4">
-              ⭐ {avgRating} <span className="text-[#9E9A90]">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
+              {avgRating} <span className="text-[#9E9A90]">({totalReviews} {totalReviews === 1 ? 'review' : 'reviews'})</span>
             </p>
           )}
 
@@ -645,7 +645,7 @@ function UserProfileContent() {
         {/* Business Hours Section */}
         {showBusinessHours && (
           <div className="mt-8 mb-8">
-            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">⏰ Business Hours</h3>
+            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">Business Hours</h3>
             <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-6 space-y-2">
               {business?.business_hours ? (
                 ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
@@ -671,7 +671,7 @@ function UserProfileContent() {
         {businessLocations.length > 0 && (
           <div className="mt-8">
             <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">
-              📍 Location{businessLocations.length > 1 ? 's' : ''}
+              Location{businessLocations.length > 1 ? 's' : ''}
             </h3>
             <div className="bg-[#242420] border border-[#3A3A34] rounded-lg overflow-hidden">
               <BusinessLocationMap
@@ -685,7 +685,7 @@ function UserProfileContent() {
         {/* Services Section (business only) */}
         {profile.type && (
           <div className="mt-8">
-            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">⚙️ Services</h3>
+            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">Services</h3>
             <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-6">
               <MenuList userId={profile.id} isOwnProfile={false} />
             </div>
@@ -694,7 +694,7 @@ function UserProfileContent() {
 
         {/* Videos Section */}
         <div className="mt-8">
-          <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">📹 Videos</h3>
+          <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">Videos</h3>
           <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-6">
             <PostedVideos userId={profile.id} isOwnProfile={false} />
           </div>
@@ -710,11 +710,11 @@ function UserProfileContent() {
             </svg>
             <span className={`text-xs ${pathname === '/' ? 'text-[#F5F0E8]' : 'text-[#F5F0E8]/60'}`}>Home</span>
           </Link>
-          <Link href="/search" className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95">
-            <svg className={`w-6 h-6 ${pathname === '/search' ? 'text-[#F5F0E8]' : 'text-[#F5F0E8]/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Link href="/feed" className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95">
+            <svg className={`w-6 h-6 ${pathname === '/feed' ? 'text-[#F5F0E8]' : 'text-[#F5F0E8]/60'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <span className={`text-xs ${pathname === '/search' ? 'text-[#F5F0E8]' : 'text-[#F5F0E8]/60'}`}>Search</span>
+            <span className={`text-xs ${pathname === '/feed' ? 'text-[#F5F0E8]' : 'text-[#F5F0E8]/60'}`}>Discover</span>
           </Link>
           <Link href="/upload" className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95">
             <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${pathname === '/upload' ? 'bg-[#F5A623]' : 'bg-[#F5A623]/20'}`}>
@@ -741,7 +741,7 @@ function UserProfileContent() {
       {/* Admin Mode Badge */}
       {adminMode && (
         <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#F5A623]/90 px-2.5 py-1 text-[11px] font-semibold text-[#1A1A18] backdrop-blur-sm">
-          ⚡ Admin
+          Admin
         </div>
       )}
     </div>

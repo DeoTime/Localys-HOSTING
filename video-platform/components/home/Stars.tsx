@@ -20,7 +20,7 @@ export function Stars({ rating, reviewCount }: { rating: number; reviewCount: nu
           );
         })}
       </div>
-      <span className="text-xs text-gray-500 dark:text-gray-400">({reviewCount})</span>
+      <span className="text-xs font-medium text-black dark:text-white">({reviewCount})</span>
     </div>
   );
 }

@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, Search, ChevronDown, RotateCcw, User, ShoppingCart, Settings, LogOut, Check } from 'lucide-react';
+import { MapPin, ChevronDown, RotateCcw, User, ShoppingCart, Settings, LogOut, Check } from 'lucide-react';
 import { Logo } from '@/components/Logo';
+import { SearchDropdown } from './SearchDropdown';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -32,7 +33,6 @@ export function TopHeader() {
   const { getCartCount } = useCart();
   const { signOut } = useAuth();
 
-  const [query, setQuery] = useState('');
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [lang, setLang] = useState('EN');
   const [openMenu, setOpenMenu] = useState<null | 'location' | 'lang' | 'profile'>(null);
@@ -41,11 +41,6 @@ export function TopHeader() {
   useClickOutside(wrapRef, () => setOpenMenu(null));
 
   const cartCount = getCartCount();
-
-  const submitSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push(query.trim() ? `/search?q=${encodeURIComponent(query.trim())}` : '/search');
-  };
 
   return (
     <header
@@ -66,20 +61,20 @@ export function TopHeader() {
           >
             <MapPin className="h-5 w-5 shrink-0 text-[#f97316]" />
             <span className="hidden leading-tight md:block">
-              <span className="block text-[11px] text-gray-500 dark:text-gray-400">How do you want your items?</span>
+              <span className="block text-[11px] text-black dark:text-white">How do you want your items?</span>
               <span className="block text-sm font-semibold text-gray-900 dark:text-white">Deliver to {location}</span>
             </span>
-            <ChevronDown className="hidden h-4 w-4 text-gray-400 md:block" />
+            <ChevronDown className="hidden h-4 w-4 text-black md:block" />
           </button>
           {openMenu === 'location' && (
             <div className="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-              <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-400">Choose location</p>
+              <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-black">Choose location</p>
               {LOCATIONS.map((loc) => (
                 <button
                   key={loc}
                   type="button"
                   onClick={() => { setLocation(loc); setOpenMenu(null); }}
-                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                 >
                   {loc}
                   {loc === location && <Check className="h-4 w-4 text-[#f97316]" />}
@@ -89,27 +84,18 @@ export function TopHeader() {
           )}
         </div>
 
-        {/* Search */}
-        <form onSubmit={submitSearch} className="relative flex min-w-0 flex-1 items-center">
-          <Search className="pointer-events-none absolute left-4 h-5 w-5 text-gray-400" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search local businesses, deals, food…"
-            aria-label="Search"
-            className="w-full rounded-full border border-gray-300 bg-white py-2.5 pl-11 pr-4 text-sm text-gray-900 placeholder-gray-400 transition focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-          />
-        </form>
+        {/* Search — opens a filter dropdown + live business suggestions */}
+        <SearchDropdown />
 
         {/* Language */}
         <div className="relative hidden shrink-0 sm:block">
           <button
             type="button"
             onClick={() => setOpenMenu(openMenu === 'lang' ? null : 'lang')}
-            className="flex items-center gap-1 rounded-full px-2 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+            className="flex items-center gap-1 rounded-full px-2 py-2 text-sm font-semibold text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
           >
             {lang}
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-black" />
           </button>
           {openMenu === 'lang' && (
             <div className="absolute right-0 top-full mt-2 w-40 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
@@ -118,10 +104,10 @@ export function TopHeader() {
                   key={l.code}
                   type="button"
                   onClick={() => { setLang(l.code); setOpenMenu(null); }}
-                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
                 >
                   <span>{l.label}</span>
-                  <span className="text-xs text-gray-400">{l.code}</span>
+                  <span className="text-xs text-black">{l.code}</span>
                 </button>
               ))}
             </div>
@@ -131,7 +117,7 @@ export function TopHeader() {
         {/* Reorder */}
         <Link
           href="/profile?tab=orders"
-          className="hidden shrink-0 flex-col items-center px-2 text-gray-700 transition hover:text-[#f97316] dark:text-gray-200 lg:flex"
+          className="hidden shrink-0 flex-col items-center px-2 text-black transition hover:text-[#f97316] dark:text-white lg:flex"
         >
           <RotateCcw className="h-5 w-5" />
           <span className="text-[11px] font-medium">Reorder</span>
@@ -143,24 +129,24 @@ export function TopHeader() {
             type="button"
             onClick={() => setOpenMenu(openMenu === 'profile' ? null : 'profile')}
             aria-label="Account menu"
-            className="flex flex-col items-center px-2 text-gray-700 transition hover:text-[#f97316] dark:text-gray-200"
+            className="flex flex-col items-center px-2 text-black transition hover:text-[#f97316] dark:text-white"
           >
             <User className="h-5 w-5" />
             <span className="hidden text-[11px] font-medium lg:block">Account</span>
           </button>
           {openMenu === 'profile' && (
             <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-              <Link href="/profile" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">
+              <Link href="/profile" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800">
                 <User className="h-4 w-4" /> Profile
               </Link>
-              <Link href="/profile?tab=settings" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800">
+              <Link href="/profile?tab=settings" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800">
                 <Settings className="h-4 w-4" /> Settings
               </Link>
               <div className="my-1 h-px bg-gray-100 dark:bg-gray-800" />
               <button
                 type="button"
                 onClick={() => { setOpenMenu(null); void signOut(); router.push('/login'); }}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-gray-700 transition hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
               >
                 <LogOut className="h-4 w-4" /> Sign out
               </button>
@@ -169,7 +155,7 @@ export function TopHeader() {
         </div>
 
         {/* Cart */}
-        <Link href="/cart" aria-label={`Cart, ${cartCount} items`} className="relative shrink-0 flex flex-col items-center px-2 text-gray-700 transition hover:text-[#f97316] dark:text-gray-200">
+        <Link href="/cart" aria-label={`Cart, ${cartCount} items`} className="relative shrink-0 flex flex-col items-center px-2 text-black transition hover:text-[#f97316] dark:text-white">
           <ShoppingCart className="h-5 w-5" />
           <span className="hidden text-[11px] font-medium lg:block">Cart</span>
           {cartCount > 0 && (

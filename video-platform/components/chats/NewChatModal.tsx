@@ -80,7 +80,7 @@ export function NewChatModal({ isOpen, onClose, currentUserId }: NewChatModalPro
           await sendMessage({
             chat_id: data.id,
             sender_id: currentUserId,
-            content: 'Hi! Is this available? 👋',
+            content: 'Hi! Is this available?',
           });
         }
         onClose();

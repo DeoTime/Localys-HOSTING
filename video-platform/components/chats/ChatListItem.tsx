@@ -1,4 +1,5 @@
 import { ChatWithDetails } from '@/lib/supabase/messages';
+import { BadgeCheck } from 'lucide-react';
 
 interface ChatListItemProps {
   chat: ChatWithDetails;
@@ -15,94 +16,57 @@ export function ChatListItem({ chat, onClick }: ChatListItemProps) {
 
   const formatTimestamp = (timestamp: string | null | undefined) => {
     if (!timestamp) return '';
-    
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } else if (diffInHours < 48) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-    }
+    if (diffInHours < 24) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (diffInHours < 48) return 'Yesterday';
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left flex items-center gap-4 px-4 py-5 border-b transition-colors duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623] ${
-        unreadCount > 0
-          ? 'border-b-[#3A3A34] bg-[#242420]/50 hover:bg-[#242420]'
-          : 'border-b-[#3A3A34] hover:bg-[#242420]/50'
+      className={`flex w-full items-center gap-4 rounded-2xl border bg-white p-4 text-left transition hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316] dark:bg-gray-900 ${
+        unreadCount > 0 ? 'border-[#f97316]' : 'border-gray-200 dark:border-gray-700'
       }`}
     >
-      {/* Avatar with Unread Indicator */}
-      <div className={`relative w-14 h-14 rounded-full flex-shrink-0 overflow-hidden ring-2 transition-all duration-200 ${
-        unreadCount > 0 
-          ? 'ring-[#F5A623] bg-[#F5A623]/10' 
-          : 'ring-[#3A3A34] bg-[#2E2E28]'
-      }`}>
+      {/* Avatar */}
+      <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
         {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={displayName}
-            className="w-full h-full object-cover"
-          />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#9E9A90] text-xl font-semibold">
+          <div className="flex h-full w-full items-center justify-center text-xl font-bold text-black dark:text-white">
             {displayName[0]?.toUpperCase() || '?'}
           </div>
         )}
-        {/* Unread dot indicator */}
         {unreadCount > 0 && (
-          <div className="absolute top-0 right-0 w-3 h-3 bg-[#F5A623] rounded-full border border-[#1A1A18] animate-pulse"></div>
+          <span className="absolute right-0 top-0 h-3 w-3 rounded-full border-2 border-white bg-[#f97316] dark:border-gray-900" />
         )}
       </div>
 
-      {/* Chat Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <h3 className={`font-semibold truncate transition-colors duration-200 ${
-            unreadCount > 0 
-              ? 'text-[#F5F0E8] font-bold' 
-              : 'text-[#F5F0E8]'
-          }`}>
+      {/* Info */}
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-1.5">
+          <h3 className={`truncate text-black dark:text-white ${unreadCount > 0 ? 'font-bold' : 'font-semibold'}`}>
             {displayName}
           </h3>
-          {isVerifiedSeller && (
-            <span className="flex items-center gap-1 bg-[#6BAF7A]/20 border border-[#6BAF7A]/40 text-[#6BAF7A] text-xs rounded-full px-2 py-0.5 whitespace-nowrap font-semibold flex-shrink-0">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              Verified
-            </span>
-          )}
+          {isVerifiedSeller && <BadgeCheck className="h-4 w-4 shrink-0 text-[#f97316]" />}
         </div>
-        <p className={`text-sm truncate transition-colors duration-200 ${
-          unreadCount > 0 
-            ? 'text-[#F5F0E8]' 
-            : 'text-[#9E9A90]'
-        }`}>
-          {lastMessageText}
-        </p>
+        <p className="truncate text-sm text-black dark:text-white">{lastMessageText}</p>
       </div>
 
-      {/* Timestamp and Unread Count */}
-      <div className="text-right flex-shrink-0">
+      {/* Timestamp + unread */}
+      <div className="flex-shrink-0 text-right">
         {chat.last_message?.created_at && (
-          <p className={`text-xs mb-1 transition-colors duration-200 ${
-            unreadCount > 0 
-              ? 'text-[#F5A623] font-semibold' 
-              : 'text-[#9E9A90]'
-          }`}>
+          <p className={`mb-1 text-xs ${unreadCount > 0 ? 'font-semibold text-[#f97316]' : 'text-black dark:text-white'}`}>
             {formatTimestamp(chat.last_message.created_at)}
           </p>
         )}
         {unreadCount > 0 && (
-          <span className="bg-[#F5A623] text-black text-xs rounded-full px-2.5 py-1 inline-block font-bold shadow-lg shadow-[#F5A623]/30 animate-pulse">
+          <span className="inline-block rounded-full bg-[#f97316] px-2.5 py-0.5 text-xs font-bold text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}

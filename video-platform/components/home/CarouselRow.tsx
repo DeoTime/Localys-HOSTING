@@ -51,7 +51,7 @@ export function CarouselRow({
         type="button"
         aria-label="Scroll right"
         onClick={() => scrollBy(1)}
-        className="absolute right-0 top-1/2 z-10 grid -translate-y-1/2 place-items-center rounded-full border border-gray-200 bg-white/95 p-2 text-gray-700 shadow-md transition hover:bg-white dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-200"
+        className="absolute right-0 top-1/2 z-10 grid -translate-y-1/2 place-items-center rounded-full border border-gray-200 bg-white/95 p-2 text-black shadow-md transition hover:bg-white dark:border-gray-700 dark:bg-gray-900/95 dark:text-white"
       >
         <ChevronRight className="h-5 w-5" />
       </button>

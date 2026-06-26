@@ -1,36 +1,91 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { AnimatePresence, motion } from 'framer-motion';
 import { dealTiles } from '@/lib/home-data';
+import { Thumb } from './Thumb';
 
 /**
- * (A) Top deals mosaic that slides + pauses on hover — reuses the landing page
- * marquee animation (`animate-marquee-x` + `.group:hover` pause in globals.css).
+ * (A) Walmart-style top deals block: ONE large featured deal that auto-shifts
+ * every ~5s (framer-motion slide, reusing the landing hero motion), surrounded
+ * by a grid of smaller deal tiles. Replaces the old left-right marquee.
  */
 export function DealsHero() {
+  const featured = dealTiles.slice(0, 4);
+  const surrounding = dealTiles.slice(4);
+  const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused) return;
+    const id = setInterval(() => setI((n) => (n + 1) % featured.length), 5000);
+    return () => clearInterval(id);
+  }, [paused, featured.length]);
+
+  const current = featured[i];
+
   return (
-    <section className="overflow-hidden">
+    <section>
       <div className="mb-3 flex items-center gap-2">
         <span className="rounded-full bg-[#f97316] px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-white">Deals</span>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white sm:text-2xl">Top local deals</h2>
+        <h2 className="text-xl font-bold text-black dark:text-white sm:text-2xl">Top local deals</h2>
       </div>
 
-      <div className="group relative [mask-image:linear-gradient(to_right,transparent,#000_4%,#000_96%,transparent)] [-webkit-mask-image:linear-gradient(to_right,transparent,#000_4%,#000_96%,transparent)]">
-        <div className="animate-marquee-x flex w-max gap-4">
-          {[...dealTiles, ...dealTiles].map((tile, i) => (
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Big featured shifting deal */}
+        <div
+          className="relative overflow-hidden rounded-3xl bg-gray-100 dark:bg-gray-800 lg:col-span-2"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+        >
+          <div className="relative aspect-[16/9] w-full lg:aspect-[2/1]">
+            <AnimatePresence mode="sync">
+              <motion.div
+                key={current.id}
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ duration: 0.9, ease: [0.65, 0, 0.35, 1] }}
+                className="absolute inset-0"
+              >
+                <Link href={current.href} className="block h-full w-full">
+                  <Thumb src={current.image} label={current.title} alt={current.title} className="h-full w-full" />
+                  <div className="absolute inset-0 bg-black/35" />
+                  <div className="absolute bottom-0 left-0 p-6 sm:p-8">
+                    <span className="inline-block rounded-full bg-[#f97316] px-3 py-1 text-sm font-bold text-white">{current.subtitle}</span>
+                    <h3 className="mt-3 text-2xl font-extrabold text-white sm:text-4xl">{current.title}</h3>
+                  </div>
+                </Link>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Slide indicators */}
+          <div className="absolute bottom-3 right-4 z-10 flex items-center gap-2">
+            {featured.map((_, n) => (
+              <button
+                key={n}
+                type="button"
+                aria-label={`Featured deal ${n + 1}`}
+                onClick={() => setI(n)}
+                className={`h-2 rounded-full transition-all ${n === i ? 'w-6 bg-[#f97316]' : 'w-2 bg-white/70'}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Surrounding deal tiles */}
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
+          {surrounding.map((tile) => (
             <Link
-              key={`${tile.id}-${i}`}
+              key={tile.id}
               href={tile.href}
-              className="group/tile flex w-56 shrink-0 items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
+              className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
             >
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-orange-50 to-amber-100 text-3xl dark:from-gray-800 dark:to-gray-700">
-                {tile.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={tile.image} alt={tile.title} className="h-full w-full rounded-xl object-cover" />
-                ) : (
-                  tile.emoji
-                )}
-              </span>
+              <Thumb src={tile.image} label={tile.title} alt={tile.title} className="h-14 w-14 shrink-0 rounded-xl" />
               <span className="min-w-0">
-                <span className="block truncate font-semibold text-gray-900 dark:text-white">{tile.title}</span>
+                <span className="block truncate font-semibold text-black dark:text-white">{tile.title}</span>
                 <span className="block truncate text-sm font-medium text-[#f97316]">{tile.subtitle}</span>
               </span>
             </Link>

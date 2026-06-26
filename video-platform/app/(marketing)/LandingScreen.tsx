@@ -361,7 +361,7 @@ export default function LandingScreen() {
             </div>
           </div>
           <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-border pt-8 sm:flex-row">
-            <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Localys. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground">{new Date().getFullYear()} Localys. All rights reserved.</p>
             <div className="flex gap-6 text-muted-foreground">
               <a href="#" aria-label="Twitter" className="transition hover:text-foreground"><Twitter size={18} /></a>
               <a href="#" aria-label="YouTube" className="transition hover:text-foreground"><Youtube size={18} /></a>

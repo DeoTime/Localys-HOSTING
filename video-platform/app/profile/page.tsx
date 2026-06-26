@@ -241,17 +241,17 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
             )}
             {business && (
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-blue-400 text-sm">🏪 {business.business_name}</p>
+                <p className="text-blue-400 text-sm">{business.business_name}</p>
                 {business.business_type && (
                   <span className="bg-blue-500/30 text-blue-200 text-xs px-2 py-1 rounded-full capitalize">
-                    {business.business_type === 'hybrid' ? '📦 Pickup & Delivery' : `🏷️ ${business.business_type}`}
+                    {business.business_type === 'hybrid' ? 'Pickup & Delivery' : `${business.business_type}`}
                   </span>
                 )}
                 <button
                   onClick={() => setShowBusinessHours(!showBusinessHours)}
                   className="bg-blue-500/20 text-blue-200 text-xs px-2 py-1 rounded-full hover:bg-blue-500/30 transition-colors"
                 >
-                  {showBusinessHours ? '⏰ Hide Hours' : '⏰ Show Hours'}
+                  {showBusinessHours ? 'Hide Hours' : 'Show Hours'}
                 </button>
               </div>
             )}
@@ -261,7 +261,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
         {/* Business Hours Display */}
         {showBusinessHours && (
           <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-8 space-y-2">
-            <h3 className="text-lg font-semibold mb-4">⏰ Business Hours</h3>
+            <h3 className="text-lg font-semibold mb-4">Business Hours</h3>
             {business?.business_hours ? (
               ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
                 <div key={day} className="flex justify-between items-center text-sm">
@@ -296,7 +296,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
             <div className="flex-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg py-3 px-4 text-center">
               <p className="text-yellow-400/80 text-xs mb-1">Coin Balance</p>
               <p className="text-yellow-400 text-2xl font-bold">
-                🪙 {profile?.coin_balance || 0}
+                {profile?.coin_balance || 0}
               </p>
             </div>
             <Link
@@ -323,7 +323,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
         {/* Services Section (business only) */}
         {business && (
           <div className="mb-8" style={{ animation: 'fadeInUp 0.4s ease-out 0.25s forwards', opacity: 0 }}>
-            <h3 className="entrance-slide text-xl font-semibold mb-4" style={{ animation: 'slideInLeft 0.4s ease-out 0.25s forwards', opacity: 0 }}>⚙️ Services</h3>
+            <h3 className="entrance-slide text-xl font-semibold mb-4" style={{ animation: 'slideInLeft 0.4s ease-out 0.25s forwards', opacity: 0 }}>Services</h3>
             <div className="bg-white/5 border border-white/10 rounded-lg p-6">
               <MenuList userId={user.id} businessId={business?.id} isOwnProfile={true} />
             </div>
@@ -348,7 +348,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
 
         {/* Orders History Section */}
         <div className="mb-8" style={{ animation: 'fadeInUp 0.4s ease-out 0.4s forwards', opacity: 0 }}>
-          <h3 className="entrance-slide text-xl font-semibold mb-4" style={{ animation: 'slideInLeft 0.4s ease-out 0.4s forwards', opacity: 0 }}>📋 Order History</h3>
+          <h3 className="entrance-slide text-xl font-semibold mb-4" style={{ animation: 'slideInLeft 0.4s ease-out 0.4s forwards', opacity: 0 }}>Order History</h3>
           <div className="bg-white/5 border border-white/10 rounded-lg p-6">
             <OrderHistory userId={user.id} isBusiness={!!business} />
           </div>
@@ -382,7 +382,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Following</h3>
             {following.length > 0 && (
-              <Link href="/search" className="text-[#F5A623] text-sm hover:underline">View All</Link>
+              <Link href="/feed" className="text-[#F5A623] text-sm hover:underline">View All</Link>
             )}
           </div>
           {followingLoading ? (
@@ -418,7 +418,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
           ) : (
             <div className="bg-white/5 border border-white/10 rounded-lg p-6 text-center">
               <p className="text-white/40 text-sm mb-3">You are not following anyone yet</p>
-              <Link href="/search" className="text-[#F5A623] text-sm font-medium hover:underline">Discover People</Link>
+              <Link href="/feed" className="text-[#F5A623] text-sm font-medium hover:underline">Discover People</Link>
             </div>
           )}
         </div>
@@ -438,7 +438,7 @@ function ProfileView({ profile, business, user, onEditClick, onSignOut, onProfil
             <a href="#" className="text-[#9E9A90] text-xs hover:text-[#F5A623] transition-colors">Program</a>
             <a href="#" className="text-[#9E9A90] text-xs hover:text-[#F5A623] transition-colors">Terms & Policies</a>
           </div>
-          <p className="text-[#9E9A90] text-xs text-center">© 2026 Localys</p>
+          <p className="text-[#9E9A90] text-xs text-center">2026 Localys</p>
         </div>
       </div>
     </>

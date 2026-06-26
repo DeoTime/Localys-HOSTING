@@ -1413,10 +1413,9 @@ div#devtools-indicator.nextjs-toast {
 
 /* Video overlay glassmorphism effect */
 .video-overlay-glass {
-  background: rgba(26, 26, 24, 0.85);
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background-image: linear-gradient(135deg, rgba(36, 36, 32, 0.4) 0%, rgba(26, 26, 24, 0.85) 100%);
 }
 
 /* Action buttons container in home feed */
