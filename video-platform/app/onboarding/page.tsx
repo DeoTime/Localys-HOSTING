@@ -44,12 +44,12 @@ export default function OnboardingPage() {
       }
     }
 
-    router.push('/feed');
+    router.push('/home');
     router.refresh();
   };
 
   const handleSkip = () => {
-    router.push('/feed');
+    router.push('/home');
     router.refresh();
   };
 

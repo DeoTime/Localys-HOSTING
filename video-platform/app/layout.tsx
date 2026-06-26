@@ -46,7 +46,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${outfit.variable} ${jetbrainsMono.variable} ${anton.variable} ${inter.variable} antialiased h-full dark bg-[#1A1A18] text-[#F5F0E8]`}
+        className={`${outfit.variable} ${jetbrainsMono.variable} ${anton.variable} ${inter.variable} antialiased h-full bg-[#1A1A18] text-[#F5F0E8]`}
       >
         <ThemeProvider>
           <AuthProvider>

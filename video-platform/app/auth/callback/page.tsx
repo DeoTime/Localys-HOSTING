@@ -14,7 +14,7 @@ function CallbackInner() {
     let cancelled = false;
 
     (async () => {
-      const next = searchParams.get('next') || '/feed';
+      const next = searchParams.get('next') || '/home';
       const code = searchParams.get('code');
       const oauthError = searchParams.get('error_description') || searchParams.get('error');
 

@@ -32,7 +32,7 @@ function resolveTurnstileSiteKey(): string {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/15';
+  'w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10';
 
 function GoogleIcon() {
   return (
@@ -49,7 +49,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center px-4 text-white/70">Loading login…</div>
+        <div className="flex min-h-screen items-center justify-center bg-white px-4 text-gray-500">Loading login…</div>
       }
     >
       <LoginPageContent />
@@ -126,7 +126,7 @@ function LoginPageContent() {
     }
 
     if (data?.session) {
-      router.push(isEmailVerified ? '/onboarding' : '/feed');
+      router.push(isEmailVerified ? '/onboarding' : '/home');
       router.refresh();
     } else {
       setLoading(false);
@@ -170,15 +170,15 @@ function LoginPageContent() {
   if (resetMode) {
     return (
       <AuthSplitLayout>
-        <div className="space-y-6 text-white">
+        <div className="space-y-6 text-gray-900">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold sm:text-3xl">Reset your password</h1>
-            <p className="mt-2 text-sm text-white/70">Enter your email and we&apos;ll send you a reset link.</p>
+            <h1 className="text-3xl font-bold">Reset your password</h1>
+            <p className="mt-2 text-sm text-gray-500">Enter your email and we&apos;ll send you a reset link.</p>
           </div>
 
           {resetSent ? (
             <div className="space-y-6">
-              <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-white/80">
+              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-center text-green-700">
                 Check your email for a password reset link.
               </div>
               <button
@@ -192,7 +192,7 @@ function LoginPageContent() {
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-5">
               {error && (
-                <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white">{error}</div>
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
               )}
               <div>
                 <label htmlFor="reset-email" className="sr-only">Email address</label>
@@ -200,7 +200,7 @@ function LoginPageContent() {
               </div>
 
               {turnstileEnabled && (
-                <TurnstileWidget siteKey={siteKey} onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} theme="dark" resetKey={turnstileResetKey} />
+                <TurnstileWidget siteKey={siteKey} onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} theme="light" resetKey={turnstileResetKey} />
               )}
 
               <button
@@ -212,7 +212,7 @@ function LoginPageContent() {
                 {loading ? 'Sending…' : 'Send reset link'}
               </button>
 
-              <button type="button" onClick={switchToLogin} className="block w-full text-center text-sm text-white/70 transition hover:text-white">
+              <button type="button" onClick={switchToLogin} className="block w-full text-center text-sm text-gray-500 transition hover:text-gray-900">
                 Back to Sign in
               </button>
             </form>
@@ -225,29 +225,29 @@ function LoginPageContent() {
   // ----- Login mode -----
   return (
     <AuthSplitLayout>
-      <div className="space-y-6 text-white">
+      <div className="space-y-6 text-gray-900">
         {/* Top row */}
         <div className="flex items-center justify-end gap-3 text-sm">
-          <span className="text-white/70">Don&apos;t have an account?</span>
-          <Link href="/signup" className="rounded-md border border-white/20 px-4 py-1.5 font-medium text-white transition hover:bg-white/10">
+          <span className="text-gray-500">Don&apos;t have an account?</span>
+          <Link href="/signup" className="rounded-md border border-gray-300 px-4 py-1.5 font-medium text-gray-900 transition hover:bg-gray-50">
             Sign up
           </Link>
         </div>
 
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-2xl font-semibold sm:text-3xl">Sign in to Localys</h1>
-          <p className="mt-2 text-sm text-white/70">Welcome back — enter your details to continue.</p>
+          <h1 className="text-3xl font-bold sm:text-4xl">Sign in to Localys</h1>
+          <p className="mt-2 text-sm text-gray-500">Welcome back — enter your details to continue.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isEmailVerified && (
-            <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-white/80">
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-center text-green-700">
               Email verified. Please sign in to continue.
             </div>
           )}
           {error && (
-            <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white">{error}</div>
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
           )}
 
           <div>
@@ -261,13 +261,13 @@ function LoginPageContent() {
           </div>
 
           <div className="text-center">
-            <button type="button" onClick={switchToReset} className="text-sm font-medium transition hover:opacity-80" style={{ color: ORANGE }}>
+            <button type="button" onClick={switchToReset} className="text-base font-semibold text-black transition hover:opacity-70">
               Forgot the password?
             </button>
           </div>
 
           {turnstileEnabled && (
-            <TurnstileWidget siteKey={siteKey} onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} theme="dark" resetKey={turnstileResetKey} />
+            <TurnstileWidget siteKey={siteKey} onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} theme="light" resetKey={turnstileResetKey} />
           )}
 
           <button
@@ -282,9 +282,9 @@ function LoginPageContent() {
 
         {/* OR divider */}
         <div className="flex items-center gap-4">
-          <div className="h-px flex-1 bg-white/15" />
-          <span className="text-xs font-medium text-white/50">OR</span>
-          <div className="h-px flex-1 bg-white/15" />
+          <div className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs font-medium text-gray-400">OR</span>
+          <div className="h-px flex-1 bg-gray-200" />
         </div>
 
         {/* Google */}
@@ -292,7 +292,7 @@ function LoginPageContent() {
           type="button"
           onClick={handleGoogle}
           disabled={googleLoading}
-          className="flex w-full items-center justify-center gap-3 rounded-lg bg-white py-3 font-semibold text-[#1A1A18] transition hover:bg-white/90 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white py-3 font-semibold text-gray-900 transition hover:bg-gray-50 disabled:opacity-60"
         >
           <GoogleIcon />
           {googleLoading ? 'Opening Google…' : 'Sign in with Google'}

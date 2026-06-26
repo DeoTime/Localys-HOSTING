@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: `dark:` utilities key off the `.dark` class that
+   ThemeContext toggles on <html> (instead of OS prefers-color-scheme). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   /* ========== COLOR PALETTE ========== */
   /* Charcoal - Primary Background */
