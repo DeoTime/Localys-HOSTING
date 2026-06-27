@@ -1,0 +1,134 @@
+/**
+ * Local video files (public/Videos) linked to their businesses.
+ *
+ * Matched by filename to a store in data/store-menus.json. These power BOTH the
+ * "Featured in Videos" home section (hover-play cards) and the Discover feed
+ * (buildFeedVideos prepends them so they're watchable full-screen). No Supabase.
+ */
+import storeMenus from '@/data/store-menus.json';
+import { getAliasItems, type AliasItem } from '@/lib/businessAliases';
+
+export interface DemoVideo {
+  /** Stable id, always prefixed `local:` so the feed can tell it from a DB video. */
+  id: string;
+  /** Encoded /Videos path. */
+  src: string;
+  businessName: string;
+  /** Slug → /profile/<slug> (resolved via lib/demoStores). */
+  businessSlug: string;
+  /** Key into data/store-menus.json for the item rail. */
+  manifestKey: string;
+  /** Department label for the feed overlay. */
+  category: string;
+  caption: string;
+  /** Injected into Discover but NOT given its own Featured card (avoids duplicate businesses). */
+  feedOnly?: boolean;
+}
+
+/**
+ * One entry per file in public/Videos. Holy Smoke has two clips → the second is
+ * feed-only so the section shows one card per business. Pho Xe Lua's card uses the
+ * local Pho Ngan clip (same restaurant; its real clip lives in Supabase).
+ */
+export const DEMO_VIDEOS: DemoVideo[] = [
+  {
+    id: 'local:jays-burger',
+    src: '/Videos/Jay%27sburgervideo.mp4',
+    businessName: "Jay's Burger",
+    businessSlug: 'jays-burger',
+    manifestKey: "Jay's Burger",
+    category: 'Restaurants',
+    caption: 'Fresh smashed burgers, made to order.',
+  },
+  {
+    id: 'local:sharp-fade-barbershop',
+    src: '/Videos/Sharp%20Fade%20Barbershop.mp4',
+    businessName: 'Sharp Fade Barbershop',
+    businessSlug: 'sharp-fade-barbershop',
+    manifestKey: 'Sharp Fade Barbershop',
+    category: 'Grooming',
+    caption: 'Clean fades and sharp lineups.',
+  },
+  {
+    id: 'local:k1-floral-studio',
+    src: '/Videos/Florist.mp4',
+    businessName: 'K1 Floral Studio',
+    businessSlug: 'k1-floral-studio',
+    manifestKey: 'K1 Floral Studio',
+    category: 'Flowers',
+    caption: 'Handcrafted bouquets for every occasion.',
+  },
+  {
+    id: 'local:holy-smoke-barbecue',
+    src: '/Videos/Holy%20Smoke.mp4',
+    businessName: 'Holy Smoke Barbecue',
+    businessSlug: 'holy-smoke-barbecue',
+    manifestKey: 'Holy Smoke Barbecue',
+    category: 'Restaurants',
+    caption: 'Low and slow, smoked over hardwood.',
+  },
+  {
+    id: 'local:pho-xe-lua',
+    src: '/Videos/Pho%20Ngan.mp4',
+    businessName: 'Pho Xe Lua Vietnamese Cuisine',
+    businessSlug: 'pho-nga-son',
+    manifestKey: 'Pho Nga Son',
+    category: 'Restaurants',
+    caption: 'A big thank you from Andy!',
+  },
+  {
+    id: 'local:holy-smoke-2',
+    src: '/Videos/Hoy%20Smoke.mp4',
+    businessName: 'Holy Smoke Barbecue',
+    businessSlug: 'holy-smoke-barbecue',
+    manifestKey: 'Holy Smoke Barbecue',
+    category: 'Restaurants',
+    caption: 'More from the pit.',
+    feedOnly: true,
+  },
+];
+
+/** Cards for the "Featured in Videos" section (one per business). */
+export const FEATURED_VIDEOS: DemoVideo[] = DEMO_VIDEOS.filter((v) => !v.feedOnly);
+
+interface ManifestStore { rating?: number }
+const MENUS = storeMenus as Record<string, ManifestStore>;
+
+/** Discover-feed shape: matches the `Video` interface used in components/HomeContent. */
+export interface FeedVideo {
+  id: string;
+  user_id: string;
+  business_id: string;
+  video_url: string;
+  caption: string;
+  created_at: string;
+  businesses: {
+    id: string;
+    business_name: string;
+    category: string;
+    average_rating?: number;
+  };
+  like_count: number;
+  /** Menu items for the feed's left rail (BusinessItemsRail `items` prop). */
+  localItems?: AliasItem[];
+}
+
+/** Synthetic Discover-feed entries for every local video (prepended to the feed). */
+export function buildFeedVideos(): FeedVideo[] {
+  return DEMO_VIDEOS.map((v) => ({
+    id: v.id,
+    user_id: v.businessSlug,
+    business_id: v.businessSlug,
+    video_url: v.src,
+    caption: v.caption,
+    created_at: '2026-01-01T00:00:00.000Z',
+    businesses: {
+      id: v.businessSlug,
+      business_name: v.businessName,
+      category: v.category,
+      average_rating: MENUS[v.manifestKey]?.rating ?? 4.8,
+    },
+    like_count: 0,
+    localItems: getAliasItems(v.manifestKey),
+  }));
+}

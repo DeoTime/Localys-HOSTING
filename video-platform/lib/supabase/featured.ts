@@ -1,6 +1,7 @@
 import { supabase } from './client';
 import type { Product, VideoCard, Deal } from '../home-data';
 import storeMenus from '@/data/store-menus.json';
+import { DEMO_STORES } from '@/lib/demoStores';
 
 /**
  * Real-data layer for the Walmart-style Home feed.
@@ -49,55 +50,80 @@ function departmentFor(category: string | null | undefined, type: string): strin
  * come from `data/store-menus.json`. Only businesses present in the manifest are
  * surfaced — no stray dev/test accounts, no empty stores.
  */
+/** Build a home-feed LocalBusiness from a manifest store + its identity/routing. */
+function menuToBusiness(
+  menu: ManifestStore,
+  opts: { id: string; username: string; name: string; type: string; category: string },
+): LocalBusiness {
+  const { id, username, name, type, category } = opts;
+  const href = `/profile/${username}`;
+  // Business card image: the banner only if it's sharp enough, else the first
+  // high-res item photo (the home builder may still swap it for variety).
+  const firstHqItem = menu.items.find((it) => it.hq)?.image;
+  const image = (menu.bannerHq ? menu.banner : undefined) || firstHqItem || menu.banner || undefined;
+  const rating = menu.rating;
+  const reviewCount = menu.reviewCount ?? (parseInt(String(menu.ratingCount), 10) || 0);
+
+  const products: Product[] = menu.items.map((it) => ({
+    id: it.id,
+    title: it.name,
+    description: name,
+    businessId: id,
+    businessName: name,
+    price: it.price,
+    image: it.image || image || undefined, // Menu item photo
+    rating,
+    reviewCount: it.reviewCount ?? reviewCount,
+    href,
+    deal: it.deal,
+    dealLabel: it.deal?.label,
+    hq: it.hq,
+  }));
+
+  return { id, username, name, image, category, type, href, rating, reviewCount, products };
+}
+
 export async function getLocalBusinesses(): Promise<LocalBusiness[]> {
   const { data: profiles, error } = await supabase
     .from('profiles')
     .select('id, username, full_name, type')
     .in('type', ['food', 'retail', 'service']);
 
-  if (error || !profiles?.length) return [];
-
-  const { data: bizRows } = await supabase
-    .from('businesses')
-    .select('owner_id, business_name, category')
-    .in('owner_id', profiles.map((p) => p.id));
-
-  const bizByOwner = new Map<string, any>();
-  for (const b of bizRows || []) bizByOwner.set(b.owner_id, b);
-
   const list: LocalBusiness[] = [];
-  for (const p of profiles) {
-    const b = bizByOwner.get(p.id);
-    const name = b?.business_name || p.full_name || '';
-    const menu = MENUS[name];
-    if (!menu) continue; // only manifest-backed stores appear on the home feed
 
-    const href = `/profile/${p.username || p.id}`;
-    // Business card image: the banner only if it's sharp enough, else the first
-    // high-res item photo (the home builder may still swap it for variety).
-    const firstHqItem = menu.items.find((it) => it.hq)?.image;
-    const image = (menu.bannerHq ? menu.banner : undefined) || firstHqItem || menu.banner || undefined;
-    const category = menu.department || departmentFor(b?.category, p.type);
-    const rating = menu.rating;
-    const reviewCount = menu.reviewCount ?? (parseInt(String(menu.ratingCount), 10) || 0);
+  if (!error && profiles?.length) {
+    const { data: bizRows } = await supabase
+      .from('businesses')
+      .select('owner_id, business_name, category')
+      .in('owner_id', profiles.map((p) => p.id));
 
-    const products: Product[] = menu.items.map((it) => ({
-      id: it.id,
-      title: it.name,
-      description: name,
-      businessId: p.id,
-      businessName: name,
-      price: it.price,
-      image: it.image || image || undefined, // Menu item photo
-      rating,
-      reviewCount: it.reviewCount ?? reviewCount,
-      href,
-      deal: it.deal,
-      dealLabel: it.deal?.label,
-      hq: it.hq,
+    const bizByOwner = new Map<string, any>();
+    for (const b of bizRows || []) bizByOwner.set(b.owner_id, b);
+
+    for (const p of profiles) {
+      const b = bizByOwner.get(p.id);
+      const name = b?.business_name || p.full_name || '';
+      const menu = MENUS[name];
+      if (!menu) continue; // only manifest-backed stores appear on the home feed
+
+      const category = menu.department || departmentFor(b?.category, p.type);
+      list.push(menuToBusiness(menu, {
+        id: p.id, username: p.username || p.id, name, type: p.type, category,
+      }));
+    }
+  }
+
+  // Built-in demo stores with no Supabase profile (e.g. Jay's Burger) — injected
+  // from the manifest so they appear on the home feed and distribute their items.
+  for (const ds of DEMO_STORES) {
+    if (!ds.demoOnly) continue;
+    if (list.some((b) => b.username === ds.slug)) continue;
+    const menu = MENUS[ds.manifestKey];
+    if (!menu) continue;
+    list.push(menuToBusiness(menu, {
+      id: ds.slug, username: ds.slug, name: ds.name, type: ds.type,
+      category: menu.department || departmentFor(null, ds.type),
     }));
-
-    list.push({ id: p.id, username: p.username || p.id, name, image, category, type: p.type, href, rating, reviewCount, products });
   }
 
   return list;

@@ -31,6 +31,9 @@ const pick = (arr, seed) => arr[seed % arr.length];
 const JUNK = [
   'donutuberone', 'download on the app store', 'get it on google play', 'uber eats home',
   'star_promotion', 'dealsbackground', 'deals-happy', 'transparenttrailingimage', 'zonnic_gray',
+  'shopping_bags',
+  // competitor / other-store logo tiles that Uber Eats injects into a store page
+  'burger king', 'dairy queen', 'popeyes', 'tondo',
 ];
 const isJunk = (file, bannerFile) => {
   if (file === bannerFile) return true;
@@ -201,6 +204,7 @@ const STORES = [
   { folder: 'RAZI pharmacy', name: 'Razi Pharmacy', slug: 'razi-pharmacy', kind: 'pharmacy' },
   { folder: 'Ambrosia', name: 'Ambrosia Thornhills', slug: 'ambrosia-thornhills', kind: 'grocery' },
   { folder: 'Ashario Pets', name: 'Ashario Pets North York', slug: 'ashario-pets', kind: 'pets' },
+  { folder: 'Jays Burger', name: "Jay's Burger", slug: 'jays-burger', kind: 'restaurant' },
   // 'Johnson supermarket' folder intentionally skipped (no seeded business).
 ];
 

@@ -7,7 +7,7 @@ import { ProductsRow } from '@/components/home/ProductsRow';
 import { BusinessesRow } from '@/components/home/BusinessesRow';
 import { ExpressDelivery } from '@/components/home/ExpressDelivery';
 import { ShopByDepartment } from '@/components/home/ShopByDepartment';
-import { FeaturedVideos } from '@/components/home/FeaturedVideos';
+import { FeaturedInVideos } from '@/components/home/FeaturedInVideos';
 import { Feedback } from '@/components/home/Feedback';
 
 /**
@@ -33,6 +33,9 @@ function HomeBody() {
       <DealsHero />
       <Challenges />
 
+      {/* Businesses with linked videos — hover to preview, click to watch in Discover */}
+      <FeaturedInVideos />
+
       {/* Food-forward, themed rows */}
       <BusinessesRow title="Top restaurants near you" seeAllHref="/feed" list={feed.topRestaurants} />
       <BusinessesRow title="Local businesses near you" seeAllHref="/feed" list={feed.localBusinesses} />
@@ -48,8 +51,6 @@ function HomeBody() {
 
       <BusinessesRow title="Home services" seeAllHref="/feed" list={feed.services} />
 
-      {/* Real videos (hidden if none) + feedback */}
-      <FeaturedVideos />
       <Feedback />
     </div>
   );

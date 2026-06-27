@@ -14,6 +14,7 @@ import { PostedVideos } from '@/components/PostedVideos';
 import { StorePage, type StoreMenu, type StoreItem } from '@/components/store/StorePage';
 import storeMenus from '@/data/store-menus.json';
 import { getBusinessAlias } from '@/lib/businessAliases';
+import { getDemoStoreBySlug } from '@/lib/demoStores';
 
 const BusinessLocationMap = dynamic(
   () => import('@/components/BusinessLocationMap'),
@@ -479,8 +480,15 @@ function UserProfileContent() {
         return;
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
-      setError('Failed to load profile');
+      // Built-in demo store with no Supabase profile (e.g. /profile/jays-burger):
+      // synthesize a profile so the manifest store page renders.
+      const demo = getDemoStoreBySlug(identifier);
+      if (demo) {
+        setProfile({ id: demo.slug, username: demo.slug, full_name: demo.manifestKey, type: demo.type });
+      } else {
+        console.error('Error loading profile:', error);
+        setError('Failed to load profile');
+      }
     } finally {
       setLoading(false);
     }

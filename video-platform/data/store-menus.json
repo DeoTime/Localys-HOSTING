@@ -5605,6 +5605,454 @@
       }
     ]
   },
+  "Jay's Burger": {
+    "slug": "jays-burger",
+    "folder": "Jays Burger",
+    "department": "Restaurants",
+    "banner": "/Menu/Jays%20Burger/Jay's%20Burger.jpg",
+    "bannerHq": true,
+    "rating": 4.7,
+    "ratingCount": "500+",
+    "reviewCount": 34,
+    "address": "4962 Yonge St, Richmond Hill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
+    "deliveryTime": "22 min",
+    "reviews": [
+      {
+        "name": "Tanya Z.",
+        "stars": 5,
+        "date": "02-11-24",
+        "text": "Friendly service and everything arrived on time."
+      },
+      {
+        "name": "Grace W.",
+        "stars": 5,
+        "date": "10-10-24",
+        "text": "Friendly service and everything arrived on time."
+      },
+      {
+        "name": "Grace W.",
+        "stars": 5,
+        "date": "13-01-24",
+        "text": "Really happy with my order. Highly recommend."
+      }
+    ],
+    "categories": [
+      "Mains",
+      "Sides"
+    ],
+    "featuredIds": [
+      "jays-burger-0",
+      "jays-burger-1",
+      "jays-burger-2",
+      "jays-burger-3",
+      "jays-burger-4",
+      "jays-burger-5",
+      "jays-burger-6",
+      "jays-burger-7"
+    ],
+    "pickedIds": [
+      "jays-burger-8",
+      "jays-burger-9",
+      "jays-burger-10",
+      "jays-burger-11",
+      "jays-burger-12",
+      "jays-burger-13"
+    ],
+    "items": [
+      {
+        "id": "jays-burger-0",
+        "name": "Banana Pudding",
+        "price": 17,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Banana%20Pudding.jpg",
+        "category": "Mains",
+        "likePct": 85,
+        "likeCount": 53,
+        "reviewCount": 247,
+        "w": 550,
+        "h": 550,
+        "hq": true,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
+      },
+      {
+        "id": "jays-burger-1",
+        "name": "Burger Box - 3 Burgers 3 Fries (Customizable)",
+        "price": 19,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Burger%20Box%20-%203%20Burgers%203%20Fries%20(Customizable).jpg",
+        "category": "Sides",
+        "likePct": 94,
+        "likeCount": 26,
+        "reviewCount": 356,
+        "w": 659,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
+      },
+      {
+        "id": "jays-burger-2",
+        "name": "Cheese Burger Poutine",
+        "price": 22,
+        "description": "Crispy, golden and delicious.",
+        "image": "/Menu/Jays%20Burger/Cheese%20Burger%20Poutine.jpg",
+        "category": "Mains",
+        "likePct": 83,
+        "likeCount": 27,
+        "reviewCount": 307,
+        "w": 659,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-3",
+        "name": "Cheese Melt",
+        "price": 13,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Cheese%20Melt.jpg",
+        "category": "Mains",
+        "likePct": 92,
+        "likeCount": 30,
+        "reviewCount": 204,
+        "w": 659,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
+      },
+      {
+        "id": "jays-burger-4",
+        "name": "Classic Burger - Meal",
+        "price": 22.5,
+        "description": "Freshly cooked and served hot.",
+        "image": "/Menu/Jays%20Burger/Classic%20Burger%20-%20Meal.jpg",
+        "category": "Mains",
+        "likePct": 84,
+        "likeCount": 58,
+        "reviewCount": 216,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-5",
+        "name": "Classic Burger",
+        "price": 15,
+        "description": "Crispy, golden and delicious.",
+        "image": "/Menu/Jays%20Burger/Classic%20Burger.jpg",
+        "category": "Mains",
+        "likePct": 94,
+        "likeCount": 32,
+        "reviewCount": 362,
+        "w": 659,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
+      },
+      {
+        "id": "jays-burger-6",
+        "name": "Cookies and Cream Milkshake",
+        "price": 15,
+        "description": "Freshly cooked and served hot.",
+        "image": "/Menu/Jays%20Burger/Cookies%20and%20Cream%20Milkshake.jpg",
+        "category": "Mains",
+        "likePct": 90,
+        "likeCount": 40,
+        "reviewCount": 254,
+        "w": 550,
+        "h": 550,
+        "hq": true,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
+      },
+      {
+        "id": "jays-burger-7",
+        "name": "Curly Fries",
+        "price": 19.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Curly%20Fries.jpg",
+        "category": "Sides",
+        "likePct": 95,
+        "likeCount": 39,
+        "reviewCount": 439,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-8",
+        "name": "Curly Poutine",
+        "price": 17.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Curly%20Poutine.jpg",
+        "category": "Mains",
+        "likePct": 82,
+        "likeCount": 20,
+        "reviewCount": 378,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-9",
+        "name": "Fries",
+        "price": 17,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Fries.jpg",
+        "category": "Sides",
+        "likePct": 90,
+        "likeCount": 40,
+        "reviewCount": 298,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-10",
+        "name": "Gravy",
+        "price": 14.5,
+        "description": "Freshly cooked and served hot.",
+        "image": "/Menu/Jays%20Burger/Gravy.jpg",
+        "category": "Mains",
+        "likePct": 88,
+        "likeCount": 62,
+        "reviewCount": 310,
+        "w": 400,
+        "h": 400,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-11",
+        "name": "Jay's Burger (MEAL)",
+        "price": 16,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Jay's%20Burger%20(MEAL).jpg",
+        "category": "Mains",
+        "likePct": 94,
+        "likeCount": 44,
+        "reviewCount": 180,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-12",
+        "name": "Jay's Burger-001",
+        "price": 16,
+        "description": "Crispy, golden and delicious.",
+        "image": "/Menu/Jays%20Burger/Jay's%20Burger-001.jpg",
+        "category": "Mains",
+        "likePct": 98,
+        "likeCount": 60,
+        "reviewCount": 272,
+        "w": 550,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
+      },
+      {
+        "id": "jays-burger-13",
+        "name": "Jay's Fries",
+        "price": 23,
+        "description": "Freshly cooked and served hot.",
+        "image": "/Menu/Jays%20Burger/Jay's%20Fries.jpg",
+        "category": "Sides",
+        "likePct": 84,
+        "likeCount": 58,
+        "reviewCount": 362,
+        "w": 550,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
+      },
+      {
+        "id": "jays-burger-14",
+        "name": "Jay's Sauce",
+        "price": 22,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Jay's%20Sauce.jpg",
+        "category": "Mains",
+        "likePct": 98,
+        "likeCount": 18,
+        "reviewCount": 36,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-15",
+        "name": "Oklahoma Onion Burger - Meal",
+        "price": 14,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Oklahoma%20Onion%20Burger%20-%20Meal.jpg",
+        "category": "Mains",
+        "likePct": 89,
+        "likeCount": 27,
+        "reviewCount": 83,
+        "w": 550,
+        "h": 550,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-16",
+        "name": "Oklahoma Onion Burger",
+        "price": 23.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Oklahoma%20Onion%20Burger.jpg",
+        "category": "Mains",
+        "likePct": 91,
+        "likeCount": 17,
+        "reviewCount": 467,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-17",
+        "name": "Patty Melt - Meal",
+        "price": 20,
+        "description": "Crispy, golden and delicious.",
+        "image": "/Menu/Jays%20Burger/Patty%20Melt%20-%20Meal.jpg",
+        "category": "Mains",
+        "likePct": 95,
+        "likeCount": 45,
+        "reviewCount": 379,
+        "w": 660,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
+      },
+      {
+        "id": "jays-burger-18",
+        "name": "Patty Melt",
+        "price": 11.5,
+        "description": "Freshly cooked and served hot.",
+        "image": "/Menu/Jays%20Burger/Patty%20Melt.jpg",
+        "category": "Mains",
+        "likePct": 83,
+        "likeCount": 15,
+        "reviewCount": 233,
+        "w": 659,
+        "h": 440,
+        "hq": true,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
+      },
+      {
+        "id": "jays-burger-19",
+        "name": "Pepperoni Smashed (Meal)",
+        "price": 20.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Pepperoni%20Smashed%20(Meal).jpg",
+        "category": "Mains",
+        "likePct": 84,
+        "likeCount": 64,
+        "reviewCount": 432,
+        "w": 660,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-20",
+        "name": "Pepperoni Smashed (New)  - Limited Time",
+        "price": 17.5,
+        "description": "Crispy, golden and delicious.",
+        "image": "/Menu/Jays%20Burger/Pepperoni%20Smashed%20(New)%20%20-%20Limited%20Time.jpg",
+        "category": "Mains",
+        "likePct": 97,
+        "likeCount": 17,
+        "reviewCount": 379,
+        "w": 550,
+        "h": 825,
+        "hq": true,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
+      },
+      {
+        "id": "jays-burger-21",
+        "name": "Popcorn Chicken",
+        "price": 20.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Popcorn%20Chicken.jpg",
+        "category": "Mains",
+        "likePct": 93,
+        "likeCount": 67,
+        "reviewCount": 343,
+        "w": 660,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-22",
+        "name": "Poutine",
+        "price": 20.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/Poutine.jpg",
+        "category": "Mains",
+        "likePct": 93,
+        "likeCount": 31,
+        "reviewCount": 223,
+        "w": 550,
+        "h": 440,
+        "hq": true
+      },
+      {
+        "id": "jays-burger-23",
+        "name": "The Fried Chicken Sando -",
+        "price": 23.5,
+        "description": "A house favourite, made to order.",
+        "image": "/Menu/Jays%20Burger/The%20Fried%20Chicken%20Sando%20-.jpg",
+        "category": "Mains",
+        "likePct": 85,
+        "likeCount": 17,
+        "reviewCount": 261,
+        "w": 550,
+        "h": 550,
+        "hq": true,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
+      }
+    ]
+  },
   "Comfort Air HVAC": {
     "slug": "comfort-air-hvac",
     "folder": "Services photos",

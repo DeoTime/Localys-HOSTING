@@ -6,7 +6,8 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Star, Check, Plus, ChevronUp, ChevronDown } from 'lucide-react';
 import { BusinessItemsRail } from '@/components/feed/BusinessItemsRail';
-import { getBusinessAlias, getPhoXeLuaItems } from '@/lib/businessAliases';
+import { getBusinessAlias, getPhoXeLuaItems, type AliasItem } from '@/lib/businessAliases';
+import { buildFeedVideos } from '@/lib/demoVideos';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
@@ -233,6 +234,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
       setCurrentIndex(idx);
       // Clean up the URL param
       router.replace('/feed', { scroll: false });
+    } else if (targetVideoId.startsWith('local:')) {
+      // Built-in local video — always already in the feed; nothing to fetch.
+      router.replace('/feed', { scroll: false });
     } else {
       // Video not in feed — fetch and prepend it
       (async () => {
@@ -320,19 +324,24 @@ export function HomeContent({ isActive }: HomeContentProps) {
       const { data, error } = await getWeightedVideoFeed(20, 0);
       if (error) throw error;
       if (data) {
-        const videosData = data as Video[];
+        // Built-in local videos (public/Videos linked to businesses) shown first,
+        // followed by the real Supabase feed. Local ids are `local:`-prefixed and
+        // excluded from all Supabase id-based lookups below.
+        const localVideos = buildFeedVideos() as unknown as Video[];
+        const realData = data as Video[];
+        const videosData = [...localVideos, ...realData];
         setVideos(videosData);
 
         const counts: { [key: string]: number } = {};
         const commentCounts: { [key: string]: number } = {};
 
-        const videoIds = videosData
+        const videoIds = realData
           .map(v => v.id)
           .filter((id): id is string => !!id && typeof id === 'string');
 
         const posterProfileIds = Array.from(
           new Set(
-            videosData
+            realData
               .map((video) => video.user_id)
               .filter((id): id is string => Boolean(id && typeof id === 'string'))
           )
@@ -342,7 +351,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
         const feedBusinessIds = Array.from(
           new Set(
-            videosData
+            realData
               .map((video) => video.business_id)
               .filter((id): id is string => Boolean(id && typeof id === 'string'))
           )
@@ -416,7 +425,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
         }
 
 
-        const businesses = videosData
+        const businesses = realData
           .map((video) => video.businesses)
           .filter((business): business is NonNullable<Video['businesses']> => Boolean(business && business.id));
 
@@ -1012,7 +1021,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
               const feedAlias = getBusinessAlias(video.profiles?.username, feedBusiness?.business_name);
               const feedName = feedAlias?.name || feedBusiness?.business_name || video.profiles?.full_name || 'Business';
               const feedCaption = feedAlias?.caption ?? video.caption;
-              const feedItems = feedAlias ? getPhoXeLuaItems() : undefined;
+              const feedItems = feedAlias
+                ? getPhoXeLuaItems()
+                : ((video as unknown as { localItems?: AliasItem[] }).localItems);
 
               return (
                 <>
