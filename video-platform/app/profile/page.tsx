@@ -9,8 +9,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/lib/supabase/client';
 import { EditableProfilePicture } from '@/components/EditableProfilePicture';
 import { LanguageSettings } from '@/components/LanguageSettings';
-import { BookmarkedVideos } from '@/components/BookmarkedVideos';
-import { PostedVideos } from '@/components/PostedVideos';
 import { SideCards } from '@/components/SideCards';
 import {
   uploadProfilePicture,
@@ -80,7 +78,7 @@ function BadgesSection({ userId }: { userId: string }) {
           return (
             <div
               key={id}
-              className={`flex flex-col items-center text-center gap-1 p-2 rounded-xl border transition-colors ${
+              className={`flex flex-col items-center text-center gap-0.5 p-1.5 rounded-xl border transition-colors ${
                 earned ? 'border-[#f97316]/20 bg-[#f97316]/5' : 'border-gray-100 bg-gray-50 opacity-50'
               }`}
             >
@@ -249,25 +247,25 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
       {!statsLoading && (bizCount > 0 || moneySpent > 0) && (
         <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4">
           <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-2.5">Your Local Impact</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
-                <Store className="h-4 w-4 text-[#f97316]" />
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-7 h-7 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
+                <Store className="h-3.5 w-3.5 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900 leading-none">{bizCount}</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">
+                <p className="text-lg font-bold text-gray-900 leading-none">{bizCount}</p>
+                <p className="text-[10px] text-gray-500 leading-none mt-px">
                   {bizCount === 1 ? 'business' : 'businesses'} supported
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-4 w-4 text-[#f97316]" />
+            <div className="flex items-center gap-1.5">
+              <div className="w-7 h-7 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-3.5 w-3.5 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-xl font-bold text-gray-900 leading-none">${moneySpent.toFixed(0)}</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">kept in community</p>
+                <p className="text-lg font-bold text-gray-900 leading-none">${moneySpent.toFixed(0)}</p>
+                <p className="text-[10px] text-gray-500 leading-none mt-px">kept in community</p>
               </div>
             </div>
           </div>
@@ -284,14 +282,6 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
       >
         {t('profile.edit_profile')}
       </button>
-
-      {/* Bookmarked Videos */}
-      <section className="mb-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-3">{t('profile.bookmarked')}</h3>
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
-          <BookmarkedVideos userId={user.id} />
-        </div>
-      </section>
 
       {/* Order History */}
       <section className="mb-6">

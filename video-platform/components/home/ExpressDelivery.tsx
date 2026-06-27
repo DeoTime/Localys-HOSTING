@@ -10,7 +10,10 @@ export function ExpressDelivery() {
         <div className="rounded-xl bg-white px-2.5 py-1.5 shadow-sm text-center">
           <div className="flex items-center gap-1">
             <Zap className="h-4 w-4 shrink-0 fill-[#f97316] text-[#f97316]" />
-            <span className="text-sm font-extrabold text-[#f97316] leading-tight">Express<br />Delivery</span>
+            <div className="flex flex-col" style={{ lineHeight: 1 }}>
+              <span className="text-[11px] font-extrabold text-[#f97316]">Express</span>
+              <span className="text-[11px] font-extrabold text-[#f97316]">Delivery</span>
+            </div>
           </div>
         </div>
       </div>

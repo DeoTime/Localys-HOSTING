@@ -59,7 +59,7 @@ export function SideCards({ userId }: SideCardsProps) {
     <>
       {/* Left card */}
       {showLeft && (
-        <div className="hidden xl:block fixed left-4 top-[32%] w-56 z-30 pointer-events-auto">
+        <div className="hidden xl:block fixed left-4 top-[32%] w-64 z-30 pointer-events-auto">
           <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg p-5">
             <button
               onClick={() => setShowLeft(false)}
@@ -112,7 +112,7 @@ export function SideCards({ userId }: SideCardsProps) {
 
       {/* Right card */}
       {showRight && (
-        <div className="hidden xl:block fixed right-4 top-[32%] w-56 z-30 pointer-events-auto">
+        <div className="hidden xl:block fixed right-4 top-[32%] w-64 z-30 pointer-events-auto">
           <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg p-5">
             <button
               onClick={() => setShowRight(false)}
