@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Menu, MenuItem, getUserMenus, getUserMenu, deleteMenu, updateMenuItem, deleteMenuItem } from '@/lib/supabase/profiles';
@@ -217,9 +217,18 @@ export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: Me
       {/* Menu Items Grid */}
       {menus.length > 0 && menus[0]?.menu_items && menus[0].menu_items.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {menus[0].menu_items.map((item, index) => (
+          {menus[0].menu_items.map((item, index) => {
+            const allItems = menus[0].menu_items!;
+            const prevCat = index > 0 ? allItems[index - 1].category : null;
+            const showHeader = !!item.category && item.category !== prevCat;
+            return (
+            <Fragment key={item.id}>
+            {showHeader && (
+              <h3 className="col-span-full text-[#F5F0E8] font-bold text-base sm:text-lg mt-3 mb-0 first:mt-0">
+                {item.category}
+              </h3>
+            )}
             <div
-              key={item.id}
               className={`menu-item-card bg-[#242420] border border-[#3A3A34] rounded-2xl overflow-hidden hover:scale-[0.97] transition-all duration-200 group relative ${
                 fadingOutItemId === item.id ? 'opacity-0 scale-95 pointer-events-none' : ''
               }`}
@@ -292,6 +301,10 @@ export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: Me
                   {item.item_name}
                 </h4>
 
+                {item.description && (
+                  <p className="text-[#9E9A90] text-xs line-clamp-2 mb-1.5">{item.description}</p>
+                )}
+
                 {/* Price — inline editable for owner */}
                 {isOwnProfile && editingPriceId === item.id ? (
                   <div className="flex items-center gap-1 mb-2">
@@ -349,7 +362,9 @@ export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: Me
                 )}
               </div>
             </div>
-          ))}
+            </Fragment>
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-12">

@@ -530,6 +530,17 @@ function UserProfileContent() {
 
       {/* Profile Content */}
       <div className="p-6 pb-32">
+        {/* Business banner (cropped from the store's online menu) */}
+        {business && profile.profile_picture_url && (
+          <div className="-mx-6 -mt-6 mb-6 overflow-hidden">
+            <img
+              src={profile.profile_picture_url}
+              alt={business.business_name || profile.full_name}
+              className="w-full h-40 sm:h-56 object-cover"
+            />
+          </div>
+        )}
+
         <div className="flex flex-col items-center mb-6">
           <img
             src={profile.profile_picture_url || 'https://via.placeholder.com/120'}
@@ -682,10 +693,12 @@ function UserProfileContent() {
           </div>
         )}
 
-        {/* Services Section (business only) */}
+        {/* Menu / Services Section (business only) */}
         {profile.type && (
           <div className="mt-8">
-            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">Services</h3>
+            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">
+              {profile.type === 'service' ? 'Services' : 'Menu'}
+            </h3>
             <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-6">
               <MenuList userId={profile.id} isOwnProfile={false} />
             </div>

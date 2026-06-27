@@ -1,19 +1,33 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import { CarouselRow } from './CarouselRow';
 import { Thumb } from './Thumb';
-import { featuredVideos } from '@/lib/home-data';
+import { getFeaturedVideos } from '@/lib/supabase/featured';
+import type { VideoCard } from '@/lib/home-data';
 
 /**
- * (F) Short-form video thumbnails (click → Discover/TikTok feed), each with
- * linkable products listed below that route to the product/business.
+ * (F) Real short-form videos (click → /video/[id]). Fetches actual videos from
+ * Supabase; renders nothing if there are none yet (no fake video cards).
  */
 export function FeaturedVideos() {
+  const [videos, setVideos] = useState<VideoCard[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    getFeaturedVideos()
+      .then((v) => { if (active) setVideos(v); })
+      .catch(() => { if (active) setVideos([]); });
+    return () => { active = false; };
+  }, []);
+
+  if (videos.length === 0) return null;
+
   return (
     <CarouselRow title="Featured in videos">
-      {featuredVideos.map((v) => (
+      {videos.map((v) => (
         <div key={v.id} className="w-[180px] shrink-0 sm:w-[200px]">
           <Link href={v.href} className="group/vid relative block overflow-hidden rounded-2xl">
             <Thumb
@@ -32,21 +46,6 @@ export function FeaturedVideos() {
               <span className="block truncate text-xs text-white">{v.businessName} · {v.views} views</span>
             </span>
           </Link>
-
-          {/* Linkable products under the video */}
-          <div className="mt-2 flex flex-col gap-1.5">
-            {v.products.map((p) => (
-              <Link
-                key={p.id}
-                href={p.href}
-                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-1.5 transition hover:border-[#f97316] dark:border-gray-700 dark:bg-gray-900"
-              >
-                <Thumb src={p.image} label={p.title} alt={p.title} className="h-8 w-8 shrink-0 rounded-lg" imgClassName="h-full w-full object-cover" />
-                <span className="min-w-0 flex-1 truncate text-xs font-medium text-black dark:text-white">{p.title}</span>
-                <span className="text-xs font-bold text-black dark:text-white">${p.price.toFixed(2)}</span>
-              </Link>
-            ))}
-          </div>
         </div>
       ))}
     </CarouselRow>

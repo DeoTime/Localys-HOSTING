@@ -1,57 +1,35 @@
 /**
- * Seeded PLACEHOLDER data for the Walmart-style Home feed.
+ * Shared types for the Walmart-style Home feed + the gamification challenges.
  *
- * Every visual item carries an optional `image` field (a path/URL). When it's
- * missing the UI renders a flat neutral placeholder box with the item's initial
- * — NO emoji, NO unicode icons. Drop real photos into `public/...` and set the
- * `image` field to swap them in (e.g. `image: '/businesses/ana-pastry.jpg'`).
+ * NOTE: All business/product/deal/video data is REAL and comes from Supabase via
+ * `lib/supabase/featured.ts` (see getLocalBusinesses / getFeaturedVideos). The
+ * old hardcoded placeholder businesses were removed — only the challenge data
+ * (which is not business data) remains hardcoded here.
  */
-
-export interface Review {
-  rating: number; // 0–5 (can be fractional)
-  count: number; // number of reviews
-}
 
 /** The core card model used everywhere (deals, trending, ranked lists, …). */
 export interface Product {
   id: string;
-  title: string; // short name / headline
-  description: string; // one-line description shown under the price
+  title: string; // short name / headline (the menu item)
+  description: string; // one-line shown under the price (usually the business name)
   businessId: string;
   businessName: string;
-  price: number; // current (discounted) price
+  price: number; // current price
   originalPrice?: number; // struck-through original when discounted
   discountPct?: number; // e.g. 30 → "30% off" badge
-  image?: string; // real photo path/URL — swap in later
+  image?: string; // real photo URL; falls back to a neutral placeholder
   rating: number; // 0–5
   reviewCount: number;
-  href: string; // where the card links to
-}
-
-export interface Business {
-  id: string;
-  name: string;
-  image?: string;
-  category: string;
-  rating: number;
-  reviewCount: number;
-  href: string;
-}
-
-export interface Category {
-  id: string;
-  label: string;
-  image?: string; // swap-in icon/photo
-  href: string;
+  href: string; // where the card links to (the real /profile/<username>)
 }
 
 export interface VideoCard {
   id: string;
   title: string;
   businessName: string;
-  thumbnail?: string; // real thumbnail — swap in later
+  thumbnail?: string;
   views: string; // pre-formatted, e.g. "12.4k"
-  href: string; // navigates to the Discover (TikTok) feed
+  href: string; // /video/[id]
   products: { id: string; title: string; price: number; image?: string; href: string }[];
 }
 
@@ -65,36 +43,8 @@ export interface Challenge {
   image?: string;
 }
 
-export interface RankedList {
-  id: string;
-  title: string;
-  items: Product[];
-}
-
-export interface DealTile {
-  id: string;
-  title: string;
-  subtitle: string;
-  image?: string;
-  href: string;
-}
-
 /* ------------------------------------------------------------------ */
-/* A — Top deals (shifting featured block + surrounding tiles)         */
-/* ------------------------------------------------------------------ */
-export const dealTiles: DealTile[] = [
-  { id: 'd1', title: 'Bakery deals', subtitle: 'Up to 30% off fresh-baked', href: '/home' },
-  { id: 'd2', title: 'Café faves', subtitle: 'Buy 1 get 1 on drinks', href: '/home' },
-  { id: 'd3', title: 'Fresh flowers', subtitle: 'Save 25% on bouquets', href: '/home' },
-  { id: 'd4', title: 'Taco Tuesday', subtitle: '2 for $9 all day', href: '/home' },
-  { id: 'd5', title: 'HVAC tune-up', subtitle: '$49 winter special', href: '/home' },
-  { id: 'd6', title: 'Sweet treats', subtitle: 'Up to 40% off desserts', href: '/home' },
-  { id: 'd7', title: 'Local roast', subtitle: 'Free refill on coffee', href: '/home' },
-  { id: 'd8', title: 'Bookstore picks', subtitle: '15% off staff picks', href: '/home' },
-];
-
-/* ------------------------------------------------------------------ */
-/* A — Challenges                                                      */
+/* Challenges (gamification — not business data)                       */
 /* ------------------------------------------------------------------ */
 export const dailyChallenges: Challenge[] = [
   { id: 'c1', title: 'Visit 3 local businesses', description: 'Check in today to earn coins', current: 1, goal: 3, reward: 50 },
@@ -104,92 +54,4 @@ export const dailyChallenges: Challenge[] = [
 export const monthlyChallenges: Challenge[] = [
   { id: 'm1', title: 'Try 10 new spots', description: 'Explore your neighbourhood', current: 4, goal: 10, reward: 300 },
   { id: 'm2', title: 'Spend at 8 businesses', description: 'Keep it local all month', current: 5, goal: 8, reward: 250 },
-];
-
-/* ------------------------------------------------------------------ */
-/* B / E / G — Product carousels                                       */
-/* ------------------------------------------------------------------ */
-export const dealsAndMore: Product[] = [
-  { id: 'p1', title: 'Sourdough Loaf', description: 'Ana’s Pastry — baked fresh daily', businessId: 'b1', businessName: 'Ana’s Pastry', price: 5.6, originalPrice: 8, discountPct: 30, rating: 4.8, reviewCount: 214, href: '/profile/b1' },
-  { id: 'p2', title: 'Cold Brew 16oz', description: 'Align Coffee — single origin', businessId: 'b2', businessName: 'Align Coffee', price: 3.75, originalPrice: 5, discountPct: 25, rating: 4.7, reviewCount: 158, href: '/profile/b2' },
-  { id: 'p3', title: 'Spring Bouquet', description: 'Bloom & Co — seasonal mix', businessId: 'b3', businessName: 'Bloom & Co', price: 18, originalPrice: 24, discountPct: 25, rating: 4.9, reviewCount: 92, href: '/profile/b3' },
-  { id: 'p4', title: 'Birria Tacos (3)', description: 'El Sabor — slow-braised beef', businessId: 'b4', businessName: 'El Sabor', price: 9, originalPrice: 12, discountPct: 25, rating: 4.8, reviewCount: 331, href: '/profile/b4' },
-  { id: 'p5', title: 'Furnace Tune-up', description: 'Arnold HVAC — 21-point check', businessId: 'b5', businessName: 'Arnold HVAC', price: 49, originalPrice: 89, discountPct: 45, rating: 4.6, reviewCount: 76, href: '/profile/b5' },
-  { id: 'p6', title: 'Matcha Croissant', description: 'Ana’s Pastry — limited batch', businessId: 'b1', businessName: 'Ana’s Pastry', price: 4.2, originalPrice: 6, discountPct: 30, rating: 4.7, reviewCount: 119, href: '/profile/b1' },
-];
-
-export const trendingArea: Product[] = [
-  { id: 't1', title: 'Smash Burger', description: 'Burger Bros — double patty', businessId: 'b6', businessName: 'Burger Bros', price: 11.5, rating: 4.9, reviewCount: 402, href: '/profile/b6' },
-  { id: 't2', title: 'Catering Platter', description: 'Fresh Catering — serves 10', businessId: 'b7', businessName: 'Fresh Catering', price: 89, originalPrice: 110, discountPct: 19, rating: 4.8, reviewCount: 64, href: '/profile/b7' },
-  { id: 't3', title: 'Lawn Care Visit', description: 'Green Acres — full service', businessId: 'b8', businessName: 'Green Acres', price: 60, rating: 4.7, reviewCount: 88, href: '/profile/b8' },
-  { id: 't4', title: 'Used Classics Set', description: 'Corner Bookstore — 3 titles', businessId: 'b9', businessName: 'Corner Bookstore', price: 15, originalPrice: 20, discountPct: 25, rating: 4.9, reviewCount: 51, href: '/profile/b9' },
-  { id: 't5', title: 'Print Bundle', description: 'Advanced Printing — 100 flyers', businessId: 'b10', businessName: 'Advanced Printing', price: 39, originalPrice: 55, discountPct: 29, rating: 4.6, reviewCount: 47, href: '/profile/b10' },
-  { id: 't6', title: 'Iced Latte', description: 'Align Coffee — oat milk', businessId: 'b2', businessName: 'Align Coffee', price: 4.5, rating: 4.7, reviewCount: 173, href: '/profile/b2' },
-];
-
-export const otherBusinesses: Product[] = [
-  { id: 'o1', title: 'Vegan Bowl', description: 'Acuvega — protein packed', businessId: 'b11', businessName: 'Acuvega', price: 12.5, originalPrice: 15, discountPct: 16, rating: 4.8, reviewCount: 96, href: '/profile/b11' },
-  { id: 'o2', title: 'Pet Grooming', description: 'Paws & Co — full groom', businessId: 'b12', businessName: 'Paws & Co', price: 45, rating: 4.9, reviewCount: 142, href: '/profile/b12' },
-  { id: 'o3', title: 'Yoga Drop-in', description: 'Still Studio — 60 min', businessId: 'b13', businessName: 'Still Studio', price: 18, originalPrice: 22, discountPct: 18, rating: 4.9, reviewCount: 210, href: '/profile/b13' },
-  { id: 'o4', title: 'Pizza Slice x2', description: 'Nonna’s — wood fired', businessId: 'b14', businessName: 'Nonna’s', price: 7, rating: 4.7, reviewCount: 288, href: '/profile/b14' },
-  { id: 'o5', title: 'Haircut', description: 'Fade Lab — skin fade', businessId: 'b15', businessName: 'Fade Lab', price: 30, originalPrice: 40, discountPct: 25, rating: 4.8, reviewCount: 134, href: '/profile/b15' },
-];
-
-/* ------------------------------------------------------------------ */
-/* D — Shop by department (wired to real /categories icons)            */
-/* ------------------------------------------------------------------ */
-export const categories: Category[] = [
-  { id: 'cat1', label: 'Restaurants', image: '/categories/restaurants.png', href: '/feed' },
-  { id: 'cat2', label: 'Fast Food', image: '/categories/Fast-food.png', href: '/feed' },
-  { id: 'cat3', label: 'Bakery', image: '/categories/bakery.png', href: '/feed' },
-  { id: 'cat4', label: 'Café', image: '/categories/cafe.png', href: '/feed' },
-  { id: 'cat5', label: 'Grocery', image: '/categories/grocery.png', href: '/feed' },
-  { id: 'cat6', label: 'Flowers', image: '/categories/flower.png', href: '/feed' },
-  { id: 'cat7', label: 'Pets', image: '/categories/pet.png', href: '/feed' },
-  { id: 'cat8', label: 'Clothing', image: '/categories/clothing.png', href: '/feed' },
-  { id: 'cat9', label: 'Services', image: '/categories/service.png', href: '/feed' },
-  { id: 'cat10', label: 'Toys', image: '/categories/toys.png', href: '/feed' },
-];
-
-/* ------------------------------------------------------------------ */
-/* F — Featured videos (click → Discover feed)                         */
-/* ------------------------------------------------------------------ */
-export const featuredVideos: VideoCard[] = [
-  {
-    id: 'v1', title: 'Inside Ana’s 5am bake', businessName: 'Ana’s Pastry', views: '12.4k', href: '/feed',
-    products: [
-      { id: 'vp1', title: 'Croissant', price: 4.2, href: '/profile/b1' },
-      { id: 'vp2', title: 'Sourdough', price: 5.6, href: '/profile/b1' },
-    ],
-  },
-  {
-    id: 'v2', title: 'Pour-over masterclass', businessName: 'Align Coffee', views: '8.1k', href: '/feed',
-    products: [
-      { id: 'vp3', title: 'Cold Brew', price: 3.75, href: '/profile/b2' },
-      { id: 'vp4', title: 'Beans 250g', price: 14, href: '/profile/b2' },
-    ],
-  },
-  {
-    id: 'v3', title: 'Birria, slow & low', businessName: 'El Sabor', views: '23.7k', href: '/feed',
-    products: [
-      { id: 'vp5', title: 'Birria Tacos', price: 9, href: '/profile/b4' },
-      { id: 'vp6', title: 'Consommé', price: 3, href: '/profile/b4' },
-    ],
-  },
-  {
-    id: 'v4', title: 'Spring arrangements', businessName: 'Bloom & Co', views: '5.6k', href: '/feed',
-    products: [
-      { id: 'vp7', title: 'Bouquet', price: 18, href: '/profile/b3' },
-      { id: 'vp8', title: 'Single stem', price: 4, href: '/profile/b3' },
-    ],
-  },
-];
-
-/* ------------------------------------------------------------------ */
-/* H — Ranked lists (repeatable pattern)                               */
-/* ------------------------------------------------------------------ */
-export const rankedLists: RankedList[] = [
-  { id: 'r1', title: 'Top selling restaurants', items: [dealsAndMore[3], trendingArea[0], otherBusinesses[3], trendingArea[1], otherBusinesses[0]] },
-  { id: 'r2', title: 'Highest rated services', items: [dealsAndMore[4], otherBusinesses[1], otherBusinesses[2], trendingArea[2], otherBusinesses[4]] },
-  { id: 'r3', title: 'Grab nearest options for cheap', items: [dealsAndMore[1], otherBusinesses[3], dealsAndMore[5], trendingArea[5], dealsAndMore[0]] },
 ];

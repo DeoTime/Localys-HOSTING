@@ -90,7 +90,11 @@ export function ProductCard({ product }: { product: Product }) {
           {product.title} — <span className="font-normal">{product.description}</span>
         </Link>
 
-        <Stars rating={product.rating} reviewCount={product.reviewCount} />
+        {product.reviewCount > 0 ? (
+          <Stars rating={product.rating} reviewCount={product.reviewCount} />
+        ) : (
+          <span className="text-xs font-medium text-[#f97316]">New</span>
+        )}
       </div>
     </div>
   );

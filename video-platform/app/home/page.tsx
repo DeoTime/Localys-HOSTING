@@ -1,45 +1,69 @@
+'use client';
+
+import { HomeDataProvider, spreadProducts, cheapestPerBusiness } from '@/components/home/HomeData';
 import { DealsHero } from '@/components/home/DealsHero';
 import { Challenges } from '@/components/home/Challenges';
-import { ProductCarousel } from '@/components/home/ProductCarousel';
+import { ProductsRow } from '@/components/home/ProductsRow';
+import { BusinessesRow } from '@/components/home/BusinessesRow';
 import { ExpressDelivery } from '@/components/home/ExpressDelivery';
 import { ShopByDepartment } from '@/components/home/ShopByDepartment';
 import { FeaturedVideos } from '@/components/home/FeaturedVideos';
 import { RankedLists } from '@/components/home/RankedLists';
 import { Feedback } from '@/components/home/Feedback';
-import { dealsAndMore, trendingArea, otherBusinesses } from '@/lib/home-data';
 
+/**
+ * Walmart-style Home feed. EVERY section renders from the real seeded Supabase
+ * businesses/menu items (shared via HomeDataProvider) — no mock/placeholder data.
+ */
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-black dark:bg-[#1A1A18] dark:text-white">
-      <div className="mx-auto w-full max-w-7xl space-y-10 px-4 py-6 sm:px-6">
-      {/* (A) Top deals marquee + challenges */}
-      <DealsHero />
-      <Challenges />
+      <HomeDataProvider>
+        <div className="mx-auto w-full max-w-7xl space-y-10 px-4 py-6 sm:px-6">
+          {/* (A) Featured businesses + challenges */}
+          <DealsHero />
+          <Challenges />
 
-      {/* (B) Deals & more for all */}
-      <ProductCarousel title="Deals & more for all" products={dealsAndMore} seeAllHref="/feed" />
+          {/* (B) Deals & more — real menu items spread across businesses */}
+          <ProductsRow
+            title="Deals & more for all"
+            seeAllHref="/feed"
+            select={(businesses) => spreadProducts(businesses, 2, 16)}
+          />
 
-      {/* (C) Express delivery */}
-      <ExpressDelivery />
+          {/* (B2) Real local businesses */}
+          <BusinessesRow title="Local businesses near you" seeAllHref="/feed" />
 
-      {/* (D) Shop by department */}
-      <ShopByDepartment />
+          {/* (C) Express delivery */}
+          <ExpressDelivery />
 
-      {/* (E) Trending in your area */}
-      <ProductCarousel title="Trending in your area" products={trendingArea} seeAllHref="/feed" />
+          {/* (D) Shop by department — filters real businesses */}
+          <ShopByDepartment />
 
-      {/* (F) Featured in videos */}
-      <FeaturedVideos />
+          {/* (E) Trending — value picks across businesses */}
+          <ProductsRow
+            title="Trending in your area"
+            seeAllHref="/feed"
+            select={(businesses) => cheapestPerBusiness(businesses, 16)}
+          />
 
-      {/* (G) Other businesses in your area */}
-      <ProductCarousel title="Other businesses in your area" products={otherBusinesses} seeAllHref="/feed" />
+          {/* (F) Featured in videos (real videos; hidden if none) */}
+          <FeaturedVideos />
 
-      {/* (H) Ranked lists */}
-      <RankedLists />
+          {/* (G) Other businesses in your area */}
+          <BusinessesRow
+            title="Other businesses in your area"
+            seeAllHref="/feed"
+            select={(b) => b.slice().reverse()}
+          />
 
-      {/* (I) Feedback */}
-      <Feedback />
-      </div>
+          {/* (H) Ranked lists */}
+          <RankedLists />
+
+          {/* (I) Feedback */}
+          <Feedback />
+        </div>
+      </HomeDataProvider>
     </div>
   );
 }
