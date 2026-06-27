@@ -10,10 +10,9 @@ import type { AliasItem } from '@/lib/businessAliases';
 // Render up to 6; how many actually show scales with viewport width via CSS below.
 const MAX_CARDS = 6;
 
-// Extra cards (beyond the first 3) reveal progressively on larger screens, so the
-// rail shows MORE item info when the window is maximized.
+// First 4 items always visible; 5th on xl, 6th on 2xl.
 const cardVisibility = (i: number) =>
-  i < 3 ? '' : i === 3 ? 'hidden lg:block' : i === 4 ? 'hidden xl:block' : 'hidden 2xl:block';
+  i < 4 ? '' : i === 4 ? 'hidden xl:block' : 'hidden 2xl:block';
 
 export function BusinessItemsRail({
   userId,
@@ -57,35 +56,33 @@ export function BusinessItemsRail({
   if (shown.length === 0) return null;
 
   return (
-    <div className="pointer-events-auto hidden w-full flex-col gap-3 pb-4 sm:flex lg:gap-4" aria-label={`${businessName} menu`}>
+    <div className="pointer-events-auto hidden w-full flex-col gap-2 pb-4 sm:flex lg:gap-2.5" aria-label={`${businessName} menu`}>
       {shown.map((item, i) => (
         <div
           key={item.id}
-          className={`overflow-hidden rounded-2xl bg-white shadow-2xl ${cardVisibility(i)}`}
-          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}
+          className={`overflow-hidden rounded-2xl border border-black/8 bg-white ${cardVisibility(i)}`}
         >
           {item.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.image}
               alt={item.name}
-              className="h-32 w-full object-cover lg:h-40 xl:h-48"
+              className="h-24 w-full object-cover lg:h-28"
             />
           ) : (
-            <div className="flex h-32 w-full items-center justify-center bg-gray-100 lg:h-40 xl:h-48">
+            <div className="flex h-24 w-full items-center justify-center bg-gray-100 lg:h-28">
               <ShoppingCart className="h-8 w-8 text-gray-300" />
             </div>
           )}
           {/* Deal badge on first item */}
           {i === 0 && (
-            <div className="mx-3 mt-2 inline-block rounded-full bg-[#f97316] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white lg:text-[11px]">
+            <div className="mx-2.5 mt-1.5 inline-block rounded-full bg-[#f97316] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
               Featured
             </div>
           )}
-          <div className="px-3 pb-3 pt-1.5 lg:px-4 lg:pb-4">
-            <p className="text-sm font-bold leading-tight text-black lg:text-base">{item.name}</p>
-            <p className="mt-0.5 text-[11px] text-gray-500 lg:text-xs">Tap to add to cart</p>
-            <div className="mt-2.5 flex items-center justify-between">
+          <div className="px-2.5 pb-2 pt-1 lg:px-3 lg:pb-2.5">
+            <p className="text-sm font-bold leading-tight text-black">{item.name}</p>
+            <div className="mt-2 flex items-center justify-between">
               <span className="text-lg font-bold text-[#f97316] lg:text-xl">${item.price.toFixed(2)}</span>
               <button
                 type="button"

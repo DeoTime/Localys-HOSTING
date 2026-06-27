@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Star, Check, Plus, X } from 'lucide-react';
+import { Star, Check, Plus, X, ChevronLeft } from 'lucide-react';
 import { BusinessItemsRail } from '@/components/feed/BusinessItemsRail';
 import { getBusinessAlias, getPhoXeLuaItems, type AliasItem } from '@/lib/businessAliases';
 import { buildFeedVideos } from '@/lib/demoVideos';
@@ -145,9 +145,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [adminLikeBoosts, setAdminLikeBoosts] = useState<{ [key: string]: number }>({});
   const realLikeCountsRef = useRef<{ [key: string]: number }>({});
 
-  // Follow state for video overlay
-  const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
-  const [followAnimating, setFollowAnimating] = useState<string | null>(null);
 
   useEffect(() => {
     loadVideos();
@@ -226,23 +223,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
   }, [adminMode, Object.keys(likeCounts).length]);
 
-  // Load follow states for all video owners
-  useEffect(() => {
-    if (!user || videos.length === 0) return;
-    const loadFollowStates = async () => {
-      const userIds = [...new Set(videos.map(v => v.user_id).filter(Boolean))] as string[];
-      if (userIds.length === 0) return;
-      const { data } = await supabase
-        .from('follows')
-        .select('following_id')
-        .eq('follower_id', user.id)
-        .in('following_id', userIds);
-      if (data) {
-        setFollowedUsers(new Set(data.map(f => f.following_id)));
-      }
-    };
-    loadFollowStates();
-  }, [user, videos]);
 
   // Handle videoId query param (e.g. from profile video click)
   useEffect(() => {
@@ -722,6 +702,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
     setTimeout(() => setIsScrolling(false), 500);
   };
 
+  const [leftOpen, setLeftOpen] = useState(true);
+
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
 
@@ -870,26 +852,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
     setTimeout(() => setBookmarkAnimating(null), 300);
   };
 
-  const toggleVideoFollow = async (userId: string | undefined) => {
-    if (!user || !userId) {
-      setToastMessage('Please sign in to follow');
-      return;
-    }
-    setFollowAnimating(userId);
-    const isFollowed = followedUsers.has(userId);
-    try {
-      if (isFollowed) {
-        await supabase.from('follows').delete().eq('follower_id', user.id).eq('following_id', userId);
-        setFollowedUsers(prev => { const next = new Set(prev); next.delete(userId); return next; });
-      } else {
-        await supabase.from('follows').insert({ follower_id: user.id, following_id: userId });
-        setFollowedUsers(prev => new Set(prev).add(userId));
-      }
-    } catch {
-      setToastMessage('Could not update follow');
-    }
-    setTimeout(() => setFollowAnimating(null), 400);
-  };
 
   const handleProfileClick = (userId?: string, username?: string) => {
     if (!userId && !username) {
@@ -1051,11 +1013,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
         .home-content-root::-webkit-scrollbar {
           display: none;
         }
-        @keyframes followPop {
-          0% { transform: translate(-50%, 0) scale(0); }
-          60% { transform: translate(-50%, 0) scale(1.2); }
-          100% { transform: translate(-50%, 0) scale(1); }
-        }
       `}</style>
       <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground">
       {/* Ambient Particle Background - CSS shimmer effect */}
@@ -1119,59 +1076,73 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
             {/* Left column: business banner + name (store-style) on top, then the
                 scrollable menu rail below — fills the height so no item is clipped. */}
-            <div className="pointer-events-none absolute left-3 top-3 bottom-6 z-20 flex w-[clamp(240px,24vw,420px)] flex-col gap-3">
-              {(feedBusiness || video.profiles) && (
-                <button
-                  type="button"
-                  onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
-                  onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
-                  aria-label={`View ${feedName}`}
-                  className="pointer-events-auto block shrink-0 overflow-hidden rounded-2xl bg-white/95 text-left shadow-xl backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                >
-                  {/* Banner (above the name); hides itself if the image is missing/broken */}
-                  {feedBusiness?.profile_picture_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={feedBusiness.profile_picture_url}
-                      alt=""
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
-                      className="h-20 w-full object-cover"
-                    />
-                  )}
-                  <div className="px-3 py-2">
-                    <span className="block text-2xl font-extrabold leading-tight text-black hover:underline sm:text-3xl">
-                      {feedName}
-                    </span>
-                    <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-600">
-                      {feedBusiness?.average_rating ? (
-                        <span className="inline-flex items-center gap-1 font-semibold text-black">
-                          <Star className="h-3.5 w-3.5 fill-[#f97316] text-[#f97316]" />
-                          {feedBusiness.average_rating.toFixed(1)}
-                        </span>
-                      ) : null}
-                      <span aria-hidden>·</span>
-                      <span>{(commentCounts[video.id] || stableCount(video.id, 'rev', 8, 480))} reviews</span>
-                      {feedDistanceLabel ? (
-                        <>
-                          <span aria-hidden>·</span>
-                          <span>{feedDistanceLabel} away</span>
-                        </>
-                      ) : null}
-                    </div>
-                    {feedCaption ? <p className="mt-1 line-clamp-2 text-xs text-gray-500">{feedCaption}</p> : null}
-                  </div>
-                </button>
-              )}
+            <div className={`pointer-events-none absolute left-2 top-3 bottom-6 z-20 flex flex-col gap-3 ${leftOpen ? 'w-[clamp(260px,32vw,480px)]' : 'w-auto'}`}>
+              {/* Collapse / expand toggle */}
+              <button
+                type="button"
+                onClick={() => setLeftOpen((v) => !v)}
+                aria-label={leftOpen ? 'Collapse panel' : 'Expand panel'}
+                className="pointer-events-auto self-start rounded-full border border-black/15 bg-black/60 p-1.5 text-white backdrop-blur-sm transition hover:bg-black/80"
+              >
+                <ChevronLeft className={`h-4 w-4 transition-transform duration-300 ${leftOpen ? '' : 'rotate-180'}`} />
+              </button>
 
-              {(feedBusiness || feedItems) && (
-                <div className="pointer-events-auto min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-                  <BusinessItemsRail
-                    userId={video.user_id || ''}
-                    businessId={feedBusiness?.id || ''}
-                    businessName={feedName}
-                    items={feedItems}
-                  />
-                </div>
+              {leftOpen && (
+                <>
+                  {(feedBusiness || video.profiles) && (
+                    <button
+                      type="button"
+                      onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
+                      onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
+                      aria-label={`View ${feedName}`}
+                      className="pointer-events-auto block shrink-0 overflow-hidden rounded-2xl border border-black/10 bg-white/95 text-left backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                    >
+                      {/* Banner (above the name); hides itself if the image is missing/broken */}
+                      {feedBusiness?.profile_picture_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={feedBusiness.profile_picture_url}
+                          alt=""
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                          className="h-20 w-full object-cover"
+                        />
+                      )}
+                      <div className="px-3 py-2">
+                        <span className="block text-2xl font-extrabold leading-tight text-black hover:underline sm:text-3xl">
+                          {feedName}
+                        </span>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-600">
+                          {feedBusiness?.average_rating ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-black">
+                              <Star className="h-3.5 w-3.5 fill-[#f97316] text-[#f97316]" />
+                              {feedBusiness.average_rating.toFixed(1)}
+                            </span>
+                          ) : null}
+                          <span aria-hidden>·</span>
+                          <span>{(commentCounts[video.id] || stableCount(video.id, 'rev', 8, 480))} reviews</span>
+                          {feedDistanceLabel ? (
+                            <>
+                              <span aria-hidden>·</span>
+                              <span>{feedDistanceLabel} away</span>
+                            </>
+                          ) : null}
+                        </div>
+                        {feedCaption ? <p className="mt-1 line-clamp-2 text-xs text-gray-500">{feedCaption}</p> : null}
+                      </div>
+                    </button>
+                  )}
+
+                  {(feedBusiness || feedItems) && (
+                    <div className="pointer-events-auto min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                      <BusinessItemsRail
+                        userId={video.user_id || ''}
+                        businessId={feedBusiness?.id || ''}
+                        businessName={feedName}
+                        items={feedItems}
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -1257,38 +1228,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
       {/* Right Side - Interaction Buttons */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
-        {/* Profile Picture */}
-        <div className="relative">
-          <button
-            onClick={() => handleProfileClick(currentVideo.user_id, currentVideo.profiles?.username)}
-            onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(currentVideo.user_id, currentVideo.profiles?.username))}
-            className="action-button-animate rounded-full focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#1A1A18]"
-            aria-label={`View profile of ${currentBusiness?.business_name || currentVideo.profiles?.full_name || 'user'}`}
-          >
-            <Image
-              src={currentBusiness?.profile_picture_url || currentVideo.profiles?.profile_picture_url || 'https://via.placeholder.com/60'}
-              alt={currentBusiness?.business_name || 'Business'}
-              width={56}
-              height={56}
-              className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full border-2 border-[#3A3A34] object-cover transition-transform duration-200 hover:scale-110 active:scale-95"
-              unoptimized={!(currentBusiness?.profile_picture_url || currentVideo.profiles?.profile_picture_url)}
-            />
-          </button>
-          {/* Follow Button */}
-          {user && currentVideo.user_id && currentVideo.user_id !== user.id && (
-            <button
-              onClick={() => toggleVideoFollow(currentVideo.user_id)}
-              className="absolute -bottom-2 left-1/2 -translate-x-1/2 transition-transform duration-400"
-              aria-label={followedUsers.has(currentVideo.user_id!) ? 'Unfollow' : 'Follow'}
-              style={{ animation: followAnimating === currentVideo.user_id ? 'followPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined }}
-            >
-              <div className="h-[25px] w-[25px] rounded-full flex items-center justify-center text-[11px] font-bold bg-[#f97316] text-white border-2 border-white transition-all duration-300">
-                {followedUsers.has(currentVideo.user_id!) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-              </div>
-            </button>
-          )}
-        </div>
-
         {/* Like Button - show for all videos */}
         <button
           onClick={(e) => toggleLike(currentVideo.id, currentBusiness?.id, e)}
