@@ -11,17 +11,17 @@ type Dept =
 const WHITE_BG = new Set(['Beauty', 'Bakery', 'Flowers', 'Home Services', 'Pets', 'Restaurants', 'Toys']);
 
 const DEPARTMENTS: Dept[] = [
-  { name: 'Restaurants',   src: '/Shop%20by%20department/Restaurants1.png',     href: '/feed?category=Restaurants' },
-  { name: 'Grocery',       src: '/Shop%20by%20department/Grocery.jpg',          href: '/feed?category=Grocery' },
-  { name: 'Beauty',        src: '/Shop%20by%20department/beauty1.png',          href: '/feed?category=Beauty' },
-  { name: 'Personal Care', src: '/Shop%20by%20department/Personal%20care.jpg',  href: '/feed?category=Personal+Care' },
-  { name: 'Health',        src: '/Shop%20by%20department/Health.jpg',           href: '/feed?category=Health' },
-  { name: 'Bakery',        src: '/Shop%20by%20department/bakery1.png',          href: '/feed?category=Restaurants' },
-  { name: 'Flowers',       src: '/Shop%20by%20department/Flowers1.png',         href: '/feed?category=Flowers' },
-  { name: 'Pets',          src: '/Shop%20by%20department/Pets.png',             href: '/feed?category=Pets' },
-  { name: 'Home Services', src: '/Shop%20by%20department/Services1.png',        href: '/feed?category=Home+Services', pos: 'right center' },
-  { name: 'Toys',          src: '/Shop%20by%20department/Toys1.png',            href: '/feed?category=Flowers' },
-  { name: 'Others',        icon: true,                                           href: '/feed?category=Others' },
+  { name: 'Restaurants',   src: '/Shop%20by%20department/Restaurants1.png',     href: '/category/restaurants' },
+  { name: 'Grocery',       src: '/Shop%20by%20department/Grocery.jpg',          href: '/category/grocery' },
+  { name: 'Beauty',        src: '/Shop%20by%20department/beauty1.png',          href: '/category/beauty' },
+  { name: 'Personal Care', src: '/Shop%20by%20department/Personal%20care.jpg',  href: '/category/personal-care' },
+  { name: 'Health',        src: '/Shop%20by%20department/Health.jpg',           href: '/category/health' },
+  { name: 'Bakery',        src: '/Shop%20by%20department/bakery1.png',          href: '/category/restaurants' },
+  { name: 'Flowers',       src: '/Shop%20by%20department/Flowers1.png',         href: '/category/flowers' },
+  { name: 'Pets',          src: '/Shop%20by%20department/Pets.png',             href: '/category/pets' },
+  { name: 'Home Services', src: '/Shop%20by%20department/Services1.png',        href: '/category/home-services', pos: 'right center' },
+  { name: 'Toys',          src: '/Shop%20by%20department/Toys1.png',            href: '/category/flowers' },
+  { name: 'Others',        icon: true,                                           href: '/category/others' },
 ];
 
 /** 3×3 dot-grid "more" icon for the Others department circle. */

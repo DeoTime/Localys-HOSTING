@@ -11,20 +11,19 @@ import type { Product } from '@/lib/home-data';
  */
 export interface HomeFeed {
   heroBusinesses: LocalBusiness[];
-  trending: Product[];          // the quality bar: hi-res restaurant items
-  foodDeals: Product[];
+  trending: Product[];
   flowers: Product[];
   pets: Product[];
   groceryConvenience: Product[];
   pharmacy: Product[];
   restaurants: LocalBusiness[];
-  topRestaurants: LocalBusiness[]; // 6+ entries (real + named variations)
+  topRestaurants: LocalBusiness[];
   services: LocalBusiness[];
   localBusinesses: LocalBusiness[];
 }
 
 const EMPTY_FEED: HomeFeed = {
-  heroBusinesses: [], trending: [], foodDeals: [], flowers: [], pets: [],
+  heroBusinesses: [], trending: [], flowers: [], pets: [],
   groceryConvenience: [], pharmacy: [], restaurants: [], topRestaurants: [],
   services: [], localBusinesses: [],
 };
@@ -132,43 +131,40 @@ function buildFeed(businesses: LocalBusiness[]): HomeFeed {
   const food = byTheme('food');
   const foodByRating = food.slice().sort((a, c) => c.rating - a.rating);
 
-  // 1) Trending — hi-res RESTAURANT items (the loved, all-food quality bar). Reserved
-  //    first so its photos are never reused by another row.
+  // 1) Trending — hi-res food items reserved first so they never appear in another row.
   const trending = itemRow(foodByRating, 14, 6);
 
-  // 2) Hero — prominent businesses; reserve their images next.
+  // 2) Top-restaurants — shares the global `used` set so banners/item photos
+  //    never repeat against trending or any later row.
+  const topRestaurants = buildTopRestaurants(food, used);
+
+  // 3) Hero — prominent businesses; reserve their images next.
   const heroOrder = [...foodByRating, ...byTheme('flowers'), ...byTheme('pets'), ...businesses]
     .filter((b, i, arr) => arr.findIndex((x) => x.id === b.id) === i);
   const heroBusinesses = bizRow(heroOrder, 8);
 
-  // 3) Themed item rows.
-  const foodDeals = itemRow(foodByRating, 14, 6);
+  // 4) Themed item rows (foodDeals removed).
   const flowers = itemRow(byTheme('flowers'), 12, 5);
   const pets = itemRow(byTheme('pets'), 12, 8);
   const groceryConvenience = itemRow(byTheme('grocery'), 16, 4);
   const pharmacy = itemRow(byTheme('pharmacy'), 12, 8);
 
-  // 4) Business-card rows.
+  // 5) Business-card rows.
   const restaurants = bizRow(foodByRating, 12);
   const services = bizRow(byTheme('services'), 16);
   const localBusinesses = bizRow(businesses, 20);
 
-  // 5) Top-restaurants row: 6+ entries with named variations (own dedup set).
-  const topRestaurants = buildTopRestaurants(food);
-
   return {
-    heroBusinesses, trending, foodDeals, flowers, pets,
+    heroBusinesses, trending, flowers, pets,
     groceryConvenience, pharmacy, restaurants, topRestaurants, services, localBusinesses,
   };
 }
 
 /**
- * Build a "Top restaurants near you" row with 6–8 entries. Uses its own image
- * dedup set so it is never starved by other rows. Real restaurants first, then
- * named variations that link to the same store but show a different menu photo.
+ * Build a "Top restaurants near you" row with 6–8 entries. Accepts the global
+ * `used` set so images it picks are never shown again in any subsequent row.
  */
-function buildTopRestaurants(food: LocalBusiness[]): LocalBusiness[] {
-  const localUsed = new Set<string>();
+function buildTopRestaurants(food: LocalBusiness[], used: Set<string>): LocalBusiness[] {
   const out: LocalBusiness[] = [];
 
   const nameVariations: Record<string, string[]> = {
@@ -177,16 +173,16 @@ function buildTopRestaurants(food: LocalBusiness[]): LocalBusiness[] {
     'Pho Nga Son': ['Saigon Noodle Bar', 'Pho Ha Noi'],
   };
 
-  // 1. Real restaurants (banner image preferred)
+  // 1. Real restaurants (banner preferred, falls back to first fresh hq item photo)
   for (const b of food) {
     const img =
-      typeof b.image === 'string' && !localUsed.has(b.image)
+      typeof b.image === 'string' && !used.has(b.image)
         ? b.image
         : b.products.find(
-            (p) => p.hq === true && typeof p.image === 'string' && !localUsed.has(p.image as string)
+            (p) => p.hq === true && typeof p.image === 'string' && !used.has(p.image as string)
           )?.image;
     if (!img) continue;
-    localUsed.add(img);
+    used.add(img);
     out.push({ ...b, image: img });
   }
 
@@ -196,10 +192,10 @@ function buildTopRestaurants(food: LocalBusiness[]): LocalBusiness[] {
     for (const varName of (nameVariations[b.name] ?? [])) {
       if (out.length >= 8) break;
       const img = b.products.find(
-        (p) => p.hq === true && typeof p.image === 'string' && !localUsed.has(p.image as string)
+        (p) => p.hq === true && typeof p.image === 'string' && !used.has(p.image as string)
       )?.image;
       if (!img) continue;
-      localUsed.add(img);
+      used.add(img);
       out.push({ ...b, id: `${b.id}:${varName}`, name: varName, image: img });
     }
   }

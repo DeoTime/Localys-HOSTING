@@ -58,7 +58,8 @@ export interface Challenge {
 /* Challenges (gamification — not business data)                       */
 /* ------------------------------------------------------------------ */
 export const dailyChallenges: Challenge[] = [
-  { id: 'c2', title: 'Like 5 videos', description: 'Support local creators', current: 3, goal: 5, reward: 20 },
+  { id: 'c1', title: 'Place an order', description: '', current: 0, goal: 1, reward: 50 },
+  { id: 'c2', title: 'Like 5 videos', description: '', current: 3, goal: 5, reward: 20 },
 ];
 
 export const monthlyChallenges: Challenge[] = [

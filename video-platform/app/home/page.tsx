@@ -35,8 +35,6 @@ function HomeBody() {
 
       {/* Food-forward, themed rows */}
       <BusinessesRow title="Top restaurants near you" seeAllHref="/feed" list={feed.topRestaurants} />
-      <ProductsRow title="Food deals near you" seeAllHref="/feed" items={feed.foodDeals} />
-
       <BusinessesRow title="Local businesses near you" seeAllHref="/feed" list={feed.localBusinesses} />
       <ProductsRow title="Trending in your area" seeAllHref="/feed" items={feed.trending} />
 
