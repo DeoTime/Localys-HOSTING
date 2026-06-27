@@ -38,7 +38,7 @@ export function ChatList({ chats, loading, activeChatId, onSelect }: ChatListPro
   }
 
   return (
-    <div className="divide-y divide-dashed divide-gray-200 dark:divide-gray-700">
+    <div className="divide-y divide-gray-100 dark:divide-gray-800">
       {chats.map((chat) => (
         <ChatListItem
           key={chat.id}

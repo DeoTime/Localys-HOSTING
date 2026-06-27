@@ -220,7 +220,7 @@ function DashboardContent() {
         <div className="max-w-6xl mx-auto">
           <div className="flex items-end justify-between mb-4">
             <div>
-              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Business Manager</p>
+              <p className="text-xs text-gray-600 font-medium uppercase tracking-wide mb-1">Business Manager</p>
               <p className="text-3xl font-bold text-gray-900">${displayRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
               <div className="flex items-center gap-1.5 mt-1">
                 {revenueChange >= 0 ? <ArrowUpRight className="h-3.5 w-3.5 text-green-500" /> : <ArrowDownRight className="h-3.5 w-3.5 text-red-500" />}
@@ -260,7 +260,7 @@ function DashboardContent() {
                   <p className="text-sm font-semibold text-gray-700">Cash Flow</p>
                   <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">Last 7 days</span>
                 </div>
-                <p className="text-xs text-gray-400 mb-4">Revenue performance</p>
+                <p className="text-xs text-gray-600 mb-4">Revenue performance</p>
                 <div className="h-44">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={hasRevenue ? chartData : DEMO_CHART} barSize={20}>
@@ -275,12 +275,12 @@ function DashboardContent() {
               </div>
               <div className="flex flex-col gap-4">
                 <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3"><div className="w-6 h-6 rounded-md bg-green-100 flex items-center justify-center"><TrendingUp className="h-3.5 w-3.5 text-green-600" /></div><p className="text-xs font-medium text-gray-500">Income</p></div>
+                  <div className="flex items-center gap-2 mb-3"><div className="w-6 h-6 rounded-md bg-green-100 flex items-center justify-center"><TrendingUp className="h-3.5 w-3.5 text-green-600" /></div><p className="text-xs font-medium text-gray-700">Income</p></div>
                   <p className="text-2xl font-bold text-gray-900">${displayRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <span className="text-[11px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">+{Math.abs(revenueChange).toFixed(1)}%</span>
                 </div>
                 <div className="flex-1 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3"><div className="w-6 h-6 rounded-md bg-red-100 flex items-center justify-center"><TrendingDown className="h-3.5 w-3.5 text-red-500" /></div><p className="text-xs font-medium text-gray-500">Expense</p></div>
+                  <div className="flex items-center gap-2 mb-3"><div className="w-6 h-6 rounded-md bg-red-100 flex items-center justify-center"><TrendingDown className="h-3.5 w-3.5 text-red-500" /></div><p className="text-xs font-medium text-gray-700">Expense</p></div>
                   <p className="text-2xl font-bold text-gray-900">${(displayRevenue * 0.32).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   <span className="text-[11px] font-semibold text-red-500 bg-red-50 px-1.5 py-0.5 rounded mt-1 inline-block">-12.5%</span>
                 </div>
@@ -362,7 +362,7 @@ function DashboardContent() {
                     const max = items[0]?.count || 1;
                     return items.map((item, i) => (
                       <div key={item.name} className="flex items-center gap-2">
-                        <span className="w-4 text-[11px] font-bold text-gray-400">#{i + 1}</span>
+                        <span className="w-4 text-[11px] font-bold text-gray-600">#{i + 1}</span>
                         {real.length > 0 && (itemImages[item.itemId] || itemNameImages[item.name]) ? (
                           <img src={itemImages[item.itemId] || itemNameImages[item.name]} alt={item.name} className="w-7 h-7 rounded-lg object-cover shrink-0" />
                         ) : (
@@ -415,14 +415,14 @@ function DashboardContent() {
                     </div>
                   );
                 })()}
-                <p className="text-[11px] text-gray-400 mt-2">Peak: 12pm–1pm &middot; 6pm–7pm</p>
+                <p className="text-[11px] text-gray-600 mt-2">Peak: 12pm–1pm &middot; 6pm–7pm</p>
               </div>
             </div>
 
             {/* Revenue Trend + Insights row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">Avg Order Value</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">Avg Order Value</p>
                 <p className="text-xl font-bold text-gray-900">
                   {completedOrders.length > 0
                     ? `$${(completedOrders.reduce((s,o)=>s+o.price,0)/completedOrders.length).toFixed(2)}`
@@ -431,7 +431,7 @@ function DashboardContent() {
                 <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">+8.3%</span>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">Repeat Customers</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">Repeat Customers</p>
                 <p className="text-xl font-bold text-gray-900">
                   {completedOrders.length > 0
                     ? (() => { const s = new Set(); const r = new Set(); for (const o of completedOrders) { if (s.has(o.buyer_id)) r.add(o.buyer_id); s.add(o.buyer_id); } return `${Math.round((r.size/Math.max(s.size,1))*100)}%`; })()
@@ -440,18 +440,18 @@ function DashboardContent() {
                 <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1 inline-block">Strong</span>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">Highest Rated</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">Highest Rated</p>
                 <p className="text-sm font-bold text-gray-900 truncate">
                   {reviews.length > 0
                     ? (() => { const m: Record<string,{s:number;c:number}> = {}; for (const r of reviews) { if (r.video_caption) { if (!m[r.video_caption]) m[r.video_caption]={s:0,c:0}; m[r.video_caption].s+=r.rating; m[r.video_caption].c++; } } const top = Object.entries(m).sort((a,b)=>b[1].s/b[1].c - a[1].s/a[1].c)[0]; return top ? top[0] : 'Classic Burger'; })()
                     : 'Classic Burger'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">
+                <p className="text-[10px] text-gray-600 mt-0.5">
                   {reviews.length > 0 ? `${avgRating.toFixed(1)} avg` : '4.9 avg, 23 reviews'}
                 </p>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">This Month</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">This Month</p>
                 <p className="text-xl font-bold text-gray-900">
                   {completedOrders.length > 0
                     ? `$${completedOrders.filter(o => new Date(o.purchased_at).getMonth() === new Date().getMonth()).reduce((s,o)=>s+o.price,0).toLocaleString('en-US',{minimumFractionDigits:0})}`
@@ -464,33 +464,33 @@ function DashboardContent() {
             {/* ── Sales Insights ── */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">Order Completion Rate</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">Order Completion Rate</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {(completedOrders.length + pendingOrders.length) > 0
                     ? `${Math.round((completedOrders.length / Math.max(completedOrders.length + pendingOrders.length, 1)) * 100)}%`
                     : '94%'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Orders fulfilled on time</p>
+                <p className="text-[10px] text-gray-600 mt-0.5">Orders fulfilled on time</p>
                 <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">Excellent</span>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">Revenue / Customer</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">Revenue / Customer</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {completedOrders.length > 0
                     ? (() => { const byBuyer: Record<string, number> = {}; for (const o of completedOrders) byBuyer[o.buyer_id] = (byBuyer[o.buyer_id] || 0) + o.price; const vals = Object.values(byBuyer); return `$${(vals.reduce((s,v)=>s+v,0)/Math.max(vals.length,1)).toFixed(2)}`; })()
                     : '$34.20'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Avg lifetime value</p>
+                <p className="text-[10px] text-gray-600 mt-0.5">Avg lifetime value</p>
                 <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">+5.2%</span>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <p className="text-[11px] font-medium text-gray-500 mb-1">Items Sold (Month)</p>
+                <p className="text-[11px] font-medium text-gray-700 mb-1">Items Sold (Month)</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {completedOrders.length > 0
                     ? completedOrders.filter(o => new Date(o.purchased_at).getMonth() === new Date().getMonth()).reduce((s,o)=>s+(o.quantity||1),0)
                     : '312'}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Units across all items</p>
+                <p className="text-[10px] text-gray-600 mt-0.5">Units across all items</p>
                 <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded mt-1.5 inline-block">+18%</span>
               </div>
             </div>
@@ -500,7 +500,7 @@ function DashboardContent() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm font-semibold text-gray-900">Revenue Forecast</p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">Projected next 7 days based on trend</p>
+                  <p className="text-[11px] text-gray-600 mt-0.5">Projected next 7 days based on trend</p>
                 </div>
                 <span className="text-xs font-bold text-[#f97316] bg-orange-50 px-2.5 py-1 rounded-full">+12% projected</span>
               </div>
@@ -524,8 +524,8 @@ function DashboardContent() {
                 );
               })()}
               <div className="flex items-center gap-4 mt-3">
-                <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded-sm bg-gray-200" /><span className="text-[10px] text-gray-500">Actual</span></div>
-                <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded-sm bg-[#f97316]/40 border border-[#f97316]/40" /><span className="text-[10px] text-gray-500">Forecast</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded-sm bg-gray-200" /><span className="text-[10px] text-gray-700">Actual</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-3 h-2 rounded-sm bg-[#f97316]/40 border border-[#f97316]/40" /><span className="text-[10px] text-gray-700">Forecast</span></div>
               </div>
             </div>
 
@@ -537,7 +537,7 @@ function DashboardContent() {
                   <p className="text-2xl font-bold text-gray-900">
                     {(() => { const s = new Set(completedOrders.map(o=>o.buyer_id)); return s.size > 0 ? s.size : 89; })()}
                   </p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">Total Customers</p>
+                  <p className="text-[11px] text-gray-700 mt-0.5">Total Customers</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-[#f97316]">
@@ -545,15 +545,15 @@ function DashboardContent() {
                       ? (() => { const s = new Set<string>(); const r = new Set<string>(); for (const o of completedOrders) { if (s.has(o.buyer_id)) r.add(o.buyer_id); s.add(o.buyer_id); } return `${Math.round((r.size/Math.max(s.size,1))*100)}%`; })()
                       : '68%'}
                   </p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">Returning</p>
+                  <p className="text-[11px] text-gray-700 mt-0.5">Returning</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-gray-900">{avgRating > 0 ? avgRating.toFixed(1) : '4.9'}</p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">Avg Rating</p>
+                  <p className="text-[11px] text-gray-700 mt-0.5">Avg Rating</p>
                 </div>
                 <div className="text-center">
                   <p className="text-2xl font-bold text-gray-900">{reviews.length > 0 ? reviews.length : 23}</p>
-                  <p className="text-[11px] text-gray-500 mt-0.5">Total Reviews</p>
+                  <p className="text-[11px] text-gray-700 mt-0.5">Total Reviews</p>
                 </div>
               </div>
               <div className="mt-4 pt-4 border-t border-gray-100">
@@ -566,11 +566,11 @@ function DashboardContent() {
                   const pct = Math.round((count/total)*100);
                   return (
                     <div key={star} className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-bold text-gray-500 w-4 text-right">{star}</span>
+                      <span className="text-[10px] font-bold text-gray-700 w-4 text-right">{star}</span>
                       <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                         <div className="h-full rounded-full bg-[#f97316]" style={{ width: `${pct}%` }} />
                       </div>
-                      <span className="text-[10px] text-gray-400 w-6 text-left">{pct}%</span>
+                      <span className="text-[10px] text-gray-600 w-6 text-left">{pct}%</span>
                     </div>
                   );
                 })}
@@ -640,8 +640,8 @@ function DashboardContent() {
             {reviews.length === 0 ? (
               <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center">
                 <Star className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-                <p className="font-semibold text-gray-500">No reviews yet</p>
-                <p className="text-gray-400 text-sm mt-1">Reviews appear here when customers rate your videos</p>
+                <p className="font-semibold text-gray-700">No reviews yet</p>
+                <p className="text-gray-600 text-sm mt-1">Reviews appear here when customers rate your videos</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -654,13 +654,13 @@ function DashboardContent() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-0.5">
                           <span className="text-sm font-semibold text-black truncate">
-                            {r.reviewer_name}{r.reviewer_username ? <span className="font-normal text-gray-400 ml-1">@{r.reviewer_username}</span> : null}
+                            {r.reviewer_name}{r.reviewer_username ? <span className="font-normal text-gray-600 ml-1">@{r.reviewer_username}</span> : null}
                           </span>
                           <span className="text-[11px] text-gray-400 shrink-0">{new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
                         <div className="flex items-center gap-0.5 mb-1">{[1,2,3,4,5].map(s => <Star key={s} className={`h-3 w-3 ${s <= r.rating ? 'text-[#f97316] fill-[#f97316]' : 'text-gray-200 fill-gray-200'}`} />)}</div>
                         {r.content && <p className="text-sm text-black leading-snug">{r.content}</p>}
-                        {r.video_caption && <p className="text-[11px] text-gray-400 mt-0.5 truncate">on: {r.video_caption}</p>}
+                        {r.video_caption && <p className="text-[11px] text-gray-600 mt-0.5 truncate">on: {r.video_caption}</p>}
                       </div>
                     </div>
                   </div>
@@ -731,7 +731,7 @@ function Empty({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center">
       <div className="mx-auto mb-2 flex justify-center">{icon}</div>
-      <p className="text-gray-400 text-sm">{text}</p>
+      <p className="text-gray-600 text-sm">{text}</p>
     </div>
   );
 }
@@ -771,7 +771,7 @@ function OrderCard({ order, variant }: { order: ItemPurchase; variant: 'pending'
         <div className="min-w-0 flex-1 mr-3">
           <div className="flex items-center gap-2">
             <p className="font-medium text-gray-900 text-sm truncate">
-              {order.item_name}{order.quantity && order.quantity > 1 ? <span className="text-gray-400 font-normal"> ×{order.quantity}</span> : null}
+              {order.item_name}{order.quantity && order.quantity > 1 ? <span className="text-gray-600 font-normal"> ×{order.quantity}</span> : null}
             </p>
             {order.group_order_id && (
               <span className="shrink-0 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md flex items-center gap-1">
@@ -779,7 +779,7 @@ function OrderCard({ order, variant }: { order: ItemPurchase; variant: 'pending'
               </span>
             )}
           </div>
-          <p className="text-gray-400 text-xs mt-0.5">#{order.id.slice(0, 8)} · {fmt(order.purchased_at)}</p>
+          <p className="text-gray-500 text-xs mt-0.5">#{order.id.slice(0, 8)} · {fmt(order.purchased_at)}</p>
           {order.scheduled_at && (
             <div className="flex items-center gap-1 mt-1">
               <CalendarClock className="h-3 w-3 text-gray-900" />
@@ -945,7 +945,7 @@ function PromoCodesManager({ userId, promoCodes, onChanged }: { userId: string; 
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-semibold text-gray-900">Promo Codes</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Customers enter these at checkout to get a discount</p>
+          <p className="text-xs text-gray-600 mt-0.5">Customers enter these at checkout to get a discount</p>
         </div>
         <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 bg-[#f97316] hover:opacity-90 text-white text-sm font-semibold px-3 py-2 rounded-xl transition-opacity">
           <Plus className="h-4 w-4" /> New Code
@@ -995,8 +995,8 @@ function PromoCodesManager({ userId, promoCodes, onChanged }: { userId: string; 
       {promoCodes.length === 0 && !showForm ? (
         <div className="bg-white border border-gray-200 rounded-2xl p-10 text-center">
           <Tag className="h-10 w-10 text-gray-200 mx-auto mb-3" />
-          <p className="font-semibold text-gray-500">No promo codes yet</p>
-          <p className="text-gray-400 text-sm mt-1">Create codes to offer discounts to your customers</p>
+          <p className="font-semibold text-gray-700">No promo codes yet</p>
+          <p className="text-gray-600 text-sm mt-1">Create codes to offer discounts to your customers</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -1015,7 +1015,7 @@ function PromoCodesManager({ userId, promoCodes, onChanged }: { userId: string; 
                         p.is_active ? <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-lg">Active</span> :
                         <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-lg">Inactive</span>}
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-600 mt-1">
                       {p.used_count} use{p.used_count !== 1 ? 's' : ''}
                       {p.max_uses != null && ` / ${p.max_uses} max`}
                       {p.expiry_date && ` · Expires ${new Date(p.expiry_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}

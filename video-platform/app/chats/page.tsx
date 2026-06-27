@@ -95,15 +95,15 @@ function ChatsLayout() {
       <div className="flex w-full shrink-0 flex-col border-r border-gray-200 dark:border-gray-800 lg:w-[320px]">
 
         {/* Header */}
-        <div className="flex shrink-0 items-center gap-3 px-5 py-4">
-          <span className="text-[15px] font-semibold text-black dark:text-white">Messages</span>
+        <div className="flex shrink-0 items-center px-5 py-4">
+          <span className="flex-1 text-[15px] font-semibold text-black dark:text-white">Messages</span>
           <button
             type="button"
             onClick={() => setShowNewChat(true)}
             aria-label="New message"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] transition hover:opacity-90"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-5 w-5 text-white" />
           </button>
         </div>
 
