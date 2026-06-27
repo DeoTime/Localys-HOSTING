@@ -122,16 +122,22 @@ function UserProfileContent() {
     }
   }, [profile?.type]);
 
-  // Resolve the Uber-Eats store menu: prefer the folder-driven manifest, else
-  // fall back to the store's Supabase items (neutral placeholder photos).
+  // Resolve the Uber-Eats store menu for ANY business-type profile. Prefer the
+  // folder-driven manifest (by business name, full name, or slug==username), else
+  // fall back to the store's Supabase items. Robust to a missing `businesses` row.
   useEffect(() => {
-    if (!business || !profile) { setStoreMenu(null); return; }
-    const manifest = (storeMenus as Record<string, StoreMenu>)[business.business_name];
+    if (!profile?.type) { setStoreMenu(null); return; }
+    const all = storeMenus as Record<string, StoreMenu>;
+    const manifest =
+      (business?.business_name && all[business.business_name]) ||
+      (profile.full_name && all[profile.full_name]) ||
+      Object.values(all).find((m) => m.slug === profile.username);
     if (manifest) { setStoreMenu(manifest); return; }
     let active = true;
     (async () => {
       const { data: menu } = await getUserMenu(profile.id);
-      if (active) setStoreMenu(buildFallbackMenu(business, (menu as any)?.menu_items || []));
+      const biz = business || ({ owner_id: profile.id, business_name: profile.full_name } as Business);
+      if (active) setStoreMenu(buildFallbackMenu(biz, (menu as any)?.menu_items || []));
     })();
     return () => { active = false; };
   }, [business, profile]);
@@ -365,10 +371,11 @@ function UserProfileContent() {
     );
   }
 
-  // Business profiles render the Uber-Eats-style store page (white, no follow).
-  if (business) {
+  // Business profiles render the Uber-Eats-style store page (white, no follow),
+  // regardless of whether the `businesses` row loaded — keyed off profile.type.
+  if (profile.type) {
     if (!storeMenu) return <div className="min-h-screen bg-white" />;
-    return <StorePage storeName={business.business_name} sellerId={profile.id} menu={storeMenu} />;
+    return <StorePage storeName={business?.business_name || profile.full_name} sellerId={profile.id} menu={storeMenu} />;
   }
 
   return (

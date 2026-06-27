@@ -9,6 +9,12 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 /* ----------------------------- types ----------------------------- */
+export interface StoreDeal {
+  type: 'percent' | 'dollar_off' | 'bogo' | 'free_delivery' | 'bundle' | 'first_order';
+  label: string;
+  value?: number;
+  threshold?: number;
+}
 export interface StoreItem {
   id: string;
   name: string;
@@ -18,6 +24,7 @@ export interface StoreItem {
   category: string;
   likePct?: number;
   likeCount?: number;
+  deal?: StoreDeal;
 }
 export interface StoreMenu {
   slug: string;
@@ -80,7 +87,7 @@ function useAdd(sellerId: string) {
   const { user } = useAuth();
   const [added, setAdded] = useState<Record<string, boolean>>({});
   const add = (it: StoreItem) => {
-    addToCart({ itemId: it.id, itemName: it.name, itemPrice: it.price, itemImage: it.image, sellerId, buyerId: user?.id || 'guest', quantity: 1 });
+    addToCart({ itemId: it.id, itemName: it.name, itemPrice: it.price, itemImage: it.image, sellerId, buyerId: user?.id || 'guest', quantity: 1, deal: it.deal });
     setAdded((p) => ({ ...p, [it.id]: true }));
     setTimeout(() => setAdded((p) => ({ ...p, [it.id]: false })), 1200);
   };
@@ -111,6 +118,11 @@ function FeaturedCard({ item, rank, onAdd, isAdded }: { item: StoreItem; rank: n
             #{rank} most liked
           </span>
         )}
+        {item.deal && (
+          <span className="absolute right-2 top-2 rounded-md bg-[#f97316] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+            {item.deal.label}
+          </span>
+        )}
         <div className="absolute bottom-2 right-2">
           <AddBtn item={item} onAdd={onAdd} isAdded={isAdded} />
         </div>
@@ -136,6 +148,11 @@ function ItemRow({ item, onAdd, isAdded }: { item: StoreItem; onAdd: (it: StoreI
       <div className="flex min-w-0 flex-col">
         <p className="line-clamp-2 text-sm font-medium text-black">{item.name}</p>
         <p className="mt-1 text-sm text-black">${item.price.toFixed(2)}{item.likePct != null && <span className="ml-2 text-xs text-gray-500">{item.likePct}% ({item.likeCount})</span>}</p>
+        {item.deal && (
+          <span className="mt-1 inline-flex w-fit rounded-md bg-[#f97316] px-1.5 py-0.5 text-[11px] font-semibold text-white">
+            {item.deal.label}
+          </span>
+        )}
         {item.description && <p className="mt-1 line-clamp-2 text-xs text-gray-500">{item.description}</p>}
       </div>
       <div className="relative h-[90px] w-[90px] shrink-0">

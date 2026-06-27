@@ -7,6 +7,14 @@
  * (which is not business data) remains hardcoded here.
  */
 
+/** A varied deal/discount attached to an item (% off, BOGO, $ off, etc.). */
+export interface Deal {
+  type: 'percent' | 'dollar_off' | 'bogo' | 'free_delivery' | 'bundle' | 'first_order';
+  label: string; // short badge text, e.g. "20% off", "Buy 1 Get 1 Free"
+  value?: number; // percent number or dollars off
+  threshold?: number; // min order $ for dollar_off / free_delivery
+}
+
 /** The core card model used everywhere (deals, trending, ranked lists, …). */
 export interface Product {
   id: string;
@@ -14,13 +22,15 @@ export interface Product {
   description: string; // one-line shown under the price (usually the business name)
   businessId: string;
   businessName: string;
-  price: number; // current price
+  price: number; // current (base) price
   originalPrice?: number; // struck-through original when discounted
   discountPct?: number; // e.g. 30 → "30% off" badge
   image?: string; // real photo URL; falls back to a neutral placeholder
   rating: number; // 0–5
   reviewCount: number;
   href: string; // where the card links to (the real /profile/<username>)
+  deal?: Deal; // varied discount badge; applied at checkout
+  dealLabel?: string; // convenience: deal?.label for the badge
 }
 
 export interface VideoCard {

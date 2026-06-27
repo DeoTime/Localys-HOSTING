@@ -1,23 +1,26 @@
 import { supabase } from './client';
-import type { Product, VideoCard } from '../home-data';
-import storeImages from '@/data/store-images.json';
+import type { Product, VideoCard, Deal } from '../home-data';
+import storeMenus from '@/data/store-menus.json';
 
 /**
  * Real-data layer for the Walmart-style Home feed.
  *
- * Everything on the home page is derived from the REAL seeded businesses:
- *   profiles (type food|retail|service) → businesses (name, category, photo)
- *   → menu_items (the product cards).
- * No mock/placeholder data is used anywhere.
- *
- * The feed is scoped to the curated seeded stores (data/store-images.json) so
- * stray dev/test accounts never surface. Each store's banner (cropped from its
- * Bizness menu) lives in the DB via the seed script; the manifest is also used
- * as an image fallback so banners show even if the DB photo is missing.
+ * SINGLE SOURCE OF TRUTH = `data/store-menus.json` (built from public/Menu by
+ * scripts/build-store-menus.mjs). Supabase is used ONLY for identity/routing:
+ * it resolves each seeded business → its profile id (cart sellerId) + username
+ * (the /profile/<username> link). Banners and item photos come from public/Menu
+ * via the manifest, so the home feed and the store page render the same photos.
  */
-const SEEDED = storeImages as Record<string, { slug: string; banner: string | null }>;
-const seededBanner = (name: string): string | undefined => SEEDED[name]?.banner || undefined;
-const isSeeded = (name: string): boolean => Object.prototype.hasOwnProperty.call(SEEDED, name);
+interface ManifestItem {
+  id: string; name: string; price: number; description?: string; image?: string;
+  category: string; likePct?: number; likeCount?: number; deal?: Deal;
+}
+interface ManifestStore {
+  slug: string; banner?: string | null; rating: number; ratingCount: string;
+  categories: string[]; featuredIds: string[]; pickedIds: string[]; items: ManifestItem[];
+  isService?: boolean;
+}
+const MENUS = storeMenus as Record<string, ManifestStore>;
 
 export interface LocalBusiness {
   id: string; // profile id (== owner_id)
@@ -40,80 +43,56 @@ function departmentFor(category: string | null | undefined, type: string): strin
 }
 
 /**
- * Fetch every seeded local business with its menu items as product cards.
- * Businesses without any available menu item are skipped (nothing to show).
+ * Build the home feed from the Menu manifest. Supabase resolves identity only
+ * (profile id for cart sellerId + username for the link); banner + items + deals
+ * come from `data/store-menus.json`. Only businesses present in the manifest are
+ * surfaced — no stray dev/test accounts, no empty stores.
  */
 export async function getLocalBusinesses(): Promise<LocalBusiness[]> {
   const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, username, full_name, type, profile_picture_url')
+    .select('id, username, full_name, type')
     .in('type', ['food', 'retail', 'service']);
 
   if (error || !profiles?.length) return [];
 
-  const ids = profiles.map((p) => p.id);
-
-  const [{ data: bizRows }, { data: items }] = await Promise.all([
-    supabase
-      .from('businesses')
-      .select('owner_id, business_name, category, profile_picture_url, average_rating, total_reviews')
-      .in('owner_id', ids),
-    supabase
-      .from('menu_items')
-      .select('id, user_id, item_name, description, price, image_url, category')
-      .in('user_id', ids)
-      .eq('is_available', true),
-  ]);
+  const { data: bizRows } = await supabase
+    .from('businesses')
+    .select('owner_id, business_name, category')
+    .in('owner_id', profiles.map((p) => p.id));
 
   const bizByOwner = new Map<string, any>();
   for (const b of bizRows || []) bizByOwner.set(b.owner_id, b);
 
-  const itemsByOwner = new Map<string, any[]>();
-  for (const it of items || []) {
-    const arr = itemsByOwner.get(it.user_id) || [];
-    arr.push(it);
-    itemsByOwner.set(it.user_id, arr);
-  }
-
   const list: LocalBusiness[] = [];
   for (const p of profiles) {
-    const its = itemsByOwner.get(p.id) || [];
-    if (!its.length) continue; // no menu yet → don't surface an empty store
-
     const b = bizByOwner.get(p.id);
-    const name = b?.business_name || p.full_name || p.username || 'Local business';
-    if (!isSeeded(name)) continue; // only the curated seeded stores — no stray dev/test accounts
-    const image = b?.profile_picture_url || p.profile_picture_url || seededBanner(name) || undefined;
-    const category = departmentFor(b?.category, p.type);
-    const href = `/profile/${p.username || p.id}`;
-    const rating = Number(b?.average_rating) || 0;
-    const reviewCount = Number(b?.total_reviews) || 0;
+    const name = b?.business_name || p.full_name || '';
+    const menu = MENUS[name];
+    if (!menu) continue; // only manifest-backed stores appear on the home feed
 
-    const products: Product[] = its.map((it) => ({
-      id: `mi-${it.id}`,
-      title: it.item_name,
+    const href = `/profile/${p.username || p.id}`;
+    const image = menu.banner || undefined; // Menu banner photo
+    const category = departmentFor(b?.category, p.type);
+    const rating = menu.rating;
+    const reviewCount = parseInt(String(menu.ratingCount), 10) || 0;
+
+    const products: Product[] = menu.items.map((it) => ({
+      id: it.id,
+      title: it.name,
       description: name,
       businessId: p.id,
       businessName: name,
-      price: Number(it.price) || 0,
-      image: it.image_url || image || undefined,
+      price: it.price,
+      image: it.image || image || undefined, // Menu item photo
       rating,
       reviewCount,
       href,
+      deal: it.deal,
+      dealLabel: it.deal?.label,
     }));
 
-    list.push({
-      id: p.id,
-      username: p.username || p.id,
-      name,
-      image,
-      category,
-      type: p.type,
-      href,
-      rating,
-      reviewCount,
-      products,
-    });
+    list.push({ id: p.id, username: p.username || p.id, name, image, category, type: p.type, href, rating, reviewCount, products });
   }
 
   return list;

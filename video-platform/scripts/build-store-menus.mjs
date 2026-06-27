@@ -78,6 +78,24 @@ const genAddress = (slug) => {
   return `${1000 + (h % 9000)} ${pick(STREETS, h)}, ${pick(CITIES, h >> 3)}`;
 };
 
+// Varied, deterministic deals. ~40% of items get one; types are mixed so the app
+// shows percentage off, BOGO, $ off, free delivery, bundle, and first-order deals.
+const DEAL_TYPES = ['percent', 'bogo', 'dollar_off', 'free_delivery', 'bundle', 'first_order'];
+const dealFor = (name) => {
+  const h = hash('deal' + name);
+  if (h % 5 >= 2) return undefined; // ~40% of items carry a deal
+  const type = DEAL_TYPES[h % DEAL_TYPES.length];
+  switch (type) {
+    case 'percent': { const v = [10, 15, 20, 25, 30][h % 5]; return { type, value: v, label: `${v}% off` }; }
+    case 'dollar_off': { const v = [3, 5, 8, 10][h % 4]; const t = [20, 25, 30][h % 3]; return { type, value: v, threshold: t, label: `$${v} off $${t}` }; }
+    case 'bogo': return { type, label: 'Buy 1 Get 1 Free' };
+    case 'free_delivery': { const t = [25, 30, 35][h % 3]; return { type, threshold: t, label: `Free delivery over $${t}` }; }
+    case 'bundle': return { type, label: 'Combo deal' };
+    case 'first_order': { const v = [15, 20][h % 2]; return { type, value: v, label: `${v}% off 1st order` }; }
+    default: return undefined;
+  }
+};
+
 /* ----------------------------- per-store config ----------------------------- */
 // kind drives price range, description templates, and category rules.
 const PRICE = {
@@ -160,6 +178,42 @@ const STORES = [
   // 'Johnson supermarket' folder intentionally skipped (no seeded business).
 ];
 
+/* ----------------------------- services (photo-only, single item) ----------------------------- */
+// Each service business is one item whose image IS the service photo in
+// public/Menu/Services photos. Banner = same photo.
+const SERVICES_DIR = 'Services photos';
+const SERVICES = [
+  { name: 'Comfort Air HVAC', slug: 'comfort-air-hvac', photo: 'hvac business photo.jpg', item: 'HVAC Service Call', cat: 'Home Services', price: 99 },
+  { name: 'Reliable Flow Plumbing', slug: 'reliable-flow-plumbing', photo: 'Plumbing buissness photo.jpg', item: 'Plumbing Service Call', cat: 'Home Services', price: 89 },
+  { name: 'GreenScape Landscaping', slug: 'greenscape-landscaping', photo: 'landscaping business.jpg', item: 'Lawn & Garden Service', cat: 'Home Services', price: 79 },
+  { name: 'Summit Home Renovations', slug: 'summit-home-renovations', photo: 'renovation buisness.jpg', item: 'Renovation Consultation', cat: 'Home Services', price: 150 },
+  { name: 'Sharp Fade Barbershop', slug: 'sharp-fade-barbershop', photo: 'Barber.jpg', item: "Men's Haircut & Beard Trim", cat: 'Grooming', price: 35 },
+  { name: 'Polished Nail Studio', slug: 'polished-nail-studio', photo: 'nails.jpg', item: 'Manicure & Pedicure', cat: 'Beauty', price: 55 },
+  { name: 'Serenity Massage Therapy', slug: 'serenity-massage-therapy', photo: 'Massage.jpg', item: '60-Minute Relaxation Massage', cat: 'Wellness', price: 95 },
+  { name: 'Peak Personal Training', slug: 'peak-personal-training', photo: 'personal fitnes instructor.jpg', item: '1-on-1 Personal Training Session', cat: 'Fitness', price: 70 },
+  { name: 'Sparkle Home Cleaning', slug: 'sparkle-home-cleaning', photo: 'Home-Cleaning-Services-Richmond-Hill.jpg', item: 'Standard Home Cleaning', cat: 'Cleaning', price: 120 },
+  { name: 'ClearWash Pressure Washing', slug: 'clearwash-pressure-washing', photo: 'Pressure washing.jpg', item: 'Driveway & Exterior Pressure Wash', cat: 'Home Services', price: 150 },
+  { name: 'FreshCoat Painting', slug: 'freshcoat-painting', photo: 'home-painting-service-main-thumbnail.webp', item: 'Interior Room Painting', cat: 'Home Services', price: 300 },
+];
+
+function buildService(s) {
+  const img = encPath(SERVICES_DIR, s.photo);
+  const item = {
+    id: `${s.slug}-0`, name: s.item, price: s.price,
+    description: 'Professional service, book online.', image: img, category: s.cat,
+    likePct: 90 + (hash(s.slug) % 9), likeCount: 12 + (hash(s.slug) % 40),
+    deal: dealFor(s.item),
+  };
+  return {
+    slug: s.slug, folder: SERVICES_DIR, banner: img,
+    rating: Number((4.6 + (hash(s.slug) % 4) / 10).toFixed(1)), ratingCount: '200+',
+    address: genAddress(s.slug), availability: 'Available today',
+    hoursLabel: 'Mon–Sat 8:00 a.m. – 6:00 p.m.', deliveryTime: 'By appointment',
+    reviews: genReviews(s.slug), categories: [s.cat],
+    featuredIds: [item.id], pickedIds: [item.id], items: [item], isService: true,
+  };
+}
+
 const storeImages = existsSync(join(ROOT, 'data', 'store-images.json'))
   ? JSON.parse(readFileSync(join(ROOT, 'data', 'store-images.json'), 'utf8')) : {};
 
@@ -199,6 +253,7 @@ function build(store) {
       category: categorize(rawName, store.kind),
       likePct: 82 + (h % 18),          // 82–99%
       likeCount: 8 + (h % 60),         // 8–67
+      deal: dealFor(rawName),
     };
   });
 
@@ -240,9 +295,18 @@ for (const store of STORES) {
   try {
     manifest[store.name] = build(store);
     const m = manifest[store.name];
-    console.log(`OK  ${store.name.padEnd(30)} ${m.items.length} items · ${m.categories.length} cats · banner ${m.banner ? 'yes' : 'NO'}`);
+    const deals = m.items.filter((it) => it.deal).length;
+    console.log(`OK  ${store.name.padEnd(30)} ${m.items.length} items · ${m.categories.length} cats · ${deals} deals`);
   } catch (e) {
     console.error(`x   ${store.name}: ${e.message}`);
+  }
+}
+for (const s of SERVICES) {
+  try {
+    manifest[s.name] = buildService(s);
+    console.log(`OK  ${s.name.padEnd(30)} service · 1 item`);
+  } catch (e) {
+    console.error(`x   ${s.name}: ${e.message}`);
   }
 }
 writeFileSync(join(ROOT, 'data', 'store-menus.json'), JSON.stringify(manifest, null, 2) + '\n');

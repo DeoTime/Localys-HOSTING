@@ -32,6 +32,7 @@ export function ProductCard({ product }: { product: Product }) {
       sellerId: product.businessId,
       buyerId: user?.id ?? 'guest',
       quantity: 1,
+      deal: product.deal,
     });
     setAdded(true);
     window.setTimeout(() => setAdded(false), 1200);
@@ -49,10 +50,10 @@ export function ProductCard({ product }: { product: Product }) {
           imgClassName="h-full w-full object-cover transition duration-500 group-hover/card:scale-105"
         />
 
-        {/* % off — allowed orange */}
-        {product.discountPct ? (
+        {/* deal badge — allowed orange */}
+        {product.dealLabel || product.discountPct ? (
           <span className="absolute left-2 top-2 rounded-full bg-[#f97316] px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
-            {product.discountPct}% off
+            {product.dealLabel ?? `${product.discountPct}% off`}
           </span>
         ) : null}
 

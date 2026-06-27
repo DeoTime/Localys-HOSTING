@@ -52,7 +52,12 @@
         "image": "/Menu/Amy's%20Fish%20%26%20Chips/Haddock%20and%20Chips.jpg",
         "category": "Fish & Chips",
         "likePct": 91,
-        "likeCount": 47
+        "likeCount": 47,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "amys-fish-and-chips-1",
@@ -140,7 +145,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Baked%20Beans.jpg",
         "category": "Sides",
         "likePct": 83,
-        "likeCount": 39
+        "likeCount": 39,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "holy-smoke-barbecue-1",
@@ -150,7 +159,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/BBQ%20Platter%20for%20one.jpg",
         "category": "Combos & Platters",
         "likePct": 97,
-        "likeCount": 53
+        "likeCount": 53,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "holy-smoke-barbecue-2",
@@ -180,7 +193,13 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Brisket%20%26%20Rib%20Combo.jpg",
         "category": "Combos & Platters",
         "likePct": 82,
-        "likeCount": 62
+        "likeCount": 62,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "holy-smoke-barbecue-5",
@@ -250,7 +269,12 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Famous%20Macaroni%20Salad.jpg",
         "category": "Sides",
         "likePct": 95,
-        "likeCount": 33
+        "likeCount": 33,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "holy-smoke-barbecue-12",
@@ -280,7 +304,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Pecan%20Pie%20(Slice).jpg",
         "category": "Desserts",
         "likePct": 93,
-        "likeCount": 19
+        "likeCount": 19,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "holy-smoke-barbecue-15",
@@ -290,7 +318,12 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Pork%20Back%20Ribs.jpg",
         "category": "Smoked Meats",
         "likePct": 90,
-        "likeCount": 28
+        "likeCount": 28,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "holy-smoke-barbecue-16",
@@ -300,7 +333,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Prime%20Brisket%20%26%20Wings%20Combo.jpg",
         "category": "Combos & Platters",
         "likePct": 98,
-        "likeCount": 24
+        "likeCount": 24,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "holy-smoke-barbecue-17",
@@ -330,7 +367,12 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Smoked%20Brisket%20Sandwich.jpg",
         "category": "Sandwiches",
         "likePct": 89,
-        "likeCount": 9
+        "likeCount": 9,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "holy-smoke-barbecue-20",
@@ -340,7 +382,13 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Smoked%20Turkey%20Breast%20by%20the%201_2%20LB.jpg",
         "category": "Smoked Meats",
         "likePct": 92,
-        "likeCount": 42
+        "likeCount": 42,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "holy-smoke-barbecue-21",
@@ -447,7 +495,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/A3.%20Grilled%20Shrimp%20Mango%20Salad%20(Goi%20Xoai%20Tom%20Nuong).jpg",
         "category": "Appetizer",
         "likePct": 82,
-        "likeCount": 20
+        "likeCount": 20,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "pho-nga-son-3",
@@ -467,7 +520,13 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/A5.Deep%20Fried%20Brine%20Chicken%20Wings%20(Canh%20Ga)%20(6%20pcs).jpg",
         "category": "Appetizer",
         "likePct": 84,
-        "likeCount": 28
+        "likeCount": 28,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "pho-nga-son-5",
@@ -477,7 +536,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/A6.Marinated%20Shrimp%20Paste%20on%20Sugarcane%20(Chao%20Tom)%20(3%20pcs).jpg",
         "category": "Appetizer",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "pho-nga-son-6",
@@ -497,7 +561,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/BM1.Thit%20Nuong.jpg",
         "category": "Vietnamese Sandwich (Banh Mi)",
         "likePct": 95,
-        "likeCount": 33
+        "likeCount": 33,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "pho-nga-son-8",
@@ -507,7 +576,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/BM5.Banh%20Mi%20Combo.jpg",
         "category": "Vietnamese Sandwich (Banh Mi)",
         "likePct": 82,
-        "likeCount": 8
+        "likeCount": 8,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "pho-nga-son-9",
@@ -527,7 +600,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/C2.%20Com%20Suon%20Nuong.jpg",
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 93,
-        "likeCount": 67
+        "likeCount": 67,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "pho-nga-son-11",
@@ -547,7 +625,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/C5.%20Com%20Suon%20Nuong%20and%20Ga%20Nuong.jpg",
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 92,
-        "likeCount": 66
+        "likeCount": 66,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "pho-nga-son-13",
@@ -617,7 +700,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/P7.%20Rib%20Eye%20Beef%20and%20Tendon%20Noodle%20Soup%20(Pho%20Tai%20Gan).jpg",
         "category": "Beef Noodle Soup (Pho)",
         "likePct": 83,
-        "likeCount": 33
+        "likeCount": 33,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "pho-nga-son-20",
@@ -637,7 +725,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/S1.Tomato%20Crab%20Paste%20Vermicelli%20(%20B%C3%BAn%20Ri%C3%AAu).jpg",
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 99,
-        "likeCount": 49
+        "likeCount": 49,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "pho-nga-son-22",
@@ -647,7 +740,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/S2.%20Short%20Rib%20Stone%20Bowl%20(Pho%20to%20Da%20Suon%20Bo%20and%20Duoi%20Bo).jpg",
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 83,
-        "likeCount": 57
+        "likeCount": 57,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "pho-nga-son-23",
@@ -657,7 +755,13 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/S3.Shrimp%20Cracker%20Pork%20Platter%20(Sharing).jpg",
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 84,
-        "likeCount": 34
+        "likeCount": 34,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "pho-nga-son-24",
@@ -667,7 +771,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/S4.House%20Special%20Wraps%20Platter%20(Sharing)%20(Banh%20Hoi).jpg",
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 91,
-        "likeCount": 41
+        "likeCount": 41,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "pho-nga-son-25",
@@ -677,7 +786,12 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/S5%20Roasted%20Bone%20Marrow%20Steak%20Tartar%20(%20B%C3%B2%20t%C3%A1i%20chanh%20tu%E1%BB%B7%20n%C6%B0%E1%BB%9Bng)%20(1pc).jpg",
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 93,
-        "likeCount": 37
+        "likeCount": 37,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       }
     ]
   },
@@ -744,7 +858,12 @@
         "image": "/Menu/Express%20Mart/7up%20Shirley%20Temple%20(355%20ml).jpg",
         "category": "Soda & Juice",
         "likePct": 87,
-        "likeCount": 49
+        "likeCount": 49,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "express-mart-1",
@@ -854,7 +973,12 @@
         "image": "/Menu/Express%20Mart/Candy%20Popcorn%20M%26M.jpg",
         "category": "Chocolate & Candy",
         "likePct": 93,
-        "likeCount": 67
+        "likeCount": 67,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "express-mart-12",
@@ -874,7 +998,12 @@
         "image": "/Menu/Express%20Mart/Haribo%20Gold%20Bears%20Sour%20(142%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 85,
-        "likeCount": 41
+        "likeCount": 41,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "express-mart-14",
@@ -884,7 +1013,13 @@
         "image": "/Menu/Express%20Mart/Haribo%20Happy%20Cola%20(142%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 90,
-        "likeCount": 16
+        "likeCount": 16,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "express-mart-15",
@@ -904,7 +1039,11 @@
         "image": "/Menu/Express%20Mart/Hi-Chew%20Banana%20(50%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 84,
-        "likeCount": 10
+        "likeCount": 10,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "express-mart-17",
@@ -914,7 +1053,11 @@
         "image": "/Menu/Express%20Mart/Hi-Chew%20Getaway%20Mix%20(80%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 90,
-        "likeCount": 34
+        "likeCount": 34,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "express-mart-18",
@@ -934,7 +1077,12 @@
         "image": "/Menu/Express%20Mart/Hi-Chew%20Soda%20Pop%20Cola%20(80%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 93,
-        "likeCount": 61
+        "likeCount": 61,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "express-mart-20",
@@ -984,7 +1132,12 @@
         "image": "/Menu/Express%20Mart/Milk%20Duds%20Chocolate%20(141%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 94,
-        "likeCount": 26
+        "likeCount": 26,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "express-mart-25",
@@ -1014,7 +1167,11 @@
         "image": "/Menu/Express%20Mart/Milka%20Strawberry%20Chocolate%20Bar%20(100%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 94,
-        "likeCount": 56
+        "likeCount": 56,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "express-mart-28",
@@ -1024,7 +1181,13 @@
         "image": "/Menu/Express%20Mart/Milka%20White%20Chocolate%20Bar%20(100%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 96,
-        "likeCount": 46
+        "likeCount": 46,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "express-mart-29",
@@ -1034,7 +1197,12 @@
         "image": "/Menu/Express%20Mart/Raffaello%20Premium%20White%20Chocolate%20Bar%20(100%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 95,
-        "likeCount": 33
+        "likeCount": 33,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "express-mart-30",
@@ -1084,7 +1252,12 @@
         "image": "/Menu/Express%20Mart/Sprite%20Tropical%20Mix%20(355%20ml).jpg",
         "category": "Soda & Juice",
         "likePct": 91,
-        "likeCount": 41
+        "likeCount": 41,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "express-mart-35",
@@ -1094,7 +1267,12 @@
         "image": "/Menu/Express%20Mart/Trolli%20Sour%20Bursting%20Crawlers%20Candy%20(120%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 89,
-        "likeCount": 27
+        "likeCount": 27,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "express-mart-36",
@@ -1124,7 +1302,12 @@
         "image": "/Menu/Express%20Mart/Van%20Holten's%20Warheads%20Blue%20Raspberry%20Pickle.jpg",
         "category": "Chips & Snacks",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       }
     ]
   },
@@ -1190,7 +1373,12 @@
         "image": "/Menu/Florio%20Studio/Amazing%20Blue.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 40
+        "likeCount": 40,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "k1-floral-studio-1",
@@ -1230,7 +1418,12 @@
         "image": "/Menu/Florio%20Studio/Breath%20Taking.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 97,
-        "likeCount": 35
+        "likeCount": 35,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "k1-floral-studio-5",
@@ -1270,7 +1463,12 @@
         "image": "/Menu/Florio%20Studio/Deep%20Love.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 85,
-        "likeCount": 47
+        "likeCount": 47,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "k1-floral-studio-9",
@@ -1280,7 +1478,12 @@
         "image": "/Menu/Florio%20Studio/Dream%20box.jpg",
         "category": "Gift Boxes",
         "likePct": 97,
-        "likeCount": 17
+        "likeCount": 17,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "k1-floral-studio-10",
@@ -1320,7 +1523,11 @@
         "image": "/Menu/Florio%20Studio/Garden%20Flowers.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 16
+        "likeCount": 16,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "k1-floral-studio-14",
@@ -1330,7 +1537,12 @@
         "image": "/Menu/Florio%20Studio/Happy%20Holiday.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 89,
-        "likeCount": 45
+        "likeCount": 45,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "k1-floral-studio-15",
@@ -1340,7 +1552,11 @@
         "image": "/Menu/Florio%20Studio/Heavens%20Gate.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 94,
-        "likeCount": 38
+        "likeCount": 38,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "k1-floral-studio-16",
@@ -1350,7 +1566,12 @@
         "image": "/Menu/Florio%20Studio/Holiday%20Blessings.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 97,
-        "likeCount": 35
+        "likeCount": 35,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "k1-floral-studio-17",
@@ -1370,7 +1591,12 @@
         "image": "/Menu/Florio%20Studio/Love%20Chanel.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 84,
-        "likeCount": 46
+        "likeCount": 46,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "k1-floral-studio-19",
@@ -1440,7 +1666,12 @@
         "image": "/Menu/Florio%20Studio/Purple%20Violets.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 83,
-        "likeCount": 63
+        "likeCount": 63,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "k1-floral-studio-26",
@@ -1480,7 +1711,12 @@
         "image": "/Menu/Florio%20Studio/Vertical%20Love.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 93,
-        "likeCount": 61
+        "likeCount": 61,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "k1-floral-studio-30",
@@ -1520,7 +1756,11 @@
         "image": "/Menu/Florio%20Studio/Yellow%20Smile.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 93,
-        "likeCount": 43
+        "likeCount": 43,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       }
     ]
   },
@@ -1627,7 +1867,12 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/3%20Dozen%20Red%20Roses%20with%20Happy%20Birthday%20Message.jpg",
         "category": "Roses",
         "likePct": 87,
-        "likeCount": 25
+        "likeCount": 25,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-5",
@@ -1637,7 +1882,12 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/6%20Blue%20Roses%20with%20Diamond%20Buttons.jpg",
         "category": "Roses",
         "likePct": 84,
-        "likeCount": 40
+        "likeCount": 40,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-6",
@@ -1647,7 +1897,12 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/A%20COLORFUL%20ASSORTMENT%20OF%20FRESH%20FRUITS_%20(FGB169).jpg",
         "category": "Gift Baskets",
         "likePct": 88,
-        "likeCount": 32
+        "likeCount": 32,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-7",
@@ -1697,7 +1952,12 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Birthday%20Celebration%20Shine%20(FGB627).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 92,
-        "likeCount": 30
+        "likeCount": 30,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-12",
@@ -1707,7 +1967,13 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Blue%20Serenity_.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 88,
-        "likeCount": 44
+        "likeCount": 44,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-13",
@@ -1727,7 +1993,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Blushing%20Grace_.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 97,
-        "likeCount": 47
+        "likeCount": 47,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-15",
@@ -1757,7 +2027,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/celebrating%20special%20moments%20(FGB531).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 28
+        "likeCount": 28,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-18",
@@ -1767,7 +2041,13 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Charming%20White%20%26%20Lavender%20Daisy%20Bouquet%20(FGB629).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 94,
-        "likeCount": 26
+        "likeCount": 26,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-19",
@@ -1817,7 +2097,12 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Elegant%20Charm_%206%20Blue%20Roses%20(FGB635).jpg",
         "category": "Roses",
         "likePct": 94,
-        "likeCount": 50
+        "likeCount": 50,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-24",
@@ -1857,7 +2142,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Half%20Dozen%20Pink%20Roses%20(FGB322).jpg",
         "category": "Roses",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-28",
@@ -1887,7 +2176,13 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Harmony%20of%20Blues%20(FGB117).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 98,
-        "likeCount": 12
+        "likeCount": 12,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-31",
@@ -1897,7 +2192,12 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Joyful%20Birthday%20Wishes%20(FGB484).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 96,
-        "likeCount": 28
+        "likeCount": 28,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-32",
@@ -1907,7 +2207,13 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Lovely%20White%20and%20Pink%20(FGB503).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 84,
-        "likeCount": 64
+        "likeCount": 64,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "flowers-gifts-and-balloons-33",
@@ -2007,7 +2313,11 @@
         "image": "/Menu/Waterford%20Convience/A%20%26%20W%20Cream%20Soda%20Zero%20Sugar%20355%20ml%20Cans%20(Pack%20of%2012).jpg",
         "category": "Soda & Juice",
         "likePct": 91,
-        "likeCount": 59
+        "likeCount": 59,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-3",
@@ -2017,7 +2327,11 @@
         "image": "/Menu/Waterford%20Convience/Advil%20Liqui-%20Gels%20Extra%20Strength%2012%20Capsules.jpg",
         "category": "Health & Medicine",
         "likePct": 89,
-        "likeCount": 15
+        "likeCount": 15,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-4",
@@ -2027,7 +2341,11 @@
         "image": "/Menu/Waterford%20Convience/Allen's%20Apple%20Juice%201.89L.jpg",
         "category": "Soda & Juice",
         "likePct": 85,
-        "likeCount": 23
+        "likeCount": 23,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-5",
@@ -2047,7 +2365,11 @@
         "image": "/Menu/Waterford%20Convience/Aquafina%20Water%201L.jpg",
         "category": "Water",
         "likePct": 87,
-        "likeCount": 25
+        "likeCount": 25,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-7",
@@ -2057,7 +2379,12 @@
         "image": "/Menu/Waterford%20Convience/Aquafina%20Water%20500%20ml.jpg",
         "category": "Water",
         "likePct": 82,
-        "likeCount": 26
+        "likeCount": 26,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "waterford-convenience-8",
@@ -2077,7 +2404,12 @@
         "image": "/Menu/Waterford%20Convience/Benadryl%20Children's%20Liquid%20Allergy%20Medicine%2C%20Bubble%20Gum%20(100%20ml).jpg",
         "category": "Soda & Juice",
         "likePct": 89,
-        "likeCount": 51
+        "likeCount": 51,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "waterford-convenience-10",
@@ -2117,7 +2449,12 @@
         "image": "/Menu/Waterford%20Convience/Cascade%20Original%20Dishwasher%20Detergent%201.69kg.jpg",
         "category": "Household",
         "likePct": 90,
-        "likeCount": 40
+        "likeCount": 40,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "waterford-convenience-14",
@@ -2137,7 +2474,11 @@
         "image": "/Menu/Waterford%20Convience/Cascade%20Power%20Clean%20Dishwasher%20Detergent%20ActionPacs%201.77kg.jpg",
         "category": "Household",
         "likePct": 93,
-        "likeCount": 55
+        "likeCount": 55,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-16",
@@ -2147,7 +2488,12 @@
         "image": "/Menu/Waterford%20Convience/Claritin%20-Allergies%2010%20tablets.jpg",
         "category": "Health & Medicine",
         "likePct": 94,
-        "likeCount": 20
+        "likeCount": 20,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "waterford-convenience-17",
@@ -2157,7 +2503,12 @@
         "image": "/Menu/Waterford%20Convience/Dasani%20591ml.jpg",
         "category": "Water",
         "likePct": 93,
-        "likeCount": 19
+        "likeCount": 19,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-18",
@@ -2197,7 +2548,13 @@
         "image": "/Menu/Waterford%20Convience/Dristan%20Nasal%20Mist%2030%20ml.jpg",
         "category": "Health & Medicine",
         "likePct": 90,
-        "likeCount": 10
+        "likeCount": 10,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "waterford-convenience-22",
@@ -2207,7 +2564,12 @@
         "image": "/Menu/Waterford%20Convience/Evian%20Natural%20Spring%20Water%20(1.5%20L).jpg",
         "category": "Water",
         "likePct": 82,
-        "likeCount": 62
+        "likeCount": 62,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "waterford-convenience-23",
@@ -2217,7 +2579,12 @@
         "image": "/Menu/Waterford%20Convience/FIJI%20Natural%20Spring%20Water%20(1.5%20L).jpg",
         "category": "Water",
         "likePct": 89,
-        "likeCount": 33
+        "likeCount": 33,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-24",
@@ -2227,7 +2594,11 @@
         "image": "/Menu/Waterford%20Convience/Fiji%20Natural%20Spring%20Water%201L.jpg",
         "category": "Water",
         "likePct": 93,
-        "likeCount": 31
+        "likeCount": 31,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-25",
@@ -2247,7 +2618,12 @@
         "image": "/Menu/Waterford%20Convience/Hockey%20SP%202021-22.jpg",
         "category": "Trading Cards",
         "likePct": 83,
-        "likeCount": 51
+        "likeCount": 51,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-27",
@@ -2257,7 +2633,12 @@
         "image": "/Menu/Waterford%20Convience/Hockey%20SP%202022-23.jpg",
         "category": "Trading Cards",
         "likePct": 93,
-        "likeCount": 31
+        "likeCount": 31,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-28",
@@ -2267,7 +2648,12 @@
         "image": "/Menu/Waterford%20Convience/Hockey%20SP%202023-24.jpg",
         "category": "Trading Cards",
         "likePct": 99,
-        "likeCount": 25
+        "likeCount": 25,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-29",
@@ -2277,7 +2663,11 @@
         "image": "/Menu/Waterford%20Convience/Hockey%20SP%202024-2025.jpg",
         "category": "Trading Cards",
         "likePct": 99,
-        "likeCount": 61
+        "likeCount": 61,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-30",
@@ -2297,7 +2687,11 @@
         "image": "/Menu/Waterford%20Convience/Infants'%20Tylenol%2024%20ml%20%20(0-23%20Months).jpg",
         "category": "Health & Medicine",
         "likePct": 91,
-        "likeCount": 59
+        "likeCount": 59,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-32",
@@ -2317,7 +2711,11 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M%20'%20s%20%20Milk%20Chocolate%20165g.jpg",
         "category": "Soda & Juice",
         "likePct": 89,
-        "likeCount": 63
+        "likeCount": 63,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "waterford-convenience-34",
@@ -2327,7 +2725,12 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M%20'%20s%20%20Peanut%20Butter%20155g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 96,
-        "likeCount": 16
+        "likeCount": 16,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "waterford-convenience-35",
@@ -2347,7 +2750,12 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M's%20%20Milk%20Chocolate%20%20100g.jpg",
         "category": "Soda & Juice",
         "likePct": 96,
-        "likeCount": 46
+        "likeCount": 46,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "waterford-convenience-37",
@@ -2357,7 +2765,12 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M's%20%20Minis%20Milk%20Chocolate%20%20200g.jpg",
         "category": "Soda & Juice",
         "likePct": 87,
-        "likeCount": 37
+        "likeCount": 37,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-38",
@@ -2367,7 +2780,12 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M's%20%20Peanut%20%20100g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 96,
-        "likeCount": 46
+        "likeCount": 46,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "waterford-convenience-39",
@@ -2377,7 +2795,12 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M's%20%20Peanut%20%20Butter%20%20100g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 98,
-        "likeCount": 24
+        "likeCount": 24,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "waterford-convenience-40",
@@ -2387,7 +2810,12 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M's%20%20Peanut%20165g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 89,
-        "likeCount": 21
+        "likeCount": 21,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "waterford-convenience-41",
@@ -2447,7 +2875,12 @@
         "image": "/Menu/Waterford%20Convience/NyQuil%20Cold%26Flu%2016%20Liquid%20Capsules.jpg",
         "category": "Health & Medicine",
         "likePct": 99,
-        "likeCount": 67
+        "likeCount": 67,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "waterford-convenience-47",
@@ -2467,7 +2900,12 @@
         "image": "/Menu/Waterford%20Convience/NyQuil%20Complete%20Honey%20Cold%26Flu%20354ml.jpg",
         "category": "Health & Medicine",
         "likePct": 91,
-        "likeCount": 35
+        "likeCount": 35,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "waterford-convenience-49",
@@ -2497,7 +2935,12 @@
         "image": "/Menu/Waterford%20Convience/Otrivin%20Nasal%20Spray%20Complete%20Nasal%20Care%20%2C%20Cold%20%26%20Allergy%20%20Medication%2C%20Nasal%20Decongestant%2020ml.jpg",
         "category": "Health & Medicine",
         "likePct": 89,
-        "likeCount": 39
+        "likeCount": 39,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "waterford-convenience-52",
@@ -2576,7 +3019,12 @@
         "image": "/Menu/RAZI%20pharmacy/Aderna%20smart%20Relieves%20symptoms%20of%20stress%2090%20capsules.jpg",
         "category": "Vitamins & Supplements",
         "likePct": 86,
-        "likeCount": 24
+        "likeCount": 24,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "razi-pharmacy-1",
@@ -2586,7 +3034,12 @@
         "image": "/Menu/RAZI%20pharmacy/Anbesol%20Gel%20Extra%20Strength%20Canker%20Sores%207g.jpg",
         "category": "Oral Care",
         "likePct": 82,
-        "likeCount": 20
+        "likeCount": 20,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "razi-pharmacy-2",
@@ -2606,7 +3059,12 @@
         "image": "/Menu/RAZI%20pharmacy/Astroglide%20gel%20Lubricant%20113%20g.jpg",
         "category": "Sexual Wellness",
         "likePct": 91,
-        "likeCount": 11
+        "likeCount": 11,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "razi-pharmacy-4",
@@ -2626,7 +3084,12 @@
         "image": "/Menu/RAZI%20pharmacy/Blistex%20Lip%20Medex%20Cold%20Sore%2C%20Severely%20Dry%20Cracked%20Lips%204.25g.jpg",
         "category": "Lip Care",
         "likePct": 88,
-        "likeCount": 56
+        "likeCount": 56,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "razi-pharmacy-6",
@@ -2636,7 +3099,12 @@
         "image": "/Menu/RAZI%20pharmacy/Blistex%20Regular%20Lip%20balm.jpg",
         "category": "Lip Care",
         "likePct": 97,
-        "likeCount": 41
+        "likeCount": 41,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "razi-pharmacy-7",
@@ -2666,7 +3134,12 @@
         "image": "/Menu/RAZI%20pharmacy/Contingency%20One%20Levonorgestrel%20Tablet%201.5%20mg.jpg",
         "category": "Vitamins & Supplements",
         "likePct": 91,
-        "likeCount": 17
+        "likeCount": 17,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "razi-pharmacy-10",
@@ -2756,7 +3229,11 @@
         "image": "/Menu/RAZI%20pharmacy/Excel%20Strong%20Mintgum%20(16.8%20g).jpg",
         "category": "Oral Care",
         "likePct": 91,
-        "likeCount": 11
+        "likeCount": 11,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "razi-pharmacy-19",
@@ -2766,7 +3243,12 @@
         "image": "/Menu/RAZI%20pharmacy/FeraMax%20150%20(100's%20capsules).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 87,
-        "likeCount": 49
+        "likeCount": 49,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "razi-pharmacy-20",
@@ -2796,7 +3278,12 @@
         "image": "/Menu/RAZI%20pharmacy/GUM%20EEZ-%20Thru%20Floss%2025%20Threaders.jpg",
         "category": "Oral Care",
         "likePct": 88,
-        "likeCount": 50
+        "likeCount": 50,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "razi-pharmacy-23",
@@ -2816,7 +3303,11 @@
         "image": "/Menu/RAZI%20pharmacy/Jamieson%20D3%202500%20UI%20180%20Tablets.jpg",
         "category": "Vitamins & Supplements",
         "likePct": 89,
-        "likeCount": 45
+        "likeCount": 45,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "razi-pharmacy-25",
@@ -2836,7 +3327,11 @@
         "image": "/Menu/RAZI%20pharmacy/Kinder%20Bueno%20Chocolate%20Bars%2C%2043%20g.jpg",
         "category": "Candy & Snacks",
         "likePct": 89,
-        "likeCount": 39
+        "likeCount": 39,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "razi-pharmacy-27",
@@ -2846,7 +3341,12 @@
         "image": "/Menu/RAZI%20pharmacy/Kit%20Kat%20King%20Size%20Chocolate%20Wafer%20Bars%2C%2073%20g.jpg",
         "category": "Candy & Snacks",
         "likePct": 89,
-        "likeCount": 39
+        "likeCount": 39,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "razi-pharmacy-28",
@@ -2856,7 +3356,11 @@
         "image": "/Menu/RAZI%20pharmacy/KitKat%20Chocolate%20(45%20g).jpg",
         "category": "Candy & Snacks",
         "likePct": 88,
-        "likeCount": 56
+        "likeCount": 56,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "razi-pharmacy-29",
@@ -2876,7 +3380,11 @@
         "image": "/Menu/RAZI%20pharmacy/Lifesavers%20Five%20Flavour%20180g%20Gummies.jpg",
         "category": "Candy & Snacks",
         "likePct": 93,
-        "likeCount": 13
+        "likeCount": 13,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "razi-pharmacy-31",
@@ -2886,7 +3394,11 @@
         "image": "/Menu/RAZI%20pharmacy/Loacker%20Hazelnut%2C%2045%20g.jpg",
         "category": "Candy & Snacks",
         "likePct": 91,
-        "likeCount": 59
+        "likeCount": 59,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "razi-pharmacy-32",
@@ -2916,7 +3428,11 @@
         "image": "/Menu/RAZI%20pharmacy/Orajel%203_Medicated%20Severe%20Toothache%207g.jpg",
         "category": "Oral Care",
         "likePct": 94,
-        "likeCount": 8
+        "likeCount": 8,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "razi-pharmacy-35",
@@ -2946,7 +3462,12 @@
         "image": "/Menu/RAZI%20pharmacy/OralB%20Indicator%20Medium%20Toothbrush.jpg",
         "category": "Oral Care",
         "likePct": 99,
-        "likeCount": 31
+        "likeCount": 31,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "razi-pharmacy-38",
@@ -2956,7 +3477,11 @@
         "image": "/Menu/RAZI%20pharmacy/Palafer%20(30's%20capsules).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 86,
-        "likeCount": 12
+        "likeCount": 12,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "razi-pharmacy-39",
@@ -2966,7 +3491,12 @@
         "image": "/Menu/RAZI%20pharmacy/Palafer%20(90's%20capsules).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 86,
-        "likeCount": 54
+        "likeCount": 54,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "razi-pharmacy-40",
@@ -2976,7 +3506,12 @@
         "image": "/Menu/RAZI%20pharmacy/Palafer%20CF%20(30's%20capsules).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 91,
-        "likeCount": 41
+        "likeCount": 41,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "razi-pharmacy-41",
@@ -3006,7 +3541,11 @@
         "image": "/Menu/RAZI%20pharmacy/Sensodyne%20Pronamel%20Extra%20Fresh%2075%20ml.jpg",
         "category": "Oral Care",
         "likePct": 94,
-        "likeCount": 56
+        "likeCount": 56,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "razi-pharmacy-44",
@@ -3026,7 +3565,12 @@
         "image": "/Menu/RAZI%20pharmacy/Trojan%20Hot%20Spot%20Vibrating%20Ring%20(40%20g).jpg",
         "category": "Sexual Wellness",
         "likePct": 84,
-        "likeCount": 28
+        "likeCount": 28,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "razi-pharmacy-46",
@@ -3046,7 +3590,11 @@
         "image": "/Menu/RAZI%20pharmacy/Trojan%20Thin%2C%20Value%20pack.jpg",
         "category": "Sexual Wellness",
         "likePct": 98,
-        "likeCount": 30
+        "likeCount": 30,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "razi-pharmacy-48",
@@ -3056,7 +3604,12 @@
         "image": "/Menu/RAZI%20pharmacy/Trojan%20Vibrations%20Tandem%20Couples%20Vibrating%20Ring%20(40%20g).jpg",
         "category": "Sexual Wellness",
         "likePct": 90,
-        "likeCount": 64
+        "likeCount": 64,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
       },
       {
         "id": "razi-pharmacy-49",
@@ -3163,7 +3716,12 @@
         "image": "/Menu/Ambrosia/17%20Cooks%20-%20Spicy%20Mexican%207%20Layer%20Dip%20-%20272g.jpg",
         "category": "Snacks & Nuts",
         "likePct": 92,
-        "likeCount": 66
+        "likeCount": 66,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "ambrosia-thornhills-1",
@@ -3173,7 +3731,13 @@
         "image": "/Menu/Ambrosia/17%20Cooks%20Tzatziki%20Dip%20(227%20g).jpg",
         "category": "Snacks & Nuts",
         "likePct": 90,
-        "likeCount": 52
+        "likeCount": 52,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "ambrosia-thornhills-2",
@@ -3183,7 +3747,12 @@
         "image": "/Menu/Ambrosia/Ambrosia%20-%20Organic%20Black%20Sesame%20Seeds%20-%20454g.jpg",
         "category": "Snacks & Nuts",
         "likePct": 97,
-        "likeCount": 23
+        "likeCount": 23,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "ambrosia-thornhills-3",
@@ -3233,7 +3802,13 @@
         "image": "/Menu/Ambrosia/Beretta%20Mild%20Beef%20Sticks%20(100%20g).jpg",
         "category": "Snacks & Nuts",
         "likePct": 86,
-        "likeCount": 48
+        "likeCount": 48,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "ambrosia-thornhills-8",
@@ -3253,7 +3828,12 @@
         "image": "/Menu/Ambrosia/Better%20Bovine%20100%25%20Grass-Fed%20Wagyu%20Beef%20Jerky%20(50%20g).jpg",
         "category": "Snacks & Nuts",
         "likePct": 97,
-        "likeCount": 35
+        "likeCount": 35,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "ambrosia-thornhills-10",
@@ -3263,7 +3843,11 @@
         "image": "/Menu/Ambrosia/Bluapple%20-%20Bluapple%20-%202%20APPLES.jpg",
         "category": "Pantry",
         "likePct": 84,
-        "likeCount": 58
+        "likeCount": 58,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "ambrosia-thornhills-11",
@@ -3273,7 +3857,12 @@
         "image": "/Menu/Ambrosia/Blue%20Monkey%20Sparkling%20Juice%20Drink%2C%20Lychee%20(330%20ml).jpg",
         "category": "Drinks",
         "likePct": 97,
-        "likeCount": 41
+        "likeCount": 41,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "ambrosia-thornhills-12",
@@ -3283,7 +3872,12 @@
         "image": "/Menu/Ambrosia/Blue%20Monkey%20Sparkling%20Watermelon%20Juice%20(330%20ml).jpg",
         "category": "Drinks",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "ambrosia-thornhills-13",
@@ -3313,7 +3907,12 @@
         "image": "/Menu/Ambrosia/Bulk%20-%20Dry%20Roasted%20Cashews%20Unsalted%20-%20_1.00%20lbs%20(REG%20%248.99).jpg",
         "category": "Snacks & Nuts",
         "likePct": 87,
-        "likeCount": 55
+        "likeCount": 55,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "ambrosia-thornhills-16",
@@ -3333,7 +3932,12 @@
         "image": "/Menu/Ambrosia/Cove%20Drinks%20Ginger%20Ale%20(355%20ml).jpg",
         "category": "Drinks",
         "likePct": 92,
-        "likeCount": 54
+        "likeCount": 54,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "ambrosia-thornhills-18",
@@ -3353,7 +3957,13 @@
         "image": "/Menu/Ambrosia/Cove%20Drinks%20Zero%20Sugar%20Probiotics%20Soda%2C%20Grapefruit%20(355%20ml).jpg",
         "category": "Drinks",
         "likePct": 86,
-        "likeCount": 66
+        "likeCount": 66,
+        "deal": {
+          "type": "dollar_off",
+          "value": 3,
+          "threshold": 30,
+          "label": "$3 off $30"
+        }
       },
       {
         "id": "ambrosia-thornhills-20",
@@ -3363,7 +3973,11 @@
         "image": "/Menu/Ambrosia/Dr.Cove%20Zero%20Sugar%20Probiotic%20Soda%20(355%20ml).jpg",
         "category": "Drinks",
         "likePct": 91,
-        "likeCount": 29
+        "likeCount": 29,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       }
     ]
   },
@@ -3452,7 +4066,12 @@
         "image": "/Menu/Ashario%20Pets/ACANA%20Chicken%20Adult%20Dry%20Dog%20Food%20(Large%20breed).jpg",
         "category": "Dog Food",
         "likePct": 93,
-        "likeCount": 37
+        "likeCount": 37,
+        "deal": {
+          "type": "first_order",
+          "value": 20,
+          "label": "20% off 1st order"
+        }
       },
       {
         "id": "ashario-pets-3",
@@ -3462,7 +4081,12 @@
         "image": "/Menu/Ashario%20Pets/ACANA%20Healthy%20Grains%20Dry%20Dog%20Food%2C%20Sea%20%26%20Farm%2C%20Puppy%20(10.2%20kg).jpg",
         "category": "Dog Food",
         "likePct": 92,
-        "likeCount": 24
+        "likeCount": 24,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
       },
       {
         "id": "ashario-pets-4",
@@ -3472,7 +4096,11 @@
         "image": "/Menu/Ashario%20Pets/ACANA%20Regionals%20Grasslands%20Dry%20Dog%20Food%20(11.4%20kg).jpg",
         "category": "Dog Food",
         "likePct": 87,
-        "likeCount": 13
+        "likeCount": 13,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "ashario-pets-5",
@@ -3482,7 +4110,11 @@
         "image": "/Menu/Ashario%20Pets/Advantage%20II%20-%20Flea%20%26%20Tick%20Medicine%20-%20Large%20Dog.jpg",
         "category": "Health & Wellness",
         "likePct": 90,
-        "likeCount": 46
+        "likeCount": 46,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "ashario-pets-6",
@@ -3512,7 +4144,11 @@
         "image": "/Menu/Ashario%20Pets/Ashario%20Pets%20-%20Dispenser%20Dog%20Toy%20-%20Teeth%20Cleaning%20Ring%20-%20Large.jpg",
         "category": "Toys & Play",
         "likePct": 90,
-        "likeCount": 10
+        "likeCount": 10,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
       },
       {
         "id": "ashario-pets-9",
@@ -3532,7 +4168,11 @@
         "image": "/Menu/Ashario%20Pets/Ashario%20Pets%20-%20_BreezyVest_%20Summer%20Lightweight%20Reflective%20Harness%20-%20Blue%20-%20M.jpg",
         "category": "Carriers & Beds",
         "likePct": 93,
-        "likeCount": 37
+        "likeCount": 37,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "ashario-pets-11",
@@ -3552,7 +4192,12 @@
         "image": "/Menu/Ashario%20Pets/Baci%2B%203-In-1%20Healthy%20Aging%20For%20Adult%20Dogs%20(60%20g).jpg",
         "category": "Health & Wellness",
         "likePct": 97,
-        "likeCount": 17
+        "likeCount": 17,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
       },
       {
         "id": "ashario-pets-13",
@@ -3582,7 +4227,13 @@
         "image": "/Menu/Ashario%20Pets/Benko%20-%20Beef%20Training%20Dog%20Treats%20-%20227%20Grams.jpg",
         "category": "Dog Treats",
         "likePct": 98,
-        "likeCount": 48
+        "likeCount": 48,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
       },
       {
         "id": "ashario-pets-16",
@@ -3662,7 +4313,11 @@
         "image": "/Menu/Ashario%20Pets/BuD'z%20-%20Comfort%20Flat%20Dog%20Bed%20-%20Large%20(41x26x2in).jpg",
         "category": "Carriers & Beds",
         "likePct": 95,
-        "likeCount": 27
+        "likeCount": 27,
+        "deal": {
+          "type": "bogo",
+          "label": "Buy 1 Get 1 Free"
+        }
       },
       {
         "id": "ashario-pets-24",
@@ -3675,5 +4330,622 @@
         "likeCount": 34
       }
     ]
+  },
+  "Comfort Air HVAC": {
+    "slug": "comfort-air-hvac",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/hvac%20business%20photo.jpg",
+    "rating": 4.9,
+    "ratingCount": "200+",
+    "address": "1459 Bathurst St, Thornhill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Winnie C.",
+        "stars": 5,
+        "date": "12-06-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "04-07-24",
+        "text": "Exactly as described, fresh and well packaged."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "06-06-24",
+        "text": "Exactly as described, fresh and well packaged."
+      }
+    ],
+    "categories": [
+      "Home Services"
+    ],
+    "featuredIds": [
+      "comfort-air-hvac-0"
+    ],
+    "pickedIds": [
+      "comfort-air-hvac-0"
+    ],
+    "items": [
+      {
+        "id": "comfort-air-hvac-0",
+        "name": "HVAC Service Call",
+        "price": 99,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/hvac%20business%20photo.jpg",
+        "category": "Home Services",
+        "likePct": 90,
+        "likeCount": 31,
+        "deal": {
+          "type": "percent",
+          "value": 10,
+          "label": "10% off"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "Reliable Flow Plumbing": {
+    "slug": "reliable-flow-plumbing",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/Plumbing%20buissness%20photo.jpg",
+    "rating": 4.7,
+    "ratingCount": "200+",
+    "address": "9913 Major Mackenzie Dr, Toronto, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Marcus L.",
+        "stars": 5,
+        "date": "07-04-24",
+        "text": "Good portion and fair prices. Solid choice."
+      },
+      {
+        "name": "Winnie C.",
+        "stars": 5,
+        "date": "26-05-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Marcus L.",
+        "stars": 5,
+        "date": "23-02-24",
+        "text": "Good portion and fair prices. Solid choice."
+      }
+    ],
+    "categories": [
+      "Home Services"
+    ],
+    "featuredIds": [
+      "reliable-flow-plumbing-0"
+    ],
+    "pickedIds": [
+      "reliable-flow-plumbing-0"
+    ],
+    "items": [
+      {
+        "id": "reliable-flow-plumbing-0",
+        "name": "Plumbing Service Call",
+        "price": 89,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/Plumbing%20buissness%20photo.jpg",
+        "category": "Home Services",
+        "likePct": 93,
+        "likeCount": 45,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "GreenScape Landscaping": {
+    "slug": "greenscape-landscaping",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/landscaping%20business.jpg",
+    "rating": 4.7,
+    "ratingCount": "200+",
+    "address": "7581 Major Mackenzie Dr, Thornhill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Winnie C.",
+        "stars": 5,
+        "date": "27-06-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "08-05-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "11-08-24",
+        "text": "Good portion and fair prices. Solid choice."
+      }
+    ],
+    "categories": [
+      "Home Services"
+    ],
+    "featuredIds": [
+      "greenscape-landscaping-0"
+    ],
+    "pickedIds": [
+      "greenscape-landscaping-0"
+    ],
+    "items": [
+      {
+        "id": "greenscape-landscaping-0",
+        "name": "Lawn & Garden Service",
+        "price": 79,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/landscaping%20business.jpg",
+        "category": "Home Services",
+        "likePct": 92,
+        "likeCount": 33
+      }
+    ],
+    "isService": true
+  },
+  "Summit Home Renovations": {
+    "slug": "summit-home-renovations",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/renovation%20buisness.jpg",
+    "rating": 4.7,
+    "ratingCount": "200+",
+    "address": "1493 Yonge St, North York, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "19-04-24",
+        "text": "Good portion and fair prices. Solid choice."
+      },
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "11-05-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "08-02-24",
+        "text": "Good portion and fair prices. Solid choice."
+      }
+    ],
+    "categories": [
+      "Home Services"
+    ],
+    "featuredIds": [
+      "summit-home-renovations-0"
+    ],
+    "pickedIds": [
+      "summit-home-renovations-0"
+    ],
+    "items": [
+      {
+        "id": "summit-home-renovations-0",
+        "name": "Renovation Consultation",
+        "price": 150,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/renovation%20buisness.jpg",
+        "category": "Home Services",
+        "likePct": 97,
+        "likeCount": 25
+      }
+    ],
+    "isService": true
+  },
+  "Sharp Fade Barbershop": {
+    "slug": "sharp-fade-barbershop",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/Barber.jpg",
+    "rating": 4.7,
+    "ratingCount": "200+",
+    "address": "4285 Major Mackenzie Dr, Richmond Hill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "08-08-24",
+        "text": "Exactly as described, fresh and well packaged."
+      },
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "27-09-24",
+        "text": "Good portion and fair prices. Solid choice."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "24-06-24",
+        "text": "Exactly as described, fresh and well packaged."
+      }
+    ],
+    "categories": [
+      "Grooming"
+    ],
+    "featuredIds": [
+      "sharp-fade-barbershop-0"
+    ],
+    "pickedIds": [
+      "sharp-fade-barbershop-0"
+    ],
+    "items": [
+      {
+        "id": "sharp-fade-barbershop-0",
+        "name": "Men's Haircut & Beard Trim",
+        "price": 35,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/Barber.jpg",
+        "category": "Grooming",
+        "likePct": 90,
+        "likeCount": 17,
+        "deal": {
+          "type": "free_delivery",
+          "threshold": 25,
+          "label": "Free delivery over $25"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "Polished Nail Studio": {
+    "slug": "polished-nail-studio",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/nails.jpg",
+    "rating": 4.9,
+    "ratingCount": "200+",
+    "address": "7727 Bayview Ave, Richmond Hill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "12-06-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Winnie C.",
+        "stars": 5,
+        "date": "20-05-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Winnie C.",
+        "stars": 5,
+        "date": "23-08-24",
+        "text": "Good portion and fair prices. Solid choice."
+      }
+    ],
+    "categories": [
+      "Beauty"
+    ],
+    "featuredIds": [
+      "polished-nail-studio-0"
+    ],
+    "pickedIds": [
+      "polished-nail-studio-0"
+    ],
+    "items": [
+      {
+        "id": "polished-nail-studio-0",
+        "name": "Manicure & Pedicure",
+        "price": 55,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/nails.jpg",
+        "category": "Beauty",
+        "likePct": 94,
+        "likeCount": 19,
+        "deal": {
+          "type": "percent",
+          "value": 15,
+          "label": "15% off"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "Serenity Massage Therapy": {
+    "slug": "serenity-massage-therapy",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/Massage.jpg",
+    "rating": 4.6,
+    "ratingCount": "200+",
+    "address": "1152 Yonge St, Toronto, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Nataly O.",
+        "stars": 5,
+        "date": "01-01-24",
+        "text": "Great quality and fast delivery, will order again!"
+      },
+      {
+        "name": "Grace W.",
+        "stars": 5,
+        "date": "20-02-24",
+        "text": "Really happy with my order. Highly recommend."
+      },
+      {
+        "name": "Priya S.",
+        "stars": 5,
+        "date": "12-03-24",
+        "text": "Friendly service and everything arrived on time."
+      }
+    ],
+    "categories": [
+      "Wellness"
+    ],
+    "featuredIds": [
+      "serenity-massage-therapy-0"
+    ],
+    "pickedIds": [
+      "serenity-massage-therapy-0"
+    ],
+    "items": [
+      {
+        "id": "serenity-massage-therapy-0",
+        "name": "60-Minute Relaxation Massage",
+        "price": 95,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/Massage.jpg",
+        "category": "Wellness",
+        "likePct": 98,
+        "likeCount": 44,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "Peak Personal Training": {
+    "slug": "peak-personal-training",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/personal%20fitnes%20instructor.jpg",
+    "rating": 4.8,
+    "ratingCount": "200+",
+    "address": "9322 Major Mackenzie Dr, Richmond Hill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Grace W.",
+        "stars": 5,
+        "date": "04-07-24",
+        "text": "Great quality and fast delivery, will order again!"
+      },
+      {
+        "name": "Priya S.",
+        "stars": 5,
+        "date": "23-08-24",
+        "text": "Really happy with my order. Highly recommend."
+      },
+      {
+        "name": "Grace W.",
+        "stars": 5,
+        "date": "20-05-24",
+        "text": "Great quality and fast delivery, will order again!"
+      }
+    ],
+    "categories": [
+      "Fitness"
+    ],
+    "featuredIds": [
+      "peak-personal-training-0"
+    ],
+    "pickedIds": [
+      "peak-personal-training-0"
+    ],
+    "items": [
+      {
+        "id": "peak-personal-training-0",
+        "name": "1-on-1 Personal Training Session",
+        "price": 70,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/personal%20fitnes%20instructor.jpg",
+        "category": "Fitness",
+        "likePct": 96,
+        "likeCount": 14,
+        "deal": {
+          "type": "bundle",
+          "label": "Combo deal"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "Sparkle Home Cleaning": {
+    "slug": "sparkle-home-cleaning",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/Home-Cleaning-Services-Richmond-Hill.jpg",
+    "rating": 4.7,
+    "ratingCount": "200+",
+    "address": "3653 Hwy 7, North York, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "02-08-24",
+        "text": "Exactly as described, fresh and well packaged."
+      },
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "21-09-24",
+        "text": "Good portion and fair prices. Solid choice."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "18-06-24",
+        "text": "Exactly as described, fresh and well packaged."
+      }
+    ],
+    "categories": [
+      "Cleaning"
+    ],
+    "featuredIds": [
+      "sparkle-home-cleaning-0"
+    ],
+    "pickedIds": [
+      "sparkle-home-cleaning-0"
+    ],
+    "items": [
+      {
+        "id": "sparkle-home-cleaning-0",
+        "name": "Standard Home Cleaning",
+        "price": 120,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/Home-Cleaning-Services-Richmond-Hill.jpg",
+        "category": "Cleaning",
+        "likePct": 97,
+        "likeCount": 25
+      }
+    ],
+    "isService": true
+  },
+  "ClearWash Pressure Washing": {
+    "slug": "clearwash-pressure-washing",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/Pressure%20washing.jpg",
+    "rating": 4.9,
+    "ratingCount": "200+",
+    "address": "2163 Bathurst St, Richmond Hill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Winnie C.",
+        "stars": 5,
+        "date": "08-02-24",
+        "text": "Exactly as described, fresh and well packaged."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "27-03-24",
+        "text": "Good portion and fair prices. Solid choice."
+      },
+      {
+        "name": "Daniel K.",
+        "stars": 5,
+        "date": "19-04-24",
+        "text": "My go-to spot — never disappoints."
+      }
+    ],
+    "categories": [
+      "Home Services"
+    ],
+    "featuredIds": [
+      "clearwash-pressure-washing-0"
+    ],
+    "pickedIds": [
+      "clearwash-pressure-washing-0"
+    ],
+    "items": [
+      {
+        "id": "clearwash-pressure-washing-0",
+        "name": "Driveway & Exterior Pressure Wash",
+        "price": 150,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/Pressure%20washing.jpg",
+        "category": "Home Services",
+        "likePct": 92,
+        "likeCount": 15,
+        "deal": {
+          "type": "dollar_off",
+          "value": 8,
+          "threshold": 30,
+          "label": "$8 off $30"
+        }
+      }
+    ],
+    "isService": true
+  },
+  "FreshCoat Painting": {
+    "slug": "freshcoat-painting",
+    "folder": "Services photos",
+    "banner": "/Menu/Services%20photos/home-painting-service-main-thumbnail.webp",
+    "rating": 4.9,
+    "ratingCount": "200+",
+    "address": "4383 Bayview Ave, Thornhill, ON",
+    "availability": "Available today",
+    "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
+    "deliveryTime": "By appointment",
+    "reviews": [
+      {
+        "name": "Marcus L.",
+        "stars": 5,
+        "date": "06-12-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Omar H.",
+        "stars": 5,
+        "date": "14-11-24",
+        "text": "My go-to spot — never disappoints."
+      },
+      {
+        "name": "Marcus L.",
+        "stars": 5,
+        "date": "22-10-24",
+        "text": "My go-to spot — never disappoints."
+      }
+    ],
+    "categories": [
+      "Home Services"
+    ],
+    "featuredIds": [
+      "freshcoat-painting-0"
+    ],
+    "pickedIds": [
+      "freshcoat-painting-0"
+    ],
+    "items": [
+      {
+        "id": "freshcoat-painting-0",
+        "name": "Interior Room Painting",
+        "price": 300,
+        "description": "Professional service, book online.",
+        "image": "/Menu/Services%20photos/home-painting-service-main-thumbnail.webp",
+        "category": "Home Services",
+        "likePct": 98,
+        "likeCount": 35
+      }
+    ],
+    "isService": true
   }
 }

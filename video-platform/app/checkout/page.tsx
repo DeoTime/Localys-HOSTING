@@ -59,8 +59,21 @@ function CheckoutContent() {
   }, [checkoutItems]);
 
   const subtotal = checkoutItems.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0);
-  const couponDiscount = selectedCoupon ? Math.round(subtotal * (selectedCoupon.discount_percentage / 100) * 100) / 100 : 0;
-  const total = Math.max(0, subtotal - couponDiscount);
+
+  // Apply the straightforward item deals: % off, $ off (over threshold), and BOGO
+  // (cheapest of each pair free). free_delivery/bundle/first_order are display badges.
+  const dealSavings = Math.round(checkoutItems.reduce((sum, item) => {
+    const d = item.deal;
+    if (!d) return sum;
+    const line = item.itemPrice * item.quantity;
+    if ((d.type === 'percent' || d.type === 'first_order') && d.value) return sum + (line * d.value) / 100;
+    if (d.type === 'dollar_off' && d.value) return line >= (d.threshold ?? 0) ? sum + d.value : sum;
+    if (d.type === 'bogo') return sum + Math.floor(item.quantity / 2) * item.itemPrice;
+    return sum;
+  }, 0) * 100) / 100;
+
+  const couponDiscount = selectedCoupon ? Math.round((subtotal - dealSavings) * (selectedCoupon.discount_percentage / 100) * 100) / 100 : 0;
+  const total = Math.max(0, subtotal - dealSavings - couponDiscount);
 
   const handleProceedToPayment = async () => {
     if (checkoutItems.length === 0) return;
@@ -162,6 +175,7 @@ function CheckoutContent() {
                 {item.itemImage && <img src={item.itemImage} alt={item.itemName} className="w-12 h-12 rounded-xl object-cover border border-gray-100 shrink-0" />}
                 <div className="flex-1 min-w-0">
                   <p className="text-gray-900 font-medium truncate">{item.itemName}</p>
+                  {item.deal && <span className="mt-0.5 inline-flex rounded bg-[#f97316] px-1.5 py-0.5 text-[11px] font-semibold text-white">{item.deal.label}</span>}
                   {item.quantity > 1 && <p className="text-gray-400 text-xs">×{item.quantity} @ ${item.itemPrice.toFixed(2)}</p>}
                   {item.specialRequests && <p className="text-gray-500 text-xs mt-0.5">{item.specialRequests}</p>}
                 </div>
@@ -203,6 +217,11 @@ function CheckoutContent() {
           <div className="flex justify-between text-sm text-gray-600">
             <span>Subtotal</span><span>${subtotal.toFixed(2)}</span>
           </div>
+          {dealSavings > 0 && (
+            <div className="flex justify-between text-sm text-[#f97316]">
+              <span>Deals</span><span>-${dealSavings.toFixed(2)}</span>
+            </div>
+          )}
           {selectedCoupon && (
             <div className="flex justify-between text-sm text-green-600">
               <span>Coupon ({selectedCoupon.discount_percentage}%)</span>
