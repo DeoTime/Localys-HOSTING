@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, ChevronDown, RotateCcw, User, ShoppingCart, Settings, LogOut, Check, Building2 } from 'lucide-react';
+import { MapPin, ChevronDown, Coins, User, ShoppingCart, Settings, LogOut, Check, Building2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { SearchDropdown } from './SearchDropdown';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase/client';
 
 const LOCATIONS = ['Richmond Hill, ON', 'Toronto, ON', 'Markham, ON', 'Vaughan, ON', 'Mississauga, ON'];
 const LANGUAGES = [
@@ -31,11 +32,20 @@ function useClickOutside(ref: React.RefObject<HTMLDivElement | null>, onClose: (
 export function TopHeader() {
   const router = useRouter();
   const { getCartCount } = useCart();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
 
   const [location, setLocation] = useState(LOCATIONS[0]);
   const [lang, setLang] = useState('EN');
   const [openMenu, setOpenMenu] = useState<null | 'location' | 'lang' | 'profile'>(null);
+  const [coins, setCoins] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    supabase.from('profiles').select('coin_balance').eq('id', user.id).single()
+      .then(({ data }) => { if (!cancelled && data) setCoins(data.coin_balance ?? 0); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   useClickOutside(wrapRef, () => setOpenMenu(null));
@@ -114,13 +124,16 @@ export function TopHeader() {
           )}
         </div>
 
-        {/* Reorder */}
+        {/* Points */}
         <Link
-          href="/profile?tab=orders"
-          className="hidden shrink-0 flex-col items-center px-2 text-black transition hover:text-[#f97316] dark:text-white lg:flex"
+          href="/points"
+          className="hidden shrink-0 flex-col items-center gap-0.5 px-2 text-black transition hover:text-[#f97316] dark:text-white lg:flex"
         >
-          <RotateCcw className="h-5 w-5" />
-          <span className="text-[11px] font-medium">Reorder</span>
+          <div className="flex items-center gap-1">
+            <Coins className="h-4 w-4 text-[#f97316]" />
+            <span className="text-sm font-bold text-[#f97316]">{coins ?? '—'}</span>
+          </div>
+          <span className="text-[11px] font-medium">Points</span>
         </Link>
 
         {/* Profile */}

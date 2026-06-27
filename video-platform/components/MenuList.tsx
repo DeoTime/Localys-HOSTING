@@ -188,7 +188,7 @@ export function MenuList({ userId, businessId, isOwnProfile, layout = 'grid', on
               return (
                 <Fragment key={item.id}>
                   {showHeader && (
-                    <p className="pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 first:pt-0">
+                    <p className="pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-black first:pt-0">
                       {item.category}
                     </p>
                   )}
@@ -205,14 +205,14 @@ export function MenuList({ userId, businessId, isOwnProfile, layout = 'grid', on
                     )}
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{item.item_name}</p>
-                      {item.description && <p className="text-xs text-gray-500 line-clamp-1">{item.description}</p>}
+                      <p className="text-sm font-semibold text-black truncate">{item.item_name}</p>
+                      {item.description && <p className="text-xs text-black line-clamp-1">{item.description}</p>}
                       {!item.is_available && <span className="text-xs text-red-500">Out of Stock</span>}
                       {deletingItemId === item.id && (
                         <div className="mt-1 flex items-center gap-2">
-                          <p className="text-xs text-gray-700">Delete this item?</p>
+                          <p className="text-xs text-black">Delete this item?</p>
                           <button onClick={() => handleDeleteItemConfirm(item.id)} className="text-xs font-semibold text-red-600 hover:underline">Yes</button>
-                          <button onClick={() => setDeletingItemId(null)} className="text-xs text-gray-500 hover:underline">No</button>
+                          <button onClick={() => setDeletingItemId(null)} className="text-xs text-black hover:underline">No</button>
                         </div>
                       )}
                     </div>
@@ -245,7 +245,7 @@ export function MenuList({ userId, businessId, isOwnProfile, layout = 'grid', on
                         <div className="flex gap-1">
                           <button
                             onClick={(e) => { e.stopPropagation(); handleEditItem(item); }}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-black text-white hover:opacity-75 transition-opacity"
                             aria-label={`Edit ${item.item_name}`}
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +254,7 @@ export function MenuList({ userId, businessId, isOwnProfile, layout = 'grid', on
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); setDeletingItemId(item.id); }}
-                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-black text-white hover:bg-red-600 transition-colors"
                             aria-label={`Delete ${item.item_name}`}
                           >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

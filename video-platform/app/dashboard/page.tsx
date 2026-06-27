@@ -350,17 +350,17 @@ function DashboardContent() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm text-center">
-                <p className="text-3xl font-bold text-gray-900">{avgRating > 0 ? avgRating.toFixed(1) : '—'}</p>
+                <p className="text-3xl font-bold text-black">{avgRating > 0 ? avgRating.toFixed(1) : '—'}</p>
                 <div className="flex justify-center gap-0.5 my-1">{[1,2,3,4,5].map(s => <Star key={s} className={`h-3.5 w-3.5 ${s <= Math.round(avgRating) ? 'text-[#f97316] fill-[#f97316]' : 'text-gray-200 fill-gray-200'}`} />)}</div>
-                <p className="text-xs text-gray-400">Average Rating</p>
+                <p className="text-xs text-black">Average Rating</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm text-center">
-                <p className="text-3xl font-bold text-gray-900">{reviews.length}</p>
-                <p className="text-xs text-gray-400 mt-1">Total Reviews</p>
+                <p className="text-3xl font-bold text-black">{reviews.length}</p>
+                <p className="text-xs text-black mt-1">Total Reviews</p>
               </div>
               <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm text-center col-span-2 sm:col-span-1">
-                <p className="text-3xl font-bold text-gray-900">{reviews.filter(r => r.rating >= 4).length}</p>
-                <p className="text-xs text-gray-400 mt-1">4+ Stars</p>
+                <p className="text-3xl font-bold text-black">{reviews.filter(r => r.rating >= 4).length}</p>
+                <p className="text-xs text-black mt-1">4+ Stars</p>
               </div>
             </div>
 
@@ -371,26 +371,23 @@ function DashboardContent() {
                 <p className="text-gray-400 text-sm mt-1">Reviews appear here when customers rate your videos</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {reviews.map(r => (
-                  <div key={r.id} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
-                        {r.reviewer_avatar ? <img src={r.reviewer_avatar} alt={r.reviewer_name} className="w-full h-full object-cover" /> : <span className="text-sm font-semibold text-gray-500">{r.reviewer_name[0]?.toUpperCase()}</span>}
+                  <div key={r.id} className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                        {r.reviewer_avatar ? <img src={r.reviewer_avatar} alt={r.reviewer_name} className="w-full h-full object-cover" /> : <span className="text-xs font-semibold text-gray-500">{r.reviewer_name[0]?.toUpperCase()}</span>}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">{r.reviewer_name}</p>
-                            {r.reviewer_username && <p className="text-xs text-gray-400">@{r.reviewer_username}</p>}
-                          </div>
-                          <div className="flex items-center gap-0.5 shrink-0">{[1,2,3,4,5].map(s => <Star key={s} className={`h-3.5 w-3.5 ${s <= r.rating ? 'text-[#f97316] fill-[#f97316]' : 'text-gray-200 fill-gray-200'}`} />)}</div>
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <span className="text-sm font-semibold text-black truncate">
+                            {r.reviewer_name}{r.reviewer_username ? <span className="font-normal text-gray-400 ml-1">@{r.reviewer_username}</span> : null}
+                          </span>
+                          <span className="text-[11px] text-gray-400 shrink-0">{new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                         </div>
-                        {r.content && <p className="text-sm text-gray-700 mt-1.5 leading-relaxed">{r.content}</p>}
-                        <div className="flex items-center gap-3 mt-2">
-                          <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                          {r.video_caption && <p className="text-xs text-gray-400 truncate">on: {r.video_caption}</p>}
-                        </div>
+                        <div className="flex items-center gap-0.5 mb-1">{[1,2,3,4,5].map(s => <Star key={s} className={`h-3 w-3 ${s <= r.rating ? 'text-[#f97316] fill-[#f97316]' : 'text-gray-200 fill-gray-200'}`} />)}</div>
+                        {r.content && <p className="text-sm text-black leading-snug">{r.content}</p>}
+                        {r.video_caption && <p className="text-[11px] text-gray-400 mt-0.5 truncate">on: {r.video_caption}</p>}
                       </div>
                     </div>
                   </div>
@@ -419,7 +416,7 @@ function DashboardContent() {
             <BusinessInfoEditor business={business} onSaved={setBusiness} />
             <BusinessHoursEditor business={business} onSaved={setBusiness} />
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Services &amp; Menu</h2>
+              <h2 className="text-sm font-semibold text-black mb-4">Services &amp; Menu</h2>
               <MenuList userId={user.id} businessId={business.id} isOwnProfile={true} layout="list" />
             </div>
           </div>
@@ -437,7 +434,7 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm text-center">
       <p className="text-2xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-400 mt-0.5">{label}</p>
+      <p className="text-xs text-black mt-0.5">{label}</p>
     </div>
   );
 }

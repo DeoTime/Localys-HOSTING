@@ -96,14 +96,14 @@ function ChatsLayout() {
 
         {/* Header */}
         <div className="flex shrink-0 items-center gap-3 px-5 py-4">
-          <span className="text-[15px] font-semibold text-gray-900 dark:text-white">Messages</span>
+          <span className="text-[15px] font-semibold text-black dark:text-white">Messages</span>
           <button
             type="button"
             onClick={() => setShowNewChat(true)}
             aria-label="New message"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </button>
         </div>
 

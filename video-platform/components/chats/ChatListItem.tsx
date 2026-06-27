@@ -57,8 +57,8 @@ export function ChatListItem({ chat, isActive, onClick }: ChatListItemProps) {
             <span
               className={`truncate text-[14px] ${
                 unread > 0
-                  ? 'font-semibold text-gray-900 dark:text-white'
-                  : 'font-medium text-gray-800 dark:text-gray-200'
+                  ? 'font-semibold text-black dark:text-white'
+                  : 'font-medium text-black dark:text-gray-200'
               }`}
             >
               {name}
@@ -79,8 +79,8 @@ export function ChatListItem({ chat, isActive, onClick }: ChatListItemProps) {
           <p
             className={`mt-0.5 truncate text-[13px] ${
               unread > 0
-                ? 'font-medium text-gray-700 dark:text-gray-300'
-                : 'font-normal text-gray-400 dark:text-gray-500'
+                ? 'font-medium text-black dark:text-gray-300'
+                : 'font-normal text-black dark:text-gray-400'
             }`}
           >
             {preview}
