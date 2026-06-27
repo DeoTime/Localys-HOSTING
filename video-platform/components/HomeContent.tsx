@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Star, Coins, Check, Plus } from 'lucide-react';
+import { Star, Check, Plus } from 'lucide-react';
 import { MenuPopup } from '@/components/feed/MenuPopup';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
@@ -14,7 +14,6 @@ import dynamic from 'next/dynamic';
 const CommentModal = dynamic(() => import('@/components/CommentModal').then(mod => mod.CommentModal), { ssr: false });
 import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { haversineDistance } from '@/lib/utils/geo';
 import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/pricing';
 
@@ -953,7 +952,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
           100% { transform: translate(-50%, 0) scale(1); }
         }
       `}</style>
-      <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-black text-foreground">
+      <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground">
       {/* Ambient Particle Background - CSS shimmer effect */}
       <div className="home-feed-particles" aria-hidden="true" />
 
@@ -983,19 +982,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
               return (
                 <>
-            {/* Ambient blurred backdrop fills the sides (active slide only) — no black bars */}
-            {index === currentIndex && (
-              <video
-                src={video.video_url}
-                aria-hidden
-                muted
-                loop
-                playsInline
-                autoPlay
-                className="pointer-events-none absolute inset-0 h-full w-full scale-110 object-cover opacity-40 blur-2xl"
-              />
-            )}
-
             {/* Main video — centered vertical column, fills with object-cover */}
             <div className="absolute inset-0 flex items-center justify-center">
               <video
@@ -1072,9 +1058,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
         ))}
       </div>
 
-      {/* Floating feed controls — the global header already provides logo/nav */}
+      {/* Floating feed controls — volume only; header provides nav/profile */}
       <div className="absolute right-3 top-3 z-30">
-          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-2 py-1.5 backdrop-blur-xl sm:gap-3">
+          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-2 py-1.5 backdrop-blur-xl">
             {/* Volume Dropdown */}
             <div
               className="relative"
@@ -1121,45 +1107,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
                 </div>
               </div>
             </div>
-
-            <ThemeToggle />
-
-            {showCoinBadge && (
-              <Link
-                href="/buy-coins"
-                className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#3A3A34] bg-[#242420] px-3 py-2 text-sm font-medium text-[#F5F0E8] transition-colors hover:bg-[#2E2E28]"
-                aria-label="Buy coins"
-              >
-                <Coins className="h-4 w-4" />
-                <span>{userCoins}</span>
-              </Link>
-            )}
-
-            <Link
-              href="/profile"
-              className="hidden md:flex items-center gap-2 transition-all duration-200 hover:opacity-80 active:scale-95"
-              aria-label="Open profile"
-            >
-              {headerProfile?.profile_picture_url ? (
-                <Image
-                  src={headerProfile.profile_picture_url}
-                  alt={headerProfile.full_name || headerProfile.username || 'Profile'}
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-full object-cover border border-[#3A3A34]"
-                  unoptimized
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#242420] text-xs font-semibold text-[#F5F0E8] border border-[#3A3A34]">
-                  {(headerProfile?.full_name || headerProfile?.username || user?.email || 'U').charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className="max-w-[140px] leading-none">
-                <p className="mb-0 truncate text-xs font-semibold text-[#F5F0E8]">
-                  @{headerProfile?.username || 'profile'}
-                </p>
-              </div>
-            </Link>
           </div>
       </div>
 

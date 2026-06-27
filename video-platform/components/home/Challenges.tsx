@@ -10,7 +10,7 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
           <p className="font-semibold leading-tight text-black dark:text-white">{challenge.title}</p>
           <p className="text-xs text-black dark:text-white">{challenge.description}</p>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-xs font-semibold text-[#f97316] dark:bg-[#f97316]/15">
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700 dark:bg-gray-700 dark:text-gray-200">
           <Coins className="h-3.5 w-3.5" />+{challenge.reward}
         </span>
       </div>

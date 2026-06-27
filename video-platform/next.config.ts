@@ -4,12 +4,19 @@ const nextConfig: NextConfig = {
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production';
 
+    // Dev needs 'unsafe-eval' for React/Next.js hot-reload; strip it in prod.
+    const scriptSrc = isDev
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com"
+      : "script-src 'self' 'unsafe-inline' js.stripe.com";
+
     const csp = [
       "default-src 'self'",
-      // unsafe-inline required for Next.js 16 inline hydration scripts
-      "script-src 'self' 'unsafe-inline' js.stripe.com",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: *.supabase.co *.cloudfront.net img.icons8.com via.placeholder.com",
+      // media-src must explicitly allow Supabase storage + blob: or <video> elements
+      // with cross-origin src will throw NotSupportedError (no supported sources).
+      "media-src 'self' blob: data: *.supabase.co *.cloudfront.net",
       "connect-src 'self' *.supabase.co wss://*.supabase.co api.stripe.com challenges.cloudflare.com *.tile.openstreetmap.org",
       "frame-src js.stripe.com *.stripe.com challenges.cloudflare.com",
       "font-src 'self'",

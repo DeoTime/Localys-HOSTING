@@ -8,6 +8,8 @@ export interface Community {
   description: string;
   memberCount: number;
   color: string;
+  votes: number;
+  userVote: 0 | 1 | -1;
 }
 
 export interface Thread {
@@ -34,11 +36,11 @@ export interface ThreadComment {
 }
 
 const SEED_COMMUNITIES: Community[] = [
-  { id: 'richmondhill-eats', name: 'RichmondHillEats', description: 'Food discoveries in Richmond Hill', memberCount: 1842, color: '#f97316' },
-  { id: 'local-services', name: 'LocalServices', description: 'Trusted local service providers', memberCount: 956, color: '#3b82f6' },
-  { id: 'support-local', name: 'SupportLocal', description: 'Champion local businesses', memberCount: 3210, color: '#10b981' },
-  { id: 'markham', name: 'Markham', description: 'Everything in Markham', memberCount: 2140, color: '#8b5cf6' },
-  { id: 'vaughan', name: 'Vaughan', description: 'Local deals and news in Vaughan', memberCount: 1320, color: '#ec4899' },
+  { id: 'richmondhill-eats', name: 'RichmondHillEats', description: 'Food discoveries in Richmond Hill', memberCount: 1842, color: '#f97316', votes: 312, userVote: 0 },
+  { id: 'local-services', name: 'LocalServices', description: 'Trusted local service providers', memberCount: 956, color: '#3b82f6', votes: 184, userVote: 0 },
+  { id: 'support-local', name: 'SupportLocal', description: 'Champion local businesses', memberCount: 3210, color: '#10b981', votes: 528, userVote: 0 },
+  { id: 'markham', name: 'Markham', description: 'Everything in Markham', memberCount: 2140, color: '#8b5cf6', votes: 267, userVote: 0 },
+  { id: 'vaughan', name: 'Vaughan', description: 'Local deals and news in Vaughan', memberCount: 1320, color: '#ec4899', votes: 143, userVote: 0 },
 ];
 
 const SEED_THREADS: Thread[] = [
@@ -64,6 +66,7 @@ interface CommunitiesContextType {
   comments: ThreadComment[];
   vote: (threadId: string, direction: 1 | -1) => void;
   voteComment: (commentId: string, direction: 1 | -1) => void;
+  voteCommunity: (communityId: string, direction: 1 | -1) => void;
   createCommunity: (name: string, description: string) => Community;
   createThread: (communityId: string, title: string, content: string, author: string) => Thread;
   addComment: (threadId: string, content: string, author: string) => ThreadComment;
@@ -94,6 +97,15 @@ export function CommunitiesProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const voteCommunity = (communityId: string, direction: 1 | -1) => {
+    setCommunities(prev => prev.map(c => {
+      if (c.id !== communityId) return c;
+      const newVote: 0 | 1 | -1 = c.userVote === direction ? 0 : direction;
+      const delta = newVote - c.userVote;
+      return { ...c, votes: c.votes + delta, userVote: newVote };
+    }));
+  };
+
   const createCommunity = (name: string, description: string): Community => {
     const community: Community = {
       id: `${name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
@@ -101,6 +113,8 @@ export function CommunitiesProvider({ children }: { children: ReactNode }) {
       description,
       memberCount: 1,
       color: '#f97316',
+      votes: 1,
+      userVote: 1,
     };
     setCommunities(prev => [community, ...prev]);
     return community;
@@ -142,7 +156,7 @@ export function CommunitiesProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CommunitiesContext.Provider value={{ communities, threads, comments, vote, voteComment, createCommunity, createThread, addComment }}>
+    <CommunitiesContext.Provider value={{ communities, threads, comments, vote, voteComment, voteCommunity, createCommunity, createThread, addComment }}>
       {children}
     </CommunitiesContext.Provider>
   );

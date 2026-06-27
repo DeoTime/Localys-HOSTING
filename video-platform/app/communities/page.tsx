@@ -27,7 +27,7 @@ export default function CommunitiesPage() {
 function CommunitiesContent() {
   const router = useRouter();
   const { user } = useAuth();
-  const { communities, threads, vote, createCommunity, createThread } = useCommunities();
+  const { communities, threads, vote, voteCommunity, createCommunity, createThread } = useCommunities();
 
   const [showCreateCommunity, setShowCreateCommunity] = useState(false);
   const [showCreateThread, setShowCreateThread] = useState(false);
@@ -67,35 +67,69 @@ function CommunitiesContent() {
               Create Community
             </button>
 
-            {/* Communities list */}
+            {/* Communities list with vote buttons */}
             <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
               <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Communities</h3>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {communities.map((c) => (
-                  <Link
-                    key={c.id}
-                    href={`/communities/${c.id}`}
-                    className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <span className="h-5 w-5 shrink-0 rounded-full" style={{ background: c.color }} />
-                    <span className="truncate text-sm text-gray-800 dark:text-gray-200">{c.name}</span>
-                  </Link>
+                  <div key={c.id} className="flex items-center gap-1 rounded-lg px-1 py-1 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+                    {/* Vote column */}
+                    <div className="flex flex-col items-center shrink-0">
+                      <button
+                        onClick={() => voteCommunity(c.id, 1)}
+                        aria-label={`Upvote ${c.name}`}
+                        className={`flex h-5 w-5 items-center justify-center rounded transition-colors ${
+                          c.userVote === 1 ? 'text-[#f97316]' : 'text-gray-300 hover:text-[#f97316]'
+                        }`}
+                      >
+                        <ChevronUp className="h-3.5 w-3.5" />
+                      </button>
+                      <span className={`text-[10px] font-bold tabular-nums leading-none ${
+                        c.userVote === 1 ? 'text-[#f97316]' : c.userVote === -1 ? 'text-blue-500' : 'text-gray-400'
+                      }`}>{c.votes}</span>
+                      <button
+                        onClick={() => voteCommunity(c.id, -1)}
+                        aria-label={`Downvote ${c.name}`}
+                        className={`flex h-5 w-5 items-center justify-center rounded transition-colors ${
+                          c.userVote === -1 ? 'text-blue-500' : 'text-gray-300 hover:text-blue-500'
+                        }`}
+                      >
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <Link
+                      href={`/communities/${c.id}`}
+                      className="flex min-w-0 flex-1 items-center gap-2"
+                    >
+                      <span className="h-4 w-4 shrink-0 rounded-full" style={{ background: c.color }} />
+                      <span className="truncate text-sm text-gray-800 dark:text-gray-200">{c.name}</span>
+                    </Link>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Recent posts */}
+            {/* Recent posts — improved layout */}
             <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
               <h3 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Recent Posts</h3>
-              <div className="space-y-3">
+              <div className="divide-y divide-gray-100 dark:divide-gray-800">
                 {sortedThreads.slice(0, 4).map((t) => (
                   <Link
                     key={t.id}
                     href={`/communities/${t.communityId}/${t.id}`}
-                    className="block rounded-lg p-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    className="block py-2.5 first:pt-0 last:pb-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 -mx-1 px-1 rounded transition-colors"
                   >
-                    <p className="text-[11px] font-medium text-[#f97316]">{t.communityName}</p>
-                    <p className="mt-0.5 text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-snug">{t.title}</p>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: communities.find(c => c.id === t.communityId)?.color || '#f97316' }} />
+                      <span className="text-[10px] font-semibold text-[#f97316] uppercase tracking-wide">{t.communityName}</span>
+                      <span className="ml-auto text-[10px] text-gray-400">{timeAgo(t.createdAt)}</span>
+                    </div>
+                    <p className="text-xs font-medium text-gray-800 dark:text-gray-200 line-clamp-2 leading-snug">{t.title}</p>
+                    <div className="mt-1 flex items-center gap-2 text-[10px] text-gray-400">
+                      <span>{t.votes} votes</span>
+                      <span>&middot;</span>
+                      <span>{t.commentCount} {t.commentCount === 1 ? 'comment' : 'comments'}</span>
+                    </div>
                   </Link>
                 ))}
               </div>
