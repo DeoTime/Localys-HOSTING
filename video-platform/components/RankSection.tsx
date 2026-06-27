@@ -44,23 +44,23 @@ export function RankSection({ moneySpent, points, bizCount }: ImpactInputs) {
         </button>
       </div>
 
-      <div className="flex items-center gap-4">
-        <RankBadge src={current.image} alt={current.name} className="h-16 w-16 shrink-0" />
+      <div className="flex items-center gap-5">
+        <RankBadge src={current.image} alt={current.name} className="h-28 w-28 shrink-0 sm:h-32 sm:w-32" />
         <div className="min-w-0 flex-1">
-          <p className="text-lg font-bold leading-tight text-gray-900">{current.name}</p>
-          <p className="text-[11px] text-gray-500">Impact Score {score.toLocaleString()}</p>
+          <p className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">{current.name}</p>
+          <p className="mt-0.5 text-sm text-gray-500">Impact Score {score.toLocaleString()}</p>
 
           {isMax ? (
-            <div className="mt-2 inline-flex items-center rounded-full bg-[#f97316] px-3 py-1 text-xs font-semibold text-white">
+            <div className="mt-3 inline-flex items-center rounded-full bg-[#f97316] px-4 py-1.5 text-sm font-semibold text-white">
               Max rank reached
             </div>
           ) : (
-            <div className="mt-2">
-              <div className="mb-1 flex items-center justify-between text-[11px]">
-                <span className="font-medium text-[#f97316]">{pctToNext}% to {next!.name}</span>
+            <div className="mt-3">
+              <div className="mb-1.5 flex items-center justify-between text-sm">
+                <span className="font-semibold text-[#f97316]">{pctToNext}% to {next!.name}</span>
                 <span className="text-gray-400">{score.toLocaleString()} / {next!.threshold.toLocaleString()}</span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+              <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
                 <div
                   className="h-full rounded-full bg-[#f97316] transition-[width] duration-500"
                   style={{ width: `${pctToNext}%` }}
