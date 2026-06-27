@@ -8,6 +8,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { QRScanner } from '@/components/QRScanner';
 import { PostedVideos } from '@/components/PostedVideos';
 import { MenuList } from '@/components/MenuList';
+import { BusinessReports } from '@/components/dashboard/BusinessReports';
 import {
   ensureUserBusiness,
   updateBusinessInfo,
@@ -27,18 +28,19 @@ import {
   TrendingUp, TrendingDown, QrCode, Clock, Save, CheckCircle,
   ArrowUpRight, ArrowDownRight, LayoutDashboard, PackageCheck,
   Star, Tag, Settings, Phone, MapPin, FileText, Trash2, Plus,
-  Users, CalendarClock, Video,
+  Users, CalendarClock, Video, BarChart3,
 } from 'lucide-react';
 
 export default function DashboardPage() {
   return <ProtectedRoute><DashboardContent /></ProtectedRoute>;
 }
 
-type Tab = 'overview' | 'orders' | 'reviews' | 'promos' | 'videos' | 'business';
+type Tab = 'overview' | 'orders' | 'reports' | 'reviews' | 'promos' | 'videos' | 'business';
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'overview', label: 'Dashboard',  icon: <LayoutDashboard className="h-4 w-4" /> },
   { key: 'orders',   label: 'Orders',     icon: <PackageCheck className="h-4 w-4" /> },
+  { key: 'reports',  label: 'Reports',    icon: <BarChart3 className="h-4 w-4" /> },
   { key: 'reviews',  label: 'Reviews',    icon: <Star className="h-4 w-4" /> },
   { key: 'promos',   label: 'Promos',     icon: <Tag className="h-4 w-4" /> },
   { key: 'videos',   label: 'Videos',     icon: <Video className="h-4 w-4" /> },
@@ -618,6 +620,15 @@ function DashboardContent() {
               {completedOrders.length === 0 ? <Empty icon={<CheckCircle className="h-6 w-6 text-gray-300" />} text="No completed orders yet" /> : completedOrders.slice(0, 15).map(o => <OrderCard key={o.id} order={o} variant="completed" />)}
             </Section>
           </div>
+        )}
+
+        {/* REPORTS */}
+        {activeTab === 'reports' && (
+          <BusinessReports
+            orders={[...completedOrders, ...pendingOrders]}
+            reviews={reviews}
+            businessName={business?.business_name}
+          />
         )}
 
         {/* REVIEWS */}
