@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Heart, MoreHorizontal, Search, Users, ChevronLeft, ChevronRight,
-  Info, Clock, Plus, Star, ThumbsUp, Check, DollarSign,
+  Info, Clock, Plus, Star, ThumbsUp, Check, DollarSign, X, MapPin, Phone,
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,6 +35,8 @@ export interface StoreMenu {
   availability: string;
   hoursLabel: string;
   deliveryTime: string;
+  phone?: string;
+  businessHours?: Record<string, { open?: string; close?: string; closed?: boolean }>;
   reviews: { name: string; stars: number; date: string; text: string }[];
   categories: string[];
   featuredIds: string[];
@@ -165,9 +167,74 @@ function ItemRow({ item, onAdd, isAdded }: { item: StoreItem; onAdd: (it: StoreI
   );
 }
 
+/* ----------------------------- info modal ----------------------------- */
+const HOUR_DAYS = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] as const;
+
+function formatTime(t: string): string {
+  const [h, m] = t.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  return `${h % 12 || 12}:${m.toString().padStart(2, '0')} ${ampm}`;
+}
+
+function InfoModal({ menu, storeName, onClose }: { menu: StoreMenu; storeName: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+          <h2 className="text-base font-bold text-black">{storeName}</h2>
+          <button onClick={onClose} className="text-gray-400 transition-colors hover:text-black"><X className="h-5 w-5" /></button>
+        </div>
+        <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-4">
+          {menu.address && (
+            <div className="flex gap-3">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#f97316]" />
+              <p className="text-sm text-black">{menu.address}</p>
+            </div>
+          )}
+          {menu.phone && (
+            <div className="flex gap-3">
+              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#f97316]" />
+              <p className="text-sm text-black">{menu.phone}</p>
+            </div>
+          )}
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <Clock className="h-4 w-4 shrink-0 text-[#f97316]" />
+              <p className="text-sm font-semibold text-black">Hours</p>
+            </div>
+            {menu.businessHours ? (
+              <div className="ml-6 space-y-1">
+                {HOUR_DAYS.map((day) => {
+                  const h = menu.businessHours![day];
+                  return (
+                    <div key={day} className="flex justify-between text-sm">
+                      <span className="capitalize text-gray-500">{day}</span>
+                      {h?.closed ? (
+                        <span className="text-gray-400">Closed</span>
+                      ) : h?.open && h?.close ? (
+                        <span className="font-medium text-black">{formatTime(h.open)} – {formatTime(h.close)}</span>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="ml-6 text-sm text-black">{menu.hoursLabel}</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ----------------------------- main ----------------------------- */
 export function StorePage({ storeName, sellerId, menu }: { storeName: string; sellerId: string; menu: StoreMenu }) {
   const { add, added } = useAdd(sellerId);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const byId = useMemo(() => new Map(menu.items.map((it) => [it.id, it])), [menu.items]);
   const featured = menu.featuredIds.map((id) => byId.get(id)).filter(Boolean) as StoreItem[];
   const picked = menu.pickedIds.map((id) => byId.get(id)).filter(Boolean) as StoreItem[];
@@ -208,6 +275,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
 
   return (
     <div className="min-h-screen bg-white text-black">
+      {showInfoModal && <InfoModal menu={menu} storeName={storeName} onClose={() => setShowInfoModal(false)} />}
       <div className="mx-auto w-full max-w-[1100px] px-4 pb-28 sm:px-6">
         {/* 1. Banner */}
         <div className="relative mt-3 overflow-hidden rounded-xl">
@@ -231,8 +299,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
                 {menu.rating.toFixed(1)} <Star className="h-3.5 w-3.5" style={{ fill: '#000', color: '#000' }} />
               </span>
               <span className="text-gray-500">({menu.ratingCount})</span>
-              <span className="text-gray-300">·</span>
-              <button className="font-medium text-black underline-offset-2 hover:underline">Info</button>
+              <button onClick={() => setShowInfoModal(true)} className="font-medium text-black underline-offset-2 hover:underline">Info</button>
             </div>
             <div className="mt-1.5 flex items-start gap-1.5 text-sm text-gray-600">
               <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" strokeWidth={2} />
@@ -320,7 +387,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
                 </div>
                 <div className="flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4">
                   <div>
-                    <p className="text-sm font-semibold text-black">$0 Delivery Fee + 5% off with Uber One</p>
+                    <p className="text-sm font-semibold text-black">$0 Delivery Fee + 5% off with Localys Premium</p>
                     <button className="mt-1 text-xs font-semibold text-[#f97316] hover:underline">Try free for 4 weeks</button>
                   </div>
                   <ItemImg src={menu.banner || undefined} alt="" className="h-16 w-24 shrink-0 rounded-lg object-cover" />

@@ -26,20 +26,21 @@ import {
   TrendingUp, TrendingDown, QrCode, Clock, Save, CheckCircle,
   ArrowUpRight, ArrowDownRight, LayoutDashboard, PackageCheck,
   Star, Tag, Settings, Phone, MapPin, FileText, Trash2, Plus,
-  Users, CalendarClock,
+  Users, CalendarClock, Video,
 } from 'lucide-react';
 
 export default function DashboardPage() {
   return <ProtectedRoute><DashboardContent /></ProtectedRoute>;
 }
 
-type Tab = 'overview' | 'orders' | 'reviews' | 'promos' | 'business';
+type Tab = 'overview' | 'orders' | 'reviews' | 'promos' | 'videos' | 'business';
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'overview', label: 'Dashboard',  icon: <LayoutDashboard className="h-4 w-4" /> },
   { key: 'orders',   label: 'Orders',     icon: <PackageCheck className="h-4 w-4" /> },
   { key: 'reviews',  label: 'Reviews',    icon: <Star className="h-4 w-4" /> },
   { key: 'promos',   label: 'Promos',     icon: <Tag className="h-4 w-4" /> },
+  { key: 'videos',   label: 'Videos',     icon: <Video className="h-4 w-4" /> },
   { key: 'business', label: 'Business',   icon: <Settings className="h-4 w-4" /> },
 ];
 
@@ -180,6 +181,16 @@ function DashboardContent() {
   const displayRevenue = hasRevenue ? totalRevenue : 3500.45;
   const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
+  const mostPopularOrder = useMemo(() => {
+    if (completedOrders.length === 0) return null;
+    const counts: Record<string, { count: number; price: number; name: string }> = {};
+    for (const o of completedOrders) {
+      if (!counts[o.item_name]) counts[o.item_name] = { count: 0, price: o.price, name: o.item_name };
+      counts[o.item_name].count++;
+    }
+    return Object.values(counts).sort((a, b) => b.count - a.count)[0] || null;
+  }, [completedOrders]);
+
   if (isBusiness === null || loading) {
     return <div className="min-h-screen bg-white flex items-center justify-center"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#f97316]" /></div>;
   }
@@ -263,6 +274,23 @@ function DashboardContent() {
               <StatCard label="Scheduled" value={String(scheduledOrders.length || 2)} />
               <StatCard label="Avg Rating" value={avgRating > 0 ? avgRating.toFixed(1) : '4.8'} />
               <StatCard label="Reviews" value={String(reviews.length || 24)} />
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+              <p className="text-sm font-semibold text-gray-700 mb-3">Most Popular Order</p>
+              {mostPopularOrder ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                    <span className="text-xl font-bold text-[#f97316]">{mostPopularOrder.name[0].toUpperCase()}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{mostPopularOrder.name}</p>
+                    <p className="text-xs text-gray-400">{mostPopularOrder.count} order{mostPopularOrder.count !== 1 ? 's' : ''} &middot; ${mostPopularOrder.price.toFixed(2)} avg</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">No completed orders yet</p>
+              )}
             </div>
 
             <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -377,6 +405,14 @@ function DashboardContent() {
           <PromoCodesManager userId={user.id} promoCodes={promoCodes} onChanged={loadPromoCodes} />
         )}
 
+        {/* VIDEOS */}
+        {activeTab === 'videos' && user && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <h2 className="text-sm font-semibold text-gray-900 mb-4">Your Videos</h2>
+            <PostedVideos userId={user.id} isOwnProfile={true} />
+          </div>
+        )}
+
         {/* BUSINESS */}
         {activeTab === 'business' && user && business && (
           <div className="space-y-5">
@@ -384,11 +420,7 @@ function DashboardContent() {
             <BusinessHoursEditor business={business} onSaved={setBusiness} />
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-gray-900 mb-4">Services &amp; Menu</h2>
-              <MenuList userId={user.id} businessId={business.id} isOwnProfile={true} />
-            </div>
-            <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Videos</h2>
-              <PostedVideos userId={user.id} isOwnProfile={true} />
+              <MenuList userId={user.id} businessId={business.id} isOwnProfile={true} layout="list" />
             </div>
           </div>
         )}
@@ -434,14 +466,21 @@ function Empty({ icon, text }: { icon: React.ReactNode; text: string }) {
   );
 }
 
+const AVATAR_COLORS = ['bg-orange-100', 'bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-pink-100'];
+
 function OrderRow({ order }: { order: ItemPurchase }) {
+  const colorIdx = (order.item_name?.charCodeAt(0) || 0) % AVATAR_COLORS.length;
+  const initial = (order.item_name || '?')[0].toUpperCase();
   return (
-    <div className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors">
-      <div>
-        <p className="text-sm font-medium text-gray-900">{order.item_name}</p>
+    <div className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+      <div className={`w-9 h-9 rounded-lg ${AVATAR_COLORS[colorIdx]} flex items-center justify-center shrink-0`}>
+        <span className="text-sm font-bold text-gray-600">{initial}</span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-gray-900 truncate">{order.item_name}</p>
         <p className="text-xs text-gray-400">{new Date(order.purchased_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
       </div>
-      <div className="text-right">
+      <div className="text-right shrink-0">
         <p className="text-sm font-semibold text-gray-900">${order.price.toFixed(2)}</p>
         <span className={`text-xs font-medium ${order.status === 'completed' ? 'text-green-600' : 'text-[#f97316]'}`}>{order.status}</span>
       </div>
@@ -580,7 +619,7 @@ function BusinessHoursEditor({ business, onSaved }: { business: Business; onSave
       <div className="space-y-3">
         {DAYS.map(day => (
           <div key={day} className="flex items-center gap-3">
-            <label className="w-24 text-sm text-gray-600 capitalize shrink-0">{day}</label>
+            <label className="w-24 text-sm text-gray-900 capitalize shrink-0">{day}</label>
             <input type="checkbox" checked={!hours[day]?.closed} onChange={e => setHours({ ...hours, [day]: e.target.checked ? { open: '09:00', close: '17:00' } : { closed: true } })} className="w-4 h-4 accent-[#f97316] rounded" />
             {!hours[day]?.closed ? (
               <div className="flex items-center gap-2 flex-1">

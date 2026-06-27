@@ -31,6 +31,7 @@ export interface Product {
   href: string; // where the card links to (the real /profile/<username>)
   deal?: Deal; // varied discount badge; applied at checkout
   dealLabel?: string; // convenience: deal?.label for the badge
+  hq?: boolean; // image is high-resolution enough to show on the home feed
 }
 
 export interface VideoCard {
@@ -57,7 +58,6 @@ export interface Challenge {
 /* Challenges (gamification — not business data)                       */
 /* ------------------------------------------------------------------ */
 export const dailyChallenges: Challenge[] = [
-  { id: 'c1', title: 'Visit 3 local businesses', description: 'Check in today to earn coins', current: 1, goal: 3, reward: 50 },
   { id: 'c2', title: 'Like 5 videos', description: 'Support local creators', current: 3, goal: 5, reward: 20 },
 ];
 

@@ -66,6 +66,199 @@ function buildFallbackMenu(business: Business, items: any[]): StoreMenu {
   };
 }
 
+type StoreExtras = { phone?: string; businessHours?: Record<string, { open?: string; close?: string; closed?: boolean }> };
+const STORE_EXTRAS: Record<string, StoreExtras> = {
+  "Amy's Fish & Chips": {
+    phone: '1 (416) 281-4532',
+    businessHours: {
+      monday: { closed: true }, tuesday: { open: '11:00', close: '20:30' },
+      wednesday: { open: '11:00', close: '20:30' }, thursday: { open: '11:00', close: '20:30' },
+      friday: { open: '11:00', close: '21:00' }, saturday: { open: '11:00', close: '21:00' },
+      sunday: { open: '12:00', close: '19:00' },
+    },
+  },
+  'Holy Smoke Barbecue': {
+    phone: '1 (905) 476-8810',
+    businessHours: {
+      monday: { closed: true }, tuesday: { open: '12:00', close: '21:00' },
+      wednesday: { open: '12:00', close: '21:00' }, thursday: { open: '12:00', close: '21:00' },
+      friday: { open: '12:00', close: '22:00' }, saturday: { open: '11:00', close: '22:00' },
+      sunday: { open: '11:00', close: '20:00' },
+    },
+  },
+  'Pho Nga Son': {
+    phone: '1 (416) 751-3297',
+    businessHours: {
+      monday: { open: '10:00', close: '21:00' }, tuesday: { open: '10:00', close: '21:00' },
+      wednesday: { open: '10:00', close: '21:00' }, thursday: { open: '10:00', close: '21:00' },
+      friday: { open: '10:00', close: '22:00' }, saturday: { open: '10:00', close: '22:00' },
+      sunday: { open: '10:30', close: '21:00' },
+    },
+  },
+  'Express Mart Kingston Road': {
+    phone: '1 (416) 267-0944',
+    businessHours: {
+      monday: { open: '07:00', close: '23:00' }, tuesday: { open: '07:00', close: '23:00' },
+      wednesday: { open: '07:00', close: '23:00' }, thursday: { open: '07:00', close: '23:00' },
+      friday: { open: '07:00', close: '23:00' }, saturday: { open: '08:00', close: '23:00' },
+      sunday: { open: '08:00', close: '22:00' },
+    },
+  },
+  'K1 Floral Studio': {
+    phone: '1 (647) 723-5501',
+    businessHours: {
+      monday: { open: '09:00', close: '18:00' }, tuesday: { open: '09:00', close: '18:00' },
+      wednesday: { open: '09:00', close: '18:00' }, thursday: { open: '09:00', close: '18:00' },
+      friday: { open: '09:00', close: '19:00' }, saturday: { open: '09:00', close: '17:00' },
+      sunday: { closed: true },
+    },
+  },
+  'Flowers Gifts and Balloons': {
+    phone: '1 (905) 883-2167',
+    businessHours: {
+      monday: { open: '09:30', close: '17:30' }, tuesday: { open: '09:30', close: '17:30' },
+      wednesday: { open: '09:30', close: '17:30' }, thursday: { open: '09:30', close: '17:30' },
+      friday: { open: '09:30', close: '18:00' }, saturday: { open: '10:00', close: '15:00' },
+      sunday: { closed: true },
+    },
+  },
+  'Waterford Convenience': {
+    phone: '1 (416) 292-7340',
+    businessHours: {
+      monday: { open: '06:00', close: '22:00' }, tuesday: { open: '06:00', close: '22:00' },
+      wednesday: { open: '06:00', close: '22:00' }, thursday: { open: '06:00', close: '22:00' },
+      friday: { open: '06:00', close: '22:00' }, saturday: { open: '07:00', close: '22:00' },
+      sunday: { open: '08:00', close: '21:00' },
+    },
+  },
+  'Razi Pharmacy': {
+    phone: '1 (905) 889-4418',
+    businessHours: {
+      monday: { open: '09:00', close: '18:00' }, tuesday: { open: '09:00', close: '18:00' },
+      wednesday: { open: '09:00', close: '18:00' }, thursday: { open: '09:00', close: '18:00' },
+      friday: { open: '09:00', close: '18:00' }, saturday: { open: '10:00', close: '16:00' },
+      sunday: { closed: true },
+    },
+  },
+  'Ambrosia Thornhills': {
+    phone: '1 (905) 771-2639',
+    businessHours: {
+      monday: { open: '10:00', close: '20:00' }, tuesday: { open: '10:00', close: '20:00' },
+      wednesday: { open: '10:00', close: '20:00' }, thursday: { open: '10:00', close: '20:00' },
+      friday: { open: '10:00', close: '21:00' }, saturday: { open: '10:00', close: '20:00' },
+      sunday: { open: '11:00', close: '18:00' },
+    },
+  },
+  'Ashario Pets North York': {
+    phone: '1 (647) 948-3352',
+    businessHours: {
+      monday: { open: '10:00', close: '19:00' }, tuesday: { open: '10:00', close: '19:00' },
+      wednesday: { open: '10:00', close: '19:00' }, thursday: { open: '10:00', close: '19:00' },
+      friday: { open: '10:00', close: '19:00' }, saturday: { open: '09:00', close: '18:00' },
+      sunday: { open: '11:00', close: '17:00' },
+    },
+  },
+  'Comfort Air HVAC': {
+    phone: '1 (905) 841-6087',
+    businessHours: {
+      monday: { open: '08:00', close: '17:00' }, tuesday: { open: '08:00', close: '17:00' },
+      wednesday: { open: '08:00', close: '17:00' }, thursday: { open: '08:00', close: '17:00' },
+      friday: { open: '08:00', close: '17:00' }, saturday: { open: '09:00', close: '13:00' },
+      sunday: { closed: true },
+    },
+  },
+  'Reliable Flow Plumbing': {
+    phone: '1 (416) 743-9250',
+    businessHours: {
+      monday: { open: '07:00', close: '18:00' }, tuesday: { open: '07:00', close: '18:00' },
+      wednesday: { open: '07:00', close: '18:00' }, thursday: { open: '07:00', close: '18:00' },
+      friday: { open: '07:00', close: '18:00' }, saturday: { open: '08:00', close: '15:00' },
+      sunday: { closed: true },
+    },
+  },
+  'GreenScape Landscaping': {
+    phone: '1 (905) 896-5413',
+    businessHours: {
+      monday: { open: '07:00', close: '17:00' }, tuesday: { open: '07:00', close: '17:00' },
+      wednesday: { open: '07:00', close: '17:00' }, thursday: { open: '07:00', close: '17:00' },
+      friday: { open: '07:00', close: '17:00' }, saturday: { open: '08:00', close: '14:00' },
+      sunday: { closed: true },
+    },
+  },
+  'Summit Home Renovations': {
+    phone: '1 (416) 667-2894',
+    businessHours: {
+      monday: { open: '08:00', close: '17:00' }, tuesday: { open: '08:00', close: '17:00' },
+      wednesday: { open: '08:00', close: '17:00' }, thursday: { open: '08:00', close: '17:00' },
+      friday: { open: '08:00', close: '16:00' }, saturday: { open: '09:00', close: '14:00' },
+      sunday: { closed: true },
+    },
+  },
+  'Sharp Fade Barbershop': {
+    phone: '1 (647) 352-6710',
+    businessHours: {
+      monday: { closed: true }, tuesday: { open: '10:00', close: '19:00' },
+      wednesday: { open: '10:00', close: '19:00' }, thursday: { open: '10:00', close: '19:00' },
+      friday: { open: '10:00', close: '19:00' }, saturday: { open: '09:00', close: '18:00' },
+      sunday: { open: '11:00', close: '16:00' },
+    },
+  },
+  'Polished Nail Studio': {
+    phone: '1 (905) 770-4882',
+    businessHours: {
+      monday: { open: '10:00', close: '19:00' }, tuesday: { open: '10:00', close: '19:00' },
+      wednesday: { open: '10:00', close: '19:00' }, thursday: { open: '10:00', close: '19:00' },
+      friday: { open: '10:00', close: '20:00' }, saturday: { open: '09:00', close: '19:00' },
+      sunday: { open: '11:00', close: '17:00' },
+    },
+  },
+  'Serenity Massage Therapy': {
+    phone: '1 (416) 504-3176',
+    businessHours: {
+      monday: { open: '10:00', close: '20:00' }, tuesday: { open: '10:00', close: '20:00' },
+      wednesday: { open: '10:00', close: '20:00' }, thursday: { open: '10:00', close: '20:00' },
+      friday: { open: '10:00', close: '20:00' }, saturday: { open: '10:00', close: '18:00' },
+      sunday: { open: '11:00', close: '17:00' },
+    },
+  },
+  'Peak Personal Training': {
+    phone: '1 (647) 498-7224',
+    businessHours: {
+      monday: { open: '06:00', close: '21:00' }, tuesday: { open: '06:00', close: '21:00' },
+      wednesday: { open: '06:00', close: '21:00' }, thursday: { open: '06:00', close: '21:00' },
+      friday: { open: '06:00', close: '21:00' }, saturday: { open: '07:00', close: '18:00' },
+      sunday: { open: '08:00', close: '17:00' },
+    },
+  },
+  'Sparkle Home Cleaning': {
+    phone: '1 (905) 832-5691',
+    businessHours: {
+      monday: { open: '08:00', close: '18:00' }, tuesday: { open: '08:00', close: '18:00' },
+      wednesday: { open: '08:00', close: '18:00' }, thursday: { open: '08:00', close: '18:00' },
+      friday: { open: '08:00', close: '18:00' }, saturday: { open: '09:00', close: '16:00' },
+      sunday: { closed: true },
+    },
+  },
+  'ClearWash Pressure Washing': {
+    phone: '1 (416) 748-2093',
+    businessHours: {
+      monday: { open: '08:00', close: '18:00' }, tuesday: { open: '08:00', close: '18:00' },
+      wednesday: { open: '08:00', close: '18:00' }, thursday: { open: '08:00', close: '18:00' },
+      friday: { open: '08:00', close: '18:00' }, saturday: { open: '08:00', close: '16:00' },
+      sunday: { closed: true },
+    },
+  },
+  'FreshCoat Painting': {
+    phone: '1 (905) 761-3847',
+    businessHours: {
+      monday: { open: '08:00', close: '17:00' }, tuesday: { open: '08:00', close: '17:00' },
+      wednesday: { open: '08:00', close: '17:00' }, thursday: { open: '08:00', close: '17:00' },
+      friday: { open: '08:00', close: '17:00' }, saturday: { open: '09:00', close: '14:00' },
+      sunday: { closed: true },
+    },
+  },
+};
+
 const REPORT_REASONS = [
   { value: 'spam', label: 'Spam' },
   { value: 'harassment', label: 'Harassment or Bullying' },
@@ -132,7 +325,15 @@ function UserProfileContent() {
       (business?.business_name && all[business.business_name]) ||
       (profile.full_name && all[profile.full_name]) ||
       Object.values(all).find((m) => m.slug === profile.username);
-    if (manifest) { setStoreMenu(manifest); return; }
+    if (manifest) {
+      const storeKey =
+        (business?.business_name && all[business.business_name] ? business.business_name : null) ||
+        (profile.full_name && all[profile.full_name] ? profile.full_name : null) ||
+        Object.keys(all).find((k) => all[k].slug === profile.username) || '';
+      const extras = STORE_EXTRAS[storeKey];
+      setStoreMenu(extras ? { ...manifest, ...extras } : manifest);
+      return;
+    }
     let active = true;
     (async () => {
       const { data: menu } = await getUserMenu(profile.id);

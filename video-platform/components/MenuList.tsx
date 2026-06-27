@@ -12,10 +12,11 @@ interface MenuListProps {
   userId: string;
   businessId?: string;
   isOwnProfile: boolean;
+  layout?: 'grid' | 'list';
   onMenusLoaded?: (menus: Menu[]) => void;
 }
 
-export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: MenuListProps) {
+export function MenuList({ userId, businessId, isOwnProfile, layout = 'grid', onMenusLoaded }: MenuListProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [menus, setMenus] = useState<Menu[]>([]);
@@ -175,8 +176,101 @@ export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: Me
         </button>
       )}
 
-      {/* Items grid */}
+      {/* Items list/grid */}
       {menus.length > 0 && menus[0]?.menu_items && menus[0].menu_items.length > 0 ? (
+        layout === 'list' ? (
+          /* ── List layout (owner view) ── */
+          <div className="divide-y divide-gray-100">
+            {menus[0].menu_items.map((item, index) => {
+              const allItems = menus[0].menu_items!;
+              const prevCat = index > 0 ? allItems[index - 1].category : null;
+              const showHeader = !!item.category && item.category !== prevCat;
+              return (
+                <Fragment key={item.id}>
+                  {showHeader && (
+                    <p className="pt-4 pb-1 text-xs font-semibold uppercase tracking-wider text-gray-400 first:pt-0">
+                      {item.category}
+                    </p>
+                  )}
+                  <div className={`flex items-center gap-3 py-3 transition-opacity ${fadingOutItemId === item.id ? 'opacity-0 pointer-events-none' : ''}`}>
+                    {/* Thumbnail */}
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.item_name} className="w-14 h-14 rounded-xl object-cover shrink-0" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{item.item_name}</p>
+                      {item.description && <p className="text-xs text-gray-500 line-clamp-1">{item.description}</p>}
+                      {!item.is_available && <span className="text-xs text-red-500">Out of Stock</span>}
+                      {deletingItemId === item.id && (
+                        <div className="mt-1 flex items-center gap-2">
+                          <p className="text-xs text-gray-700">Delete this item?</p>
+                          <button onClick={() => handleDeleteItemConfirm(item.id)} className="text-xs font-semibold text-red-600 hover:underline">Yes</button>
+                          <button onClick={() => setDeletingItemId(null)} className="text-xs text-gray-500 hover:underline">No</button>
+                        </div>
+                      )}
+                    </div>
+                    {/* Price + actions */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {editingPriceId === item.id ? (
+                        <div className="flex items-center gap-1">
+                          <span className="text-[#f97316] font-bold text-sm">$</span>
+                          <input
+                            ref={priceInputRef}
+                            type="number" step="0.01"
+                            value={editingPriceValue}
+                            onChange={(e) => setEditingPriceValue(e.target.value)}
+                            onKeyDown={(e) => handlePriceKeyDown(e, item.id)}
+                            onBlur={() => handlePriceSave(item.id)}
+                            className="w-16 bg-white border border-[#f97316] rounded px-1 py-0.5 text-[#f97316] font-bold text-sm focus:outline-none"
+                            autoFocus
+                          />
+                        </div>
+                      ) : (
+                        <span
+                          className={`text-sm font-bold text-[#f97316] ${isOwnProfile ? 'cursor-pointer hover:underline' : ''} ${priceGlowId === item.id ? 'opacity-70' : ''}`}
+                          onClick={isOwnProfile ? () => handlePriceEdit(item) : undefined}
+                          title={isOwnProfile ? 'Click to edit price' : undefined}
+                        >
+                          ${item.price.toFixed(2)}
+                        </span>
+                      )}
+                      {isOwnProfile && (
+                        <div className="flex gap-1">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleEditItem(item); }}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
+                            aria-label={`Edit ${item.item_name}`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeletingItemId(item.id); }}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
+                            aria-label={`Delete ${item.item_name}`}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Fragment>
+              );
+            })}
+          </div>
+        ) : (
+        /* ── Grid layout (public / customer view) ── */
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {menus[0].menu_items.map((item, index) => {
             const allItems = menus[0].menu_items!;
@@ -325,6 +419,7 @@ export function MenuList({ userId, businessId, isOwnProfile, onMenusLoaded }: Me
             );
           })}
         </div>
+        )
       ) : (
         <div className="text-center py-12">
           <svg className="w-14 h-14 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

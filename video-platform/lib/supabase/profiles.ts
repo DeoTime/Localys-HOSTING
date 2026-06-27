@@ -230,7 +230,7 @@ export async function ensureUserBusiness(userId: string) {
     // Check if business exists
     const { data: existing, error: checkError } = await supabase
       .from('businesses')
-      .select('id, owner_id, business_name, business_type, category, profile_picture_url, business_hours, custom_messages, updated_at, created_at')
+      .select('id, owner_id, business_name, business_type, category, profile_picture_url, business_hours, custom_messages, phone, address, misc_info, updated_at, created_at')
       .eq('owner_id', userId)
       .order('updated_at', { ascending: false })
       .order('created_at', { ascending: false })
