@@ -20,7 +20,7 @@ export const DEFAULT_FILTERS: Filters = {
   dealsOnly: false,
 };
 
-const CATEGORIES = ['Restaurants', 'Bakery', 'Café', 'Grocery', 'Flowers', 'Services', 'Pets', 'Clothing'];
+const CATEGORIES = ['Restaurants', 'Bakery', 'Café', 'Grocery', 'Flowers', 'Services', 'Pets'];
 
 /**
  * Reusable filter panel (black/white + orange accent). Used by the secondary-nav
@@ -38,11 +38,11 @@ export function FilterPanel({
   const set = <K extends keyof Filters>(key: K, v: Filters[K]) => onChange({ ...value, [key]: v });
 
   return (
-    <div className="space-y-5 text-black dark:text-white">
+    <div className="space-y-5 text-black">
       {/* Distance slider */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="f-distance" className="text-sm font-semibold text-black dark:text-white">Max distance</label>
+          <label htmlFor="f-distance" className="text-sm font-semibold text-black">Max distance</label>
           <span className="text-sm font-bold text-[#f97316]">{value.maxDistanceKm} km</span>
         </div>
         <input
@@ -58,7 +58,7 @@ export function FilterPanel({
 
       {/* Category chips */}
       <div>
-        <p className="mb-1.5 text-sm font-semibold text-black dark:text-white">Category</p>
+        <p className="mb-1.5 text-sm font-semibold text-black">Category</p>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => {
             const active = value.category === c;
@@ -70,7 +70,7 @@ export function FilterPanel({
                 className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                   active
                     ? 'border-[#f97316] bg-[#f97316] text-white'
-                    : 'border-gray-300 text-black hover:border-[#f97316] dark:border-gray-600 dark:text-white'
+                    : 'border-gray-300 text-black hover:border-[#f97316] dark:border-gray-600'
                 }`}
               >
                 {c}
@@ -82,7 +82,7 @@ export function FilterPanel({
 
       {/* Min rating */}
       <div>
-        <p className="mb-1.5 text-sm font-semibold text-black dark:text-white">Minimum rating</p>
+        <p className="mb-1.5 text-sm font-semibold text-black">Minimum rating</p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -96,7 +96,7 @@ export function FilterPanel({
             </button>
           ))}
           {value.minRating > 0 && (
-            <button type="button" onClick={() => set('minRating', 0)} className="ml-2 text-xs font-semibold underline">
+            <button type="button" onClick={() => set('minRating', 0)} className="ml-2 text-xs font-semibold text-black underline">
               Any
             </button>
           )}
@@ -106,7 +106,7 @@ export function FilterPanel({
       {/* Max price */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="f-price" className="text-sm font-semibold text-black dark:text-white">Max price</label>
+          <label htmlFor="f-price" className="text-sm font-semibold text-black">Max price</label>
           <span className="text-sm font-bold text-[#f97316]">${value.maxPrice}</span>
         </div>
         <input
@@ -123,18 +123,18 @@ export function FilterPanel({
 
       {/* Toggles */}
       <div className="flex flex-col gap-2">
-        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black dark:text-white">
+        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black">
           Open now
           <input type="checkbox" checked={value.openNow} onChange={(e) => set('openNow', e.target.checked)} className="h-4 w-4 accent-[#f97316]" />
         </label>
-        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black dark:text-white">
+        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black">
           Deals only
           <input type="checkbox" checked={value.dealsOnly} onChange={(e) => set('dealsOnly', e.target.checked)} className="h-4 w-4 accent-[#f97316]" />
         </label>
       </div>
 
       {onReset && (
-        <button type="button" onClick={onReset} className="w-full rounded-full border border-gray-300 py-2 text-sm font-semibold text-black transition hover:bg-gray-50 dark:border-gray-600 dark:text-white dark:hover:bg-gray-800">
+        <button type="button" onClick={onReset} className="w-full rounded-full border border-gray-300 py-2 text-sm font-semibold text-black transition hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800">
           Reset filters
         </button>
       )}

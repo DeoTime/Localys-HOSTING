@@ -26,6 +26,7 @@ function CheckoutContent() {
   const scheduledAt = searchParams.get('scheduledAt');
   const groupOrderId = searchParams.get('groupOrderId');
   const promoCodeParam = searchParams.get('promoCode');
+  const couponCodeParam = searchParams.get('couponCode');
 
   useEffect(() => {
     if (!user) { router.push('/login'); return; }
@@ -54,10 +55,23 @@ function CheckoutContent() {
         const { data } = await getShopCoupons(sid);
         if (data) all.push(...data);
       }
-      setCoupons(all);
+      // Dedupe so a global coupon (fetched once per seller) renders once and React
+      // keys stay unique — fixes the duplicate-key crash.
+      const byKey = new Map<string, Coupon>();
+      for (const c of all) {
+        const key = c.id ?? c.code;
+        if (key && !byKey.has(key)) byKey.set(key, c);
+      }
+      const deduped = [...byKey.values()];
+      setCoupons(deduped);
+      // Preselect a coupon passed from the cart (keeps enter-time + checkout in sync).
+      if (couponCodeParam) {
+        const match = deduped.find((c) => c.code.toUpperCase() === couponCodeParam.toUpperCase());
+        if (match) setSelectedCoupon(match);
+      }
     };
     fetchCoupons();
-  }, [checkoutItems]);
+  }, [checkoutItems, couponCodeParam]);
 
   const subtotal = checkoutItems.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0);
 
@@ -96,8 +110,10 @@ function CheckoutContent() {
             itemId: item.itemId, itemName: item.itemName, itemImage: item.itemImage,
             sellerId: item.sellerId, quantity: item.quantity, specialRequests: item.specialRequests,
           })),
+          // Only ONE discount at a time: a selected coupon takes precedence over a
+          // promo code carried from the cart.
           couponCode: selectedCoupon?.code || null,
-          promoCode: promoCodeParam || null,
+          promoCode: selectedCoupon ? null : (promoCodeParam || null),
           scheduledAt: scheduledAt || null,
           groupOrderId: groupOrderId || null,
         }),
@@ -157,11 +173,11 @@ function CheckoutContent() {
           </div>
         )}
 
-        {/* Promo code applied */}
-        {promoCodeParam && (
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-4 flex items-center gap-2">
-            <Tag className="h-4 w-4 text-green-600 shrink-0" />
-            <p className="text-sm text-green-700">Promo code <strong className="font-mono">{promoCodeParam}</strong> applied</p>
+        {/* Promo code applied (hidden when a coupon is selected — one discount at a time) */}
+        {promoCodeParam && !selectedCoupon && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3 mb-4 flex items-center gap-2">
+            <Tag className="h-4 w-4 text-[#f97316] shrink-0" />
+            <p className="text-sm text-black">Promo code <strong className="font-mono text-[#f97316]">{promoCodeParam}</strong> applied</p>
           </div>
         )}
 
@@ -201,7 +217,7 @@ function CheckoutContent() {
                 const isSelected = selectedCoupon?.id === coupon.id;
                 return (
                   <button
-                    key={coupon.id}
+                    key={coupon.id ?? coupon.code}
                     onClick={() => setSelectedCoupon(isSelected ? null : coupon)}
                     className={`w-full p-3 rounded-xl border-2 transition-all text-left ${isSelected ? 'border-[#f97316] bg-orange-50' : 'border-gray-200 hover:border-orange-300'}`}
                   >
@@ -230,7 +246,7 @@ function CheckoutContent() {
             </div>
           )}
           {selectedCoupon && (
-            <div className="flex justify-between text-sm text-green-600">
+            <div className="flex justify-between text-sm text-[#f97316]">
               <span>Coupon ({selectedCoupon.discount_percentage}%)</span>
               <span>-${couponDiscount.toFixed(2)}</span>
             </div>

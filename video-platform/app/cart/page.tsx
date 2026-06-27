@@ -19,9 +19,12 @@ export default function CartPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loadingCoupons, setLoadingCoupons] = useState(false);
 
-  // Promo code state
+  // Promo code state — a typed code can match either a seller promo (promo_codes)
+  // OR a shop/global coupon (coupons), exactly what checkout accepts. Only ONE is
+  // ever applied at a time (applying one clears the other).
   const [promoInput, setPromoInput] = useState('');
   const [promoApplied, setPromoApplied] = useState<PromoCode | null>(null);
+  const [couponApplied, setCouponApplied] = useState<Coupon | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
 
@@ -40,7 +43,12 @@ export default function CartPage() {
 
   const total = items.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0);
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
-  const promoDiscount = promoApplied ? calcPromoDiscount(promoApplied, total) : 0;
+  const promoDiscount = promoApplied
+    ? calcPromoDiscount(promoApplied, total)
+    : couponApplied
+    ? Math.round(total * (couponApplied.discount_percentage / 100) * 100) / 100
+    : 0;
+  const appliedCode = promoApplied?.code ?? couponApplied?.code ?? null;
   const finalTotal = Math.max(0, total - promoDiscount);
 
   const primarySellerId = items[0]?.sellerId;
@@ -70,16 +78,36 @@ export default function CartPage() {
 
   const handleApplyPromo = async () => {
     if (!promoInput.trim() || !primarySellerId) return;
+    const code = promoInput.trim().toUpperCase();
     setPromoLoading(true);
     setPromoError(null);
-    const { data, error } = await validatePromoCode(promoInput.trim(), primarySellerId);
+
+    // 1) Seller promo code (promo_codes) — the store-specific path.
+    const { data: promo } = await validatePromoCode(code, primarySellerId);
+    if (promo) {
+      setPromoApplied(promo);
+      setCouponApplied(null); // one at a time
+      setPromoLoading(false);
+      return;
+    }
+
+    // 2) Shop/global coupon (coupons) — the SAME list checkout accepts. This is why
+    // a valid coupon code no longer wrongly reports "not found".
+    const couponMatch = coupons.find((c) => c.code.toUpperCase() === code);
+    if (couponMatch) {
+      setCouponApplied(couponMatch);
+      setPromoApplied(null); // one at a time
+      setPromoLoading(false);
+      return;
+    }
+
     setPromoLoading(false);
-    if (error) { setPromoError(error); return; }
-    setPromoApplied(data);
+    setPromoError('Promo code not found or not valid for this store.');
   };
 
   const handleRemovePromo = () => {
     setPromoApplied(null);
+    setCouponApplied(null);
     setPromoInput('');
     setPromoError(null);
   };
@@ -125,7 +153,9 @@ export default function CartPage() {
     const params = new URLSearchParams({ source: 'cart' });
     if (scheduledAt) params.set('scheduledAt', scheduledAt);
     if (groupOrder?.id) params.set('groupOrderId', groupOrder.id);
+    // Pass whichever single discount is applied (promo or coupon) — checkout honors it.
     if (promoApplied?.code) params.set('promoCode', promoApplied.code);
+    else if (couponApplied?.code) params.set('couponCode', couponApplied.code);
     router.push(`/checkout?${params.toString()}`);
   };
 
@@ -205,13 +235,15 @@ export default function CartPage() {
                 <Tag className="h-4 w-4 text-[#f97316]" />
                 <span className="text-sm font-semibold text-gray-900">Promo Code</span>
               </div>
-              {promoApplied ? (
+              {(promoApplied || couponApplied) ? (
                 <div className="flex items-center justify-between bg-white border border-[#f97316] rounded-xl px-3 py-2.5">
                   <div className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-[#f97316]" />
-                    <span className="text-sm font-mono font-semibold text-black">{promoApplied.code}</span>
+                    <span className="text-sm font-mono font-semibold text-black">{appliedCode}</span>
                     <span className="text-xs text-[#f97316]">
-                      {promoApplied.discount_type === 'percent' ? `${promoApplied.discount_value}% off` : `-$${promoApplied.discount_value.toFixed(2)}`} — saving ${promoDiscount.toFixed(2)}
+                      {promoApplied
+                        ? (promoApplied.discount_type === 'percent' ? `${promoApplied.discount_value}% off` : `-$${promoApplied.discount_value.toFixed(2)}`)
+                        : `${couponApplied!.discount_percentage}% off`} — saving ${promoDiscount.toFixed(2)}
                     </span>
                   </div>
                   <button onClick={handleRemovePromo} className="text-gray-400 hover:text-red-500 transition-colors"><X className="h-4 w-4" /></button>
@@ -363,7 +395,7 @@ export default function CartPage() {
               </div>
               {promoDiscount > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-[#f97316]">Promo ({promoApplied?.code})</span>
+                  <span className="text-[#f97316]">Promo ({appliedCode})</span>
                   <span className="font-medium text-[#f97316]">-${promoDiscount.toFixed(2)}</span>
                 </div>
               )}

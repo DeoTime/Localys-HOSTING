@@ -149,7 +149,7 @@ export function SearchDropdown() {
 
   return (
     <div ref={wrapRef} className="relative flex min-w-0 flex-1 items-center">
-      <Search className="pointer-events-none absolute left-4 z-10 h-5 w-5 text-black dark:text-white" />
+      <Search className="pointer-events-none absolute left-4 z-10 h-5 w-5 text-black" />
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
@@ -157,19 +157,19 @@ export function SearchDropdown() {
         placeholder="Search local businesses, deals, food…"
         aria-label="Search"
         aria-expanded={open}
-        className="w-full rounded-full border border-gray-300 bg-white py-2.5 pl-11 pr-4 text-sm text-black placeholder-gray-500 transition focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
+        className="w-full rounded-full border border-gray-300 bg-white py-2.5 pl-11 pr-4 text-sm text-black placeholder-gray-500 transition focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20"
       />
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 text-black shadow-xl">
           {/* Business results */}
           {showResults && (
             <div className="mb-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black dark:text-white">
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black">
                 Businesses
               </p>
               {loading ? (
-                <p className="px-1 py-2 text-sm text-black dark:text-white">Searching…</p>
+                <p className="px-1 py-2 text-sm text-black">Searching…</p>
               ) : results.length > 0 ? (
                 <ul className="space-y-1">
                   {results.map((s) => (
@@ -177,17 +177,17 @@ export function SearchDropdown() {
                       <button
                         type="button"
                         onClick={() => go(s)}
-                        className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-gray-50"
                       >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gray-100 text-sm font-bold text-black dark:bg-gray-800 dark:text-white">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gray-100 text-sm font-bold text-black">
                           {(s.full_name || s.username || '?').charAt(0).toUpperCase()}
                         </span>
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-black dark:text-white">
+                          <span className="block truncate text-sm font-semibold text-black">
                             {s.full_name || s.username}
                           </span>
                           {s.username && (
-                            <span className="block truncate text-xs text-black dark:text-white">
+                            <span className="block truncate text-xs text-black">
                               @{s.username}
                             </span>
                           )}
@@ -197,7 +197,7 @@ export function SearchDropdown() {
                   ))}
                 </ul>
               ) : (
-                <p className="px-1 py-2 text-sm text-black dark:text-white">
+                <p className="px-1 py-2 text-sm text-black">
                   No businesses match &quot;{query.trim()}&quot;.
                 </p>
               )}
@@ -205,8 +205,8 @@ export function SearchDropdown() {
           )}
 
           {/* Filters */}
-          <div className={`pt-4 ${showResults ? 'border-t border-gray-200 dark:border-gray-700' : ''}`}>
-            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-black dark:text-white">
+          <div className={`pt-4 ${showResults ? 'border-t border-gray-200' : ''}`}>
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-black">
               Filters
             </p>
             <FilterPanel

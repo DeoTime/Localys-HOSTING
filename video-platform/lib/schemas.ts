@@ -14,10 +14,14 @@ export const ItemCheckoutSchema = z.object({
   items: z
     .array(
       z.object({
-        itemId:          z.string().uuid('itemId must be a valid UUID'),
+        // Accept DB UUIDs AND demo-store manifest ids (e.g. "jays-burger-0"). The
+        // server still resolves the authoritative price (DB row or manifest), so a
+        // non-UUID id never lets the client dictate a price.
+        itemId:          z.string().min(1).max(120),
         itemName:        z.string().min(1).max(200),
         itemImage:       z.string().url().optional().nullable(),
-        sellerId:        z.string().uuid('sellerId must be a valid UUID'),
+        // Accept UUID seller ids AND demo-store slugs (e.g. "jays-burger").
+        sellerId:        z.string().min(1).max(120),
         quantity:        z.number().int().min(1).max(99),
         specialRequests: z.string().max(500).optional().nullable(),
       })

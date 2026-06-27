@@ -4,6 +4,25 @@ import { createClient } from '@supabase/supabase-js';
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 import { ItemCheckoutSchema, parseBody } from '@/lib/schemas';
 import { getAuthenticatedUser } from '@/lib/server-auth';
+import storeMenus from '@/data/store-menus.json';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Authoritative prices for built-in demo-store items (ids like "jays-burger-0").
+ * These items aren't in the `menu_items` table, so the server reads their trusted
+ * price from the menu manifest — the client still never sets the price.
+ */
+const MANIFEST_PRICES: Map<string, { name: string; price: number }> = (() => {
+  const map = new Map<string, { name: string; price: number }>();
+  const stores = storeMenus as Record<string, { items?: { id: string; name: string; price: number }[] }>;
+  for (const store of Object.values(stores)) {
+    for (const it of store.items ?? []) {
+      if (it?.id && typeof it.price === 'number') map.set(it.id, { name: it.name, price: it.price });
+    }
+  }
+  return map;
+})();
 
 export async function POST(request: NextRequest) {
   // Rate limiting
@@ -41,29 +60,41 @@ export async function POST(request: NextRequest) {
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  // Look up authoritative prices from the database — never trust client-supplied prices
+  // Look up authoritative prices — never trust client-supplied prices. Real items
+  // come from the DB; built-in demo-store items come from the menu manifest. We only
+  // query the DB with UUID ids (the `id` column is a uuid — querying it with a demo
+  // slug id would throw), then fall back to the manifest for the rest.
   const itemIds = items.map((i) => i.itemId);
-  const { data: menuItems, error: menuError } = await supabase
-    .from('menu_items')
-    .select('id, item_name, price, user_id')
-    .in('id', itemIds);
+  const uuidItemIds = itemIds.filter((id) => UUID_RE.test(id));
 
-  if (menuError || !menuItems) {
-    console.error('Error fetching menu items:', menuError);
-    return NextResponse.json({ error: 'Failed to retrieve item details' }, { status: 500 });
+  const priceMap = new Map<string, { name: string; price: number }>();
+  if (uuidItemIds.length > 0) {
+    const { data: menuItems, error: menuError } = await supabase
+      .from('menu_items')
+      .select('id, item_name, price, user_id')
+      .in('id', uuidItemIds);
+    if (menuError) {
+      console.error('Error fetching menu items:', menuError.message);
+      return NextResponse.json({ error: 'Failed to retrieve item details' }, { status: 500 });
+    }
+    for (const m of menuItems ?? []) {
+      priceMap.set(m.id, { name: m.item_name, price: m.price });
+    }
   }
 
-  const menuMap = new Map(menuItems.map((m) => [m.id, m]));
-
+  // Resolve every item to a trusted price (DB first, then demo manifest).
   for (const item of items) {
-    const mi = menuMap.get(item.itemId);
-    if (!mi) {
-      return NextResponse.json({ error: `Item not found: ${item.itemId}` }, { status: 400 });
+    const resolved = priceMap.get(item.itemId) ?? MANIFEST_PRICES.get(item.itemId);
+    if (!resolved) {
+      console.error(`Checkout: no price source for item "${item.itemId}" (seller "${item.sellerId}")`);
+      return NextResponse.json({ error: `Item not found: ${item.itemName || item.itemId}` }, { status: 400 });
     }
-    if (typeof mi.price !== 'number' || mi.price <= 0) {
-      return NextResponse.json({ error: 'Item has no valid price' }, { status: 400 });
+    if (typeof resolved.price !== 'number' || resolved.price <= 0) {
+      return NextResponse.json({ error: `Item has no valid price: ${item.itemName || item.itemId}` }, { status: 400 });
     }
+    priceMap.set(item.itemId, resolved);
   }
+  const menuMap = priceMap;
 
   // Validate global coupon if provided
   let appliedCouponCode: string | null = null;
@@ -100,7 +131,9 @@ export async function POST(request: NextRequest) {
   let promoCodeId: string | null = null;
   let promoUsedCount = 0;
 
-  if (promoCode) {
+  // Seller promo codes only exist for real (UUID) sellers. Demo-store slugs have no
+  // promo rows — and querying the uuid column with a slug would throw — so skip.
+  if (promoCode && UUID_RE.test(items[0].sellerId)) {
     const firstSellerId = items[0].sellerId;
     const { data: promo, error: promoError } = await supabase
       .from('promo_codes')
