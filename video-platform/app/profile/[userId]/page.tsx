@@ -13,6 +13,7 @@ import { MenuList } from '@/components/MenuList';
 import { PostedVideos } from '@/components/PostedVideos';
 import { StorePage, type StoreMenu, type StoreItem } from '@/components/store/StorePage';
 import storeMenus from '@/data/store-menus.json';
+import { getBusinessAlias } from '@/lib/businessAliases';
 
 const BusinessLocationMap = dynamic(
   () => import('@/components/BusinessLocationMap'),
@@ -321,6 +322,14 @@ function UserProfileContent() {
   useEffect(() => {
     if (!profile?.type) { setStoreMenu(null); return; }
     const all = storeMenus as Record<string, StoreMenu>;
+    // Aliased business (e.g. cp9xssw59 → Pho Xe Lua): use the canonical demo store menu.
+    const alias = getBusinessAlias(profile.username, business?.business_name);
+    if (alias && all[alias.manifestKey]) {
+      const aliasMenu = all[alias.manifestKey];
+      const extras = STORE_EXTRAS[alias.name];
+      setStoreMenu(extras ? { ...aliasMenu, ...extras } : aliasMenu);
+      return;
+    }
     const manifest =
       (business?.business_name && all[business.business_name]) ||
       (profile.full_name && all[profile.full_name]) ||
@@ -576,7 +585,8 @@ function UserProfileContent() {
   // regardless of whether the `businesses` row loaded — keyed off profile.type.
   if (profile.type) {
     if (!storeMenu) return <div className="min-h-screen bg-white" />;
-    return <StorePage storeName={business?.business_name || profile.full_name} sellerId={profile.id} menu={storeMenu} />;
+    const storeAlias = getBusinessAlias(profile.username, business?.business_name);
+    return <StorePage storeName={storeAlias?.name || business?.business_name || profile.full_name} sellerId={profile.id} menu={storeMenu} />;
   }
 
   return (

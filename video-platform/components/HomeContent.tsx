@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Star, Check, Plus, ChevronUp, ChevronDown } from 'lucide-react';
-import { MenuPopup } from '@/components/feed/MenuPopup';
+import { BusinessItemsRail } from '@/components/feed/BusinessItemsRail';
+import { getBusinessAlias, getPhoXeLuaItems } from '@/lib/businessAliases';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
@@ -1019,6 +1020,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
               const feedDistanceKm = getDistanceForVideo(video);
               const feedDistanceLabel = formatDistanceLabel(feedDistanceKm);
               const feedEta = getEtaMinutes(feedDistanceKm);
+              const feedAlias = getBusinessAlias(video.profiles?.username, feedBusiness?.business_name);
+              const feedName = feedAlias?.name || feedBusiness?.business_name || video.profiles?.full_name || 'Business';
+              const feedCaption = feedAlias?.caption ?? video.caption;
+              const feedItems = feedAlias ? getPhoXeLuaItems() : undefined;
 
               return (
                 <>
@@ -1059,13 +1064,15 @@ export function HomeContent({ isActive }: HomeContentProps) {
                   aria-label={`View profile of ${feedBusiness?.business_name || video.profiles?.full_name || 'Business'}`}
                 >
                   <h2 className="text-base font-bold text-white hover:underline">
-                    {video.profiles?.username
-                      ? `@${video.profiles.username}`
-                      : feedBusiness?.business_name || video.profiles?.full_name || 'Business'}
+                    {feedAlias
+                      ? feedName
+                      : video.profiles?.username
+                        ? `@${video.profiles.username}`
+                        : feedName}
                   </h2>
                 </button>
-                {video.caption ? (
-                  <p className="mt-1 line-clamp-2 text-sm text-white/95">{video.caption}</p>
+                {feedCaption ? (
+                  <p className="mt-1 line-clamp-2 text-sm text-white/95">{feedCaption}</p>
                 ) : null}
                 <div className="mt-2 flex items-center gap-2 text-xs text-white/90">
                   {feedBusiness?.average_rating ? (
@@ -1086,16 +1093,15 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             </div>
 
-            {/* Left menu pop-up — view the business menu while watching */}
-            {feedBusiness && (
-              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2">
-                <div className="relative">
-                  <MenuPopup
-                    userId={video.user_id || ''}
-                    businessId={feedBusiness.id || ''}
-                    businessName={feedBusiness.business_name || video.profiles?.full_name || 'Business'}
-                  />
-                </div>
+            {/* Left-side item cards — deals/items tied to the business in this video */}
+            {(feedBusiness || feedItems) && (
+              <div className="absolute left-3 top-1/2 z-20 max-h-[80%] -translate-y-1/2 overflow-y-auto">
+                <BusinessItemsRail
+                  userId={video.user_id || ''}
+                  businessId={feedBusiness?.id || ''}
+                  businessName={feedName}
+                  items={feedItems}
+                />
               </div>
             )}
                 </>
@@ -1107,10 +1113,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
       {/* Top-right overlay: Get Coins · Get App · profile pic (reference style) */}
       <div className="absolute right-3 top-3 z-30 flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/55 px-1.5 py-1 backdrop-blur-xl">
+          <div className="flex items-center gap-1.5 rounded-full bg-white/95 px-1.5 py-1 shadow-lg backdrop-blur">
             <Link
               href="/buy-coins"
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-black/5"
             >
               Get Coins
             </Link>
@@ -1126,7 +1132,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
                 alt="Your profile"
                 width={32}
                 height={32}
-                className="h-8 w-8 rounded-full border border-white/25 object-cover"
+                className="h-8 w-8 rounded-full border border-black/10 object-cover"
                 unoptimized={!headerProfile?.profile_picture_url}
               />
             </Link>
@@ -1186,14 +1192,14 @@ export function HomeContent({ isActive }: HomeContentProps) {
         <button
           onClick={goToPrev}
           aria-label="Previous video"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition-colors hover:bg-black/65"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-lg transition-colors hover:bg-white/90"
         >
           <ChevronUp className="h-5 w-5" />
         </button>
         <button
           onClick={goToNext}
           aria-label="Next video"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition-colors hover:bg-black/65"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-lg transition-colors hover:bg-white/90"
         >
           <ChevronDown className="h-5 w-5" />
         </button>
@@ -1226,11 +1232,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               aria-label={followedUsers.has(currentVideo.user_id!) ? 'Unfollow' : 'Follow'}
               style={{ animation: followAnimating === currentVideo.user_id ? 'followPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined }}
             >
-              <div className={`h-[25px] w-[25px] rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-300 ${
-                followedUsers.has(currentVideo.user_id!)
-                  ? 'bg-[#f97316] text-white'
-                  : 'border border-[#F5F0E8] bg-[#1A1A18]/80 text-[#F5F0E8]'
-              }`}>
+              <div className="h-[25px] w-[25px] rounded-full flex items-center justify-center text-[11px] font-bold bg-[#f97316] text-white border-2 border-white transition-all duration-300">
                 {followedUsers.has(currentVideo.user_id!) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
               </div>
             </button>
@@ -1245,12 +1247,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
           aria-label={isLiked ? 'Unlike video' : 'Like video'}
         >
           <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isLiked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl hover:border-[#f97316]/50 hover:shadow-lg hover:shadow-[#f97316]/20'
+            isLiked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'bg-white shadow-lg hover:shadow-[#f97316]/30'
           } ${likeAnimating === currentVideo.id ? 'like-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-all duration-300 ${
-                likeAnimating === currentVideo.id ? 'scale-150' : ''
-              }`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${
+                isLiked ? 'text-white' : 'text-black'
+              } ${likeAnimating === currentVideo.id ? 'scale-150' : ''}`}
               fill={isLiked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1270,8 +1272,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Add a review or comment"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl transition-all duration-300 hover:bg-[#242420]/90 hover:border-[#f97316] hover:shadow-lg hover:shadow-[#f97316]/30 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
@@ -1281,8 +1283,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
         {/* Location Button */}
         {distance && (
           <button className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95" aria-label={`Distance: ${distance}`}>
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl transition-all duration-300 hover:bg-[#242420]/90 hover:border-[#f97316] hover:shadow-lg hover:shadow-[#f97316]/30 active:scale-95">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -1298,12 +1300,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
           aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark video'}
         >
           <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isBookmarked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl hover:border-[#f97316]/50 hover:shadow-lg hover:shadow-[#f97316]/20'
+            isBookmarked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'bg-white shadow-lg hover:shadow-[#f97316]/30'
           } ${bookmarkAnimating === currentVideo.id ? 'bookmark-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-all duration-300 ${
-                bookmarkAnimating === currentVideo.id ? 'scale-150' : ''
-              }`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${
+                isBookmarked ? 'text-white' : 'text-black'
+              } ${bookmarkAnimating === currentVideo.id ? 'scale-150' : ''}`}
               fill={isBookmarked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1321,8 +1323,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Share this video"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl transition-all duration-300 hover:bg-[#242420]/90 hover:border-[#f97316] hover:shadow-lg hover:shadow-[#f97316]/30 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </div>
