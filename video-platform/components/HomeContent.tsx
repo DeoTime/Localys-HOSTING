@@ -1388,6 +1388,24 @@ export function HomeContent({ isActive }: HomeContentProps) {
           <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(shareCount)}</span>
         </button>
 
+        {/* Send to User Button — opens Chats with this video pre-filled */}
+        <button
+          onClick={() => {
+            const bizName = currentVideo.businesses?.business_name || currentVideo.profiles?.full_name || 'Business';
+            const videoUrl = `${window.location.origin}/feed?videoId=${encodeURIComponent(currentVideo.id)}`;
+            router.push(`/chats?shareVideo=${encodeURIComponent(videoUrl)}&shareTitle=${encodeURIComponent(bizName)}`);
+          }}
+          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          aria-label="Send video to a user"
+        >
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </div>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">Send</span>
+        </button>
+
       </div>
 
       {/* Comment Modal */}

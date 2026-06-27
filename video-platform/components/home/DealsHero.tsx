@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Check } from 'lucide-react';
@@ -9,6 +9,9 @@ import { useHomeData, useHomeFeed } from './HomeData';
 import type { LocalBusiness } from '@/lib/supabase/featured';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+
+/** How long each hero slide stays before auto-advancing (ms). Easy to tune. */
+const CAROUSEL_INTERVAL_MS = 5000;
 
 /**
  * (A) Walmart-style top block: ONE large featured business that auto-shifts
@@ -27,6 +30,10 @@ export function DealsHero() {
 
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Keep a ref to featured.length so the interval callback always sees the
+  // current length without needing to restart the timer when data loads.
+  const featuredLenRef = useRef(featured.length);
+  featuredLenRef.current = featured.length;
 
   const handleAdd = (e: React.MouseEvent, biz: LocalBusiness) => {
     e.preventDefault();
@@ -47,11 +54,16 @@ export function DealsHero() {
     window.setTimeout(() => setAddedId(null), 1200);
   };
 
+  // Restart the interval only when paused changes — not when more data loads —
+  // so the timing stays consistent once the carousel first appears.
   useEffect(() => {
-    if (paused || featured.length === 0) return;
-    const id = setInterval(() => setI((n) => (n + 1) % featured.length), 5000);
+    if (paused) return;
+    const id = setInterval(() => {
+      const len = featuredLenRef.current;
+      if (len > 0) setI((n) => (n + 1) % len);
+    }, CAROUSEL_INTERVAL_MS);
     return () => clearInterval(id);
-  }, [paused, featured.length]);
+  }, [paused]);
 
   if (loading || featured.length === 0) return null;
 
@@ -75,7 +87,7 @@ export function DealsHero() {
           onMouseLeave={() => setPaused(false)}
         >
           <div className="relative aspect-[16/9] w-full lg:aspect-[2/1]">
-            <AnimatePresence mode="sync">
+            <AnimatePresence mode="sync" initial={false}>
               <motion.div
                 key={current.id}
                 initial={{ x: '100%' }}

@@ -76,21 +76,23 @@ function BadgesSection({ userId }: { userId: string }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4">
       <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-2.5">Achievements</h3>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {BADGE_DEFS.map(({ id, Icon, name, desc, check }) => {
           const earned = check(stats);
           return (
             <div
               key={id}
-              className={`flex flex-col items-center text-center gap-0.5 p-1.5 rounded-xl border transition-colors ${
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-xl border transition-colors ${
                 earned ? 'border-[#f97316]/20 bg-[#f97316]/5' : 'border-gray-100 bg-gray-50 opacity-50'
               }`}
             >
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
+              <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
                 <Icon className={`h-4 w-4 ${earned ? 'text-white' : 'text-gray-400'}`} />
               </div>
-              <p className={`text-[10px] font-bold leading-tight ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
-              <p className={`text-[10px] leading-tight ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
+              <div className="min-w-0">
+                <p className={`text-xs font-bold leading-tight truncate ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
+                <p className={`text-[10px] leading-tight truncate ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
+              </div>
             </div>
           );
         })}

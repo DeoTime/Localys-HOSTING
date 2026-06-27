@@ -65,15 +65,25 @@ function ChatsLayout() {
   const isDesktop = () =>
     typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
 
-  // Open a specific conversation passed via ?c=<chatId> (e.g. from a store's
-  // "Message" button) inside the full Messages UI. On a narrow screen, the
-  // conversation gets its own screen — same as tapping it in the list.
+  // Open a specific conversation via ?c=<chatId> (e.g. from a store's "Message" button).
   useEffect(() => {
     const c = searchParams.get('c');
     if (!c) return;
     if (isDesktop()) setActiveChatId(c);
     else router.replace(`/chats/${c}`);
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pre-fill the message box when navigated here from the Discover "Send" button.
+  // ?shareVideo=<url>&shareTitle=<name> — user selects which chat to send it to.
+  const shareVideoUrl = searchParams.get('shareVideo');
+  const shareTitle = searchParams.get('shareTitle');
+  useEffect(() => {
+    if (!shareVideoUrl) return;
+    const title = shareTitle ? `${shareTitle}: ` : '';
+    setNewMessage(`${title}${decodeURIComponent(shareVideoUrl)}`);
+    // Remove params from URL so refreshing doesn't re-trigger
+    router.replace('/chats', { scroll: false });
+  }, [shareVideoUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelect = (chatId: string) => {
     if (isDesktop()) {
@@ -109,7 +119,9 @@ function ChatsLayout() {
 
         {/* Header */}
         <div className="flex shrink-0 items-center px-5 py-4">
-          <span className="flex-1 text-[15px] font-semibold text-black dark:text-white">Messages</span>
+          <span className="flex-1 text-[15px] font-semibold text-black dark:text-white">
+            {newMessage ? 'Send video to...' : 'Messages'}
+          </span>
           <button
             type="button"
             onClick={() => setShowNewChat(true)}
@@ -133,6 +145,23 @@ function ChatsLayout() {
             />
           </div>
         </div>
+
+        {/* "Send video" mode banner — shown when navigated from Discover "Send" button */}
+        {newMessage && (
+          <div className="mx-4 mb-2 flex items-center gap-2 rounded-xl bg-[#f97316]/10 border border-[#f97316]/30 px-3 py-2">
+            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-[#f97316]">
+              Pick a conversation to send the video
+            </span>
+            <button
+              type="button"
+              onClick={() => setNewMessage('')}
+              className="shrink-0 text-[#f97316]/60 hover:text-[#f97316] text-xs font-bold"
+              aria-label="Cancel send"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
 
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto border-t border-gray-100 dark:border-gray-800">
