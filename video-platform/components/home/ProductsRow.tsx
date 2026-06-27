@@ -14,13 +14,15 @@ export function ProductsRow({
   title,
   seeAllHref,
   select,
+  items: itemsProp,
 }: {
   title: string;
   seeAllHref?: string;
-  select: (businesses: LocalBusiness[], products: Product[]) => Product[];
+  select?: (businesses: LocalBusiness[], products: Product[]) => Product[];
+  items?: Product[]; // pre-composed (themed/deduped) products from useHomeFeed
 }) {
   const { businesses, products, loading } = useHomeData();
-  const items = select(businesses, products);
+  const items = itemsProp ?? (select ? select(businesses, products) : []);
   if (loading || items.length === 0) return null;
   return <ProductCarousel title={title} products={items} seeAllHref={seeAllHref} />;
 }

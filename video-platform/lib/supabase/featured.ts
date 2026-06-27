@@ -13,12 +13,13 @@ import storeMenus from '@/data/store-menus.json';
  */
 interface ManifestItem {
   id: string; name: string; price: number; description?: string; image?: string;
-  category: string; likePct?: number; likeCount?: number; deal?: Deal;
+  category: string; likePct?: number; likeCount?: number; reviewCount?: number;
+  hq?: boolean; deal?: Deal;
 }
 interface ManifestStore {
-  slug: string; banner?: string | null; rating: number; ratingCount: string;
-  categories: string[]; featuredIds: string[]; pickedIds: string[]; items: ManifestItem[];
-  isService?: boolean;
+  slug: string; department?: string; banner?: string | null; bannerHq?: boolean;
+  rating: number; ratingCount: string; reviewCount?: number; categories: string[];
+  featuredIds: string[]; pickedIds: string[]; items: ManifestItem[]; isService?: boolean;
 }
 const MENUS = storeMenus as Record<string, ManifestStore>;
 
@@ -72,10 +73,13 @@ export async function getLocalBusinesses(): Promise<LocalBusiness[]> {
     if (!menu) continue; // only manifest-backed stores appear on the home feed
 
     const href = `/profile/${p.username || p.id}`;
-    const image = menu.banner || undefined; // Menu banner photo
-    const category = departmentFor(b?.category, p.type);
+    // Business card image: the banner only if it's sharp enough, else the first
+    // high-res item photo (the home builder may still swap it for variety).
+    const firstHqItem = menu.items.find((it) => it.hq)?.image;
+    const image = (menu.bannerHq ? menu.banner : undefined) || firstHqItem || menu.banner || undefined;
+    const category = menu.department || departmentFor(b?.category, p.type);
     const rating = menu.rating;
-    const reviewCount = parseInt(String(menu.ratingCount), 10) || 0;
+    const reviewCount = menu.reviewCount ?? (parseInt(String(menu.ratingCount), 10) || 0);
 
     const products: Product[] = menu.items.map((it) => ({
       id: it.id,
@@ -86,10 +90,11 @@ export async function getLocalBusinesses(): Promise<LocalBusiness[]> {
       price: it.price,
       image: it.image || image || undefined, // Menu item photo
       rating,
-      reviewCount,
+      reviewCount: it.reviewCount ?? reviewCount,
       href,
       deal: it.deal,
       dealLabel: it.deal?.label,
+      hq: it.hq,
     }));
 
     list.push({ id: p.id, username: p.username || p.id, name, image, category, type: p.type, href, rating, reviewCount, products });

@@ -43,7 +43,7 @@ export function ProductCard({ product }: { product: Product }) {
       {/* Image */}
       <Link href={product.href} className="relative block overflow-hidden rounded-2xl">
         <Thumb
-          src={product.image}
+          src={product.hq === false ? undefined : product.image}
           label={product.title}
           alt={product.title}
           className="aspect-square rounded-2xl"
@@ -62,7 +62,7 @@ export function ProductCard({ product }: { product: Product }) {
           aria-label={liked ? 'Unlike' : 'Like'}
           aria-pressed={liked}
           onClick={(e) => { e.preventDefault(); setLiked((v) => !v); }}
-          className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-white/90 text-black shadow-sm backdrop-blur transition hover:bg-white dark:bg-gray-900/80 dark:text-white"
+          className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full p-0 bg-white/90 text-black shadow-sm backdrop-blur transition hover:bg-white dark:bg-gray-900/80 dark:text-white"
         >
           <Heart className={`h-4 w-4 ${liked ? 'fill-[#f97316] text-[#f97316]' : ''}`} strokeWidth={1.8} />
         </button>

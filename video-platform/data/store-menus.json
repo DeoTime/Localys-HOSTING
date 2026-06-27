@@ -2,9 +2,12 @@
   "Amy's Fish & Chips": {
     "slug": "amys-fish-and-chips",
     "folder": "Amy's Fish & Chips",
+    "department": "Restaurants",
     "banner": "/Menu/Amy's%20Fish%20%26%20Chips/Amy's%20Fish%20%26%20Chips.jpg",
+    "bannerHq": true,
     "rating": 4.7,
     "ratingCount": "500+",
+    "reviewCount": 70,
     "address": "6402 Bayview Ave, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -53,6 +56,10 @@
         "category": "Fish & Chips",
         "likePct": 91,
         "likeCount": 47,
+        "reviewCount": 407,
+        "w": 494,
+        "h": 493,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -67,7 +74,11 @@
         "image": "/Menu/Amy's%20Fish%20%26%20Chips/Halibut%20Fish%20(2%20pcs).jpg",
         "category": "Fish & Chips",
         "likePct": 89,
-        "likeCount": 45
+        "likeCount": 45,
+        "reviewCount": 461,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "amys-fish-and-chips-2",
@@ -77,16 +88,23 @@
         "image": "/Menu/Amy's%20Fish%20%26%20Chips/Shrimp.jpg",
         "category": "Seafood",
         "likePct": 96,
-        "likeCount": 22
+        "likeCount": 22,
+        "reviewCount": 182,
+        "w": 550,
+        "h": 440,
+        "hq": true
       }
     ]
   },
   "Holy Smoke Barbecue": {
     "slug": "holy-smoke-barbecue",
     "folder": "Holy smoke Ribs",
+    "department": "Restaurants",
     "banner": "/Menu/Holy%20smoke%20Ribs/Holy%20Smoke%20Barbecue.jpg",
+    "bannerHq": true,
     "rating": 4.5,
     "ratingCount": "500+",
+    "reviewCount": 445,
     "address": "7255 Yonge St, North York, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -146,6 +164,10 @@
         "category": "Sides",
         "likePct": 83,
         "likeCount": 39,
+        "reviewCount": 305,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -160,6 +182,10 @@
         "category": "Combos & Platters",
         "likePct": 97,
         "likeCount": 53,
+        "reviewCount": 237,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -173,7 +199,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/BBQ%20Platter%20for%20two.jpg",
         "category": "Combos & Platters",
         "likePct": 83,
-        "likeCount": 51
+        "likeCount": 51,
+        "reviewCount": 45,
+        "w": 566,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-3",
@@ -183,7 +213,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Brisket%20%26%20Pulled%20Pork%20Combo.jpg",
         "category": "Combos & Platters",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "reviewCount": 447,
+        "w": 550,
+        "h": 857,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-4",
@@ -194,6 +228,10 @@
         "category": "Combos & Platters",
         "likePct": 82,
         "likeCount": 62,
+        "reviewCount": 232,
+        "w": 510,
+        "h": 340,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -209,7 +247,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Chicken%20%26%20Pork%20Rib%20Combo.jpg",
         "category": "Combos & Platters",
         "likePct": 85,
-        "likeCount": 17
+        "likeCount": 17,
+        "reviewCount": 297,
+        "w": 586,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-6",
@@ -219,7 +261,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Chicken%20Wings%201LB.jpg",
         "category": "Smoked Meats",
         "likePct": 93,
-        "likeCount": 31
+        "likeCount": 31,
+        "reviewCount": 459,
+        "w": 581,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-7",
@@ -229,7 +275,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Corn%20Bread%20Jalapeno%20Cheddar.jpg",
         "category": "Sides",
         "likePct": 82,
-        "likeCount": 8
+        "likeCount": 8,
+        "reviewCount": 410,
+        "w": 550,
+        "h": 503,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-8",
@@ -239,7 +289,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Creamed%20Corn.jpg",
         "category": "Sides",
         "likePct": 84,
-        "likeCount": 58
+        "likeCount": 58,
+        "reviewCount": 348,
+        "w": 550,
+        "h": 825,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-9",
@@ -249,7 +303,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Creamy%20Coleslaw.jpg",
         "category": "Sides",
         "likePct": 90,
-        "likeCount": 22
+        "likeCount": 22,
+        "reviewCount": 148,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-10",
@@ -259,7 +317,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Crinkle-Cut%20Pickles.jpg",
         "category": "Sides",
         "likePct": 87,
-        "likeCount": 19
+        "likeCount": 19,
+        "reviewCount": 333,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-11",
@@ -270,6 +332,10 @@
         "category": "Sides",
         "likePct": 95,
         "likeCount": 33,
+        "reviewCount": 49,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -284,7 +350,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Jalapeno%20Cheddar%20Sausage.jpg",
         "category": "Smoked Meats",
         "likePct": 97,
-        "likeCount": 65
+        "likeCount": 65,
+        "reviewCount": 119,
+        "w": 550,
+        "h": 439,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-13",
@@ -294,7 +364,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Original%20Creamy%20Dill%20Potato%20Salad.jpg",
         "category": "Sides",
         "likePct": 94,
-        "likeCount": 32
+        "likeCount": 32,
+        "reviewCount": 394,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-14",
@@ -305,6 +379,10 @@
         "category": "Desserts",
         "likePct": 93,
         "likeCount": 19,
+        "reviewCount": 23,
+        "w": 660,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -319,6 +397,10 @@
         "category": "Smoked Meats",
         "likePct": 90,
         "likeCount": 28,
+        "reviewCount": 270,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -334,6 +416,10 @@
         "category": "Combos & Platters",
         "likePct": 98,
         "likeCount": 24,
+        "reviewCount": 244,
+        "w": 550,
+        "h": 796,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -347,7 +433,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Prime%20Brisket%20by%20the%201_2%20LB.jpg",
         "category": "Smoked Meats",
         "likePct": 95,
-        "likeCount": 39
+        "likeCount": 39,
+        "reviewCount": 227,
+        "w": 659,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-18",
@@ -357,7 +447,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Pulled%20Pork%20Sandwich.jpg",
         "category": "Sandwiches",
         "likePct": 98,
-        "likeCount": 12
+        "likeCount": 12,
+        "reviewCount": 290,
+        "w": 550,
+        "h": 554,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-19",
@@ -368,6 +462,10 @@
         "category": "Sandwiches",
         "likePct": 89,
         "likeCount": 9,
+        "reviewCount": 407,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -383,6 +481,10 @@
         "category": "Smoked Meats",
         "likePct": 92,
         "likeCount": 42,
+        "reviewCount": 484,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -398,7 +500,11 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Texas%20Trio.jpg",
         "category": "Combos & Platters",
         "likePct": 84,
-        "likeCount": 16
+        "likeCount": 16,
+        "reviewCount": 372,
+        "w": 3320,
+        "h": 2176,
+        "hq": true
       },
       {
         "id": "holy-smoke-barbecue-22",
@@ -408,16 +514,23 @@
         "image": "/Menu/Holy%20smoke%20Ribs/Tipsy%20Texan%20Sandwich.jpg",
         "category": "Sandwiches",
         "likePct": 99,
-        "likeCount": 61
+        "likeCount": 61,
+        "reviewCount": 173,
+        "w": 550,
+        "h": 440,
+        "hq": true
       }
     ]
   },
   "Pho Nga Son": {
     "slug": "pho-nga-son",
     "folder": "Pho Xelua resaturant",
+    "department": "Restaurants",
     "banner": "/Menu/Pho%20Xelua%20resaturant/PHO%20NGA%20SON.jpg",
+    "bannerHq": true,
     "rating": 4.8,
     "ratingCount": "500+",
+    "reviewCount": 318,
     "address": "10909 Yonge St, Richmond Hill, ON L4C 3E3",
     "availability": "Available Saturday 11:00 a.m.",
     "hoursLabel": "Sat 11:00 a.m. – 9:45 p.m.",
@@ -475,7 +588,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/A1.Deep%20Fried%20Spring%20Rolls%20(2%20pcs)%20(Cha%20Gio)%20(2%20Cuon).jpg",
         "category": "Appetizer",
         "likePct": 95,
-        "likeCount": 9
+        "likeCount": 9,
+        "reviewCount": 243,
+        "w": 550,
+        "h": 489,
+        "hq": true
       },
       {
         "id": "pho-nga-son-1",
@@ -485,7 +602,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/A2.%20Fresh%20Salad%20Spring%20Rolls%20(2%20pcs).jpg",
         "category": "Appetizer",
         "likePct": 93,
-        "likeCount": 49
+        "likeCount": 49,
+        "reviewCount": 291,
+        "w": 550,
+        "h": 733,
+        "hq": true
       },
       {
         "id": "pho-nga-son-2",
@@ -496,6 +617,10 @@
         "category": "Appetizer",
         "likePct": 82,
         "likeCount": 20,
+        "reviewCount": 332,
+        "w": 550,
+        "h": 561,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -510,7 +635,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/A4.Taro%20Salad%20(Goi%20Khoai%20Mon).jpg",
         "category": "Appetizer",
         "likePct": 89,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 457,
+        "w": 550,
+        "h": 733,
+        "hq": true
       },
       {
         "id": "pho-nga-son-4",
@@ -521,6 +650,10 @@
         "category": "Appetizer",
         "likePct": 84,
         "likeCount": 28,
+        "reviewCount": 350,
+        "w": 550,
+        "h": 457,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -537,6 +670,10 @@
         "category": "Appetizer",
         "likePct": 87,
         "likeCount": 43,
+        "reviewCount": 101,
+        "w": 550,
+        "h": 733,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -551,7 +688,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/B1.House%20Speical%20Vermicelli%20(Bun%20Dac%20Biet).jpg",
         "category": "Bun (Vermicelli)",
         "likePct": 95,
-        "likeCount": 33
+        "likeCount": 33,
+        "reviewCount": 269,
+        "w": 550,
+        "h": 733,
+        "hq": true
       },
       {
         "id": "pho-nga-son-7",
@@ -562,6 +703,10 @@
         "category": "Vietnamese Sandwich (Banh Mi)",
         "likePct": 95,
         "likeCount": 33,
+        "reviewCount": 213,
+        "w": 550,
+        "h": 547,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -577,6 +722,10 @@
         "category": "Vietnamese Sandwich (Banh Mi)",
         "likePct": 82,
         "likeCount": 8,
+        "reviewCount": 456,
+        "w": 550,
+        "h": 561,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -590,7 +739,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/C1.House%20Special%20Rice%20(Com%20Dac%20Biet).jpg",
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 83,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 217,
+        "w": 550,
+        "h": 818,
+        "hq": true
       },
       {
         "id": "pho-nga-son-10",
@@ -601,6 +754,10 @@
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 93,
         "likeCount": 67,
+        "reviewCount": 347,
+        "w": 550,
+        "h": 733,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -615,7 +772,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/C3.%20Com%20Ga%20Nuong.jpg",
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 99,
-        "likeCount": 19
+        "likeCount": 19,
+        "reviewCount": 131,
+        "w": 550,
+        "h": 733,
+        "hq": true
       },
       {
         "id": "pho-nga-son-12",
@@ -626,6 +787,10 @@
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 92,
         "likeCount": 66,
+        "reviewCount": 450,
+        "w": 550,
+        "h": 733,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -640,7 +805,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/C6.%20Com%20Suon%20Nuong%2C%20Ga%20Nuong%2C%20and%20Trung%20Oppla_%20Ch%E1%BA%A3%20H%E1%BA%A5p.jpg",
         "category": "Broken Steamed Rice (Com Tam)",
         "likePct": 90,
-        "likeCount": 22
+        "likeCount": 22,
+        "reviewCount": 480,
+        "w": 550,
+        "h": 554,
+        "hq": true
       },
       {
         "id": "pho-nga-son-14",
@@ -650,7 +819,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/F3.%20Pad%20Thai%20%20CHICKEN_BEEF_SHRIMPS.jpg",
         "category": "Stir-Fried Dishes",
         "likePct": 86,
-        "likeCount": 66
+        "likeCount": 66,
+        "reviewCount": 290,
+        "w": 601,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "pho-nga-son-15",
@@ -660,7 +833,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/H1.%20Traditional%20Bun%20Bo%20Hue%20(Bun%20Bo%20Hue%20Truyen%20Thong).jpg",
         "category": "Spicy Beef Noodle Soup (Bun Bo Hue)",
         "likePct": 95,
-        "likeCount": 9
+        "likeCount": 9,
+        "reviewCount": 99,
+        "w": 550,
+        "h": 733,
+        "hq": true
       },
       {
         "id": "pho-nga-son-16",
@@ -670,7 +847,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/P0.Short%20Rib%20Pho%20(Pho%20Dac%20Biet%20Suon%20Bo).jpg",
         "category": "Beef Noodle Soup (Pho)",
         "likePct": 83,
-        "likeCount": 15
+        "likeCount": 15,
+        "reviewCount": 203,
+        "w": 550,
+        "h": 629,
+        "hq": true
       },
       {
         "id": "pho-nga-son-17",
@@ -680,7 +861,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/P1.%20Pho%20Combination.jpg",
         "category": "Beef Noodle Soup (Pho)",
         "likePct": 94,
-        "likeCount": 62
+        "likeCount": 62,
+        "reviewCount": 444,
+        "w": 550,
+        "h": 550,
+        "hq": true
       },
       {
         "id": "pho-nga-son-18",
@@ -690,7 +875,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/P4.%20Flank%20Noodle%20Soup%20(Pho%20Nam).jpg",
         "category": "Beef Noodle Soup (Pho)",
         "likePct": 93,
-        "likeCount": 67
+        "likeCount": 67,
+        "reviewCount": 401,
+        "w": 550,
+        "h": 826,
+        "hq": true
       },
       {
         "id": "pho-nga-son-19",
@@ -701,6 +890,10 @@
         "category": "Beef Noodle Soup (Pho)",
         "likePct": 83,
         "likeCount": 33,
+        "reviewCount": 183,
+        "w": 550,
+        "h": 466,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -715,7 +908,11 @@
         "image": "/Menu/Pho%20Xelua%20resaturant/P9.%20Combination%20Pho%20W_%20Bone%20Marrow%20(%20Ph%E1%BB%9F%20Th%E1%BA%ADp%20C%E1%BA%A9m%20Tu%E1%BB%B7%20B%C3%B2%20N%C6%B0%E1%BB%9Bng%20).jpg",
         "category": "Beef Noodle Soup (Pho)",
         "likePct": 83,
-        "likeCount": 51
+        "likeCount": 51,
+        "reviewCount": 315,
+        "w": 550,
+        "h": 744,
+        "hq": true
       },
       {
         "id": "pho-nga-son-21",
@@ -726,6 +923,10 @@
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 99,
         "likeCount": 49,
+        "reviewCount": 103,
+        "w": 550,
+        "h": 733,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -741,6 +942,10 @@
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 83,
         "likeCount": 57,
+        "reviewCount": 265,
+        "w": 550,
+        "h": 548,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -756,6 +961,10 @@
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 84,
         "likeCount": 34,
+        "reviewCount": 252,
+        "w": 550,
+        "h": 824,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -772,6 +981,10 @@
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 91,
         "likeCount": 41,
+        "reviewCount": 223,
+        "w": 550,
+        "h": 728,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -787,6 +1000,10 @@
         "category": "Special Dishes (Mon Dac Biet)",
         "likePct": 93,
         "likeCount": 37,
+        "reviewCount": 315,
+        "w": 550,
+        "h": 733,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -798,9 +1015,12 @@
   "Express Mart Kingston Road": {
     "slug": "express-mart",
     "folder": "Express Mart",
+    "department": "Convenience",
     "banner": "/stores/express-mart/banner.jpg",
+    "bannerHq": false,
     "rating": 4.7,
     "ratingCount": "500+",
+    "reviewCount": 100,
     "address": "9722 Bayview Ave, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -859,6 +1079,10 @@
         "category": "Soda & Juice",
         "likePct": 87,
         "likeCount": 49,
+        "reviewCount": 101,
+        "w": 1000,
+        "h": 1681,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -873,7 +1097,11 @@
         "image": "/Menu/Express%20Mart/Airheads%20Blue%20Blast%20(15.6%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 86,
-        "likeCount": 30
+        "likeCount": 30,
+        "reviewCount": 44,
+        "w": 447,
+        "h": 137,
+        "hq": false
       },
       {
         "id": "express-mart-2",
@@ -883,7 +1111,11 @@
         "image": "/Menu/Express%20Mart/Airheads%20Soda%20Blue%20Raspberry%20(355%20ml).jpg",
         "category": "Soda & Juice",
         "likePct": 88,
-        "likeCount": 50
+        "likeCount": 50,
+        "reviewCount": 288,
+        "w": 459,
+        "h": 854,
+        "hq": true
       },
       {
         "id": "express-mart-3",
@@ -893,7 +1125,11 @@
         "image": "/Menu/Express%20Mart/Airheads%20Soda%20Watermelon%20(355%20ml).jpg",
         "category": "Water",
         "likePct": 98,
-        "likeCount": 54
+        "likeCount": 54,
+        "reviewCount": 400,
+        "w": 469,
+        "h": 855,
+        "hq": true
       },
       {
         "id": "express-mart-4",
@@ -903,7 +1139,11 @@
         "image": "/Menu/Express%20Mart/Airheads%20Sour%20Watermelon%20(15.6%20g).jpg",
         "category": "Water",
         "likePct": 93,
-        "likeCount": 13
+        "likeCount": 13,
+        "reviewCount": 71,
+        "w": 447,
+        "h": 133,
+        "hq": false
       },
       {
         "id": "express-mart-5",
@@ -913,7 +1153,11 @@
         "image": "/Menu/Express%20Mart/Bugles%20Chilli%20Cheese%20Chips.jpg",
         "category": "Chips & Snacks",
         "likePct": 86,
-        "likeCount": 54
+        "likeCount": 54,
+        "reviewCount": 186,
+        "w": 1000,
+        "h": 1417,
+        "hq": true
       },
       {
         "id": "express-mart-6",
@@ -923,7 +1167,11 @@
         "image": "/Menu/Express%20Mart/Bugles%20Cinnamon%20Chips.jpg",
         "category": "Chips & Snacks",
         "likePct": 83,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 119,
+        "w": 337,
+        "h": 460,
+        "hq": true
       },
       {
         "id": "express-mart-7",
@@ -933,7 +1181,11 @@
         "image": "/Menu/Express%20Mart/Bugles%20Nacho%20Cheese%20Chips.jpg",
         "category": "Chips & Snacks",
         "likePct": 96,
-        "likeCount": 10
+        "likeCount": 10,
+        "reviewCount": 60,
+        "w": 337,
+        "h": 460,
+        "hq": true
       },
       {
         "id": "express-mart-8",
@@ -943,7 +1195,11 @@
         "image": "/Menu/Express%20Mart/Bugles%20Original%20Corn%20Chips.jpg",
         "category": "Chips & Snacks",
         "likePct": 83,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 353,
+        "w": 592,
+        "h": 768,
+        "hq": true
       },
       {
         "id": "express-mart-9",
@@ -953,7 +1209,11 @@
         "image": "/Menu/Express%20Mart/Bugles%20Ranch%20Corn%20Chips.jpg",
         "category": "Chips & Snacks",
         "likePct": 90,
-        "likeCount": 10
+        "likeCount": 10,
+        "reviewCount": 236,
+        "w": 468,
+        "h": 672,
+        "hq": true
       },
       {
         "id": "express-mart-10",
@@ -963,7 +1223,11 @@
         "image": "/Menu/Express%20Mart/Bugles%20Tabasco%20Corn%20Chips.jpg",
         "category": "Chips & Snacks",
         "likePct": 97,
-        "likeCount": 41
+        "likeCount": 41,
+        "reviewCount": 409,
+        "w": 603,
+        "h": 834,
+        "hq": true
       },
       {
         "id": "express-mart-11",
@@ -974,6 +1238,10 @@
         "category": "Chocolate & Candy",
         "likePct": 93,
         "likeCount": 67,
+        "reviewCount": 327,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -988,7 +1256,11 @@
         "image": "/Menu/Express%20Mart/Candy%20Popcorn%20Snickers.jpg",
         "category": "Chocolate & Candy",
         "likePct": 93,
-        "likeCount": 55
+        "likeCount": 55,
+        "reviewCount": 467,
+        "w": 801,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "express-mart-13",
@@ -999,6 +1271,10 @@
         "category": "Chocolate & Candy",
         "likePct": 85,
         "likeCount": 41,
+        "reviewCount": 107,
+        "w": 379,
+        "h": 500,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1014,6 +1290,10 @@
         "category": "Soda & Juice",
         "likePct": 90,
         "likeCount": 16,
+        "reviewCount": 180,
+        "w": 1000,
+        "h": 1152,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -1029,7 +1309,11 @@
         "image": "/Menu/Express%20Mart/Haribo%20Watermelon%20(142%20g).jpg",
         "category": "Water",
         "likePct": 83,
-        "likeCount": 45
+        "likeCount": 45,
+        "reviewCount": 283,
+        "w": 562,
+        "h": 386,
+        "hq": true
       },
       {
         "id": "express-mart-16",
@@ -1040,6 +1324,10 @@
         "category": "Chocolate & Candy",
         "likePct": 84,
         "likeCount": 10,
+        "reviewCount": 452,
+        "w": 979,
+        "h": 336,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -1054,6 +1342,10 @@
         "category": "Chocolate & Candy",
         "likePct": 90,
         "likeCount": 34,
+        "reviewCount": 390,
+        "w": 374,
+        "h": 559,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -1067,7 +1359,11 @@
         "image": "/Menu/Express%20Mart/Hi-Chew%20Kiwi%20(50%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 87,
-        "likeCount": 31
+        "likeCount": 31,
+        "reviewCount": 115,
+        "w": 817,
+        "h": 363,
+        "hq": true
       },
       {
         "id": "express-mart-19",
@@ -1078,6 +1374,10 @@
         "category": "Soda & Juice",
         "likePct": 93,
         "likeCount": 61,
+        "reviewCount": 127,
+        "w": 685,
+        "h": 936,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1092,7 +1392,11 @@
         "image": "/Menu/Express%20Mart/Kitkat%20Duos%20Mint%20%26%20Dark%20Chocolate.jpg",
         "category": "Soda & Juice",
         "likePct": 88,
-        "likeCount": 62
+        "likeCount": 62,
+        "reviewCount": 400,
+        "w": 654,
+        "h": 385,
+        "hq": true
       },
       {
         "id": "express-mart-21",
@@ -1102,7 +1406,11 @@
         "image": "/Menu/Express%20Mart/Kool-Aid%20Soda%20Blue%20Raspberry%20Lemonade%20(355%20ml).jpg",
         "category": "Soda & Juice",
         "likePct": 88,
-        "likeCount": 62
+        "likeCount": 62,
+        "reviewCount": 146,
+        "w": 144,
+        "h": 456,
+        "hq": false
       },
       {
         "id": "express-mart-22",
@@ -1112,7 +1420,11 @@
         "image": "/Menu/Express%20Mart/Mike%20And%20Ike%20Hot%20Tamales%20Tropical%20Heat%20Fruit%20Candy%20(141%20g).png",
         "category": "Chocolate & Candy",
         "likePct": 88,
-        "likeCount": 20
+        "likeCount": 20,
+        "reviewCount": 110,
+        "w": 300,
+        "h": 300,
+        "hq": false
       },
       {
         "id": "express-mart-23",
@@ -1122,7 +1434,11 @@
         "image": "/Menu/Express%20Mart/Mike%20And%20Ike%20Mega%20Mix%20Fruit%20Candy%20(141%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 94,
-        "likeCount": 56
+        "likeCount": 56,
+        "reviewCount": 398,
+        "w": 900,
+        "h": 522,
+        "hq": true
       },
       {
         "id": "express-mart-24",
@@ -1133,6 +1449,10 @@
         "category": "Soda & Juice",
         "likePct": 94,
         "likeCount": 26,
+        "reviewCount": 118,
+        "w": 2146,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -1147,7 +1467,11 @@
         "image": "/Menu/Express%20Mart/Milka%20Chips%20Ahoy!%20Chocolate%20Bar%20(100%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 90,
-        "likeCount": 40
+        "likeCount": 40,
+        "reviewCount": 106,
+        "w": 707,
+        "h": 345,
+        "hq": true
       },
       {
         "id": "express-mart-26",
@@ -1157,7 +1481,11 @@
         "image": "/Menu/Express%20Mart/Milka%20Oreo%20Chocolate%20Bar%20(100%20g).jpg",
         "category": "Soda & Juice",
         "likePct": 90,
-        "likeCount": 52
+        "likeCount": 52,
+        "reviewCount": 174,
+        "w": 2429,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "express-mart-27",
@@ -1168,6 +1496,10 @@
         "category": "Soda & Juice",
         "likePct": 94,
         "likeCount": 56,
+        "reviewCount": 68,
+        "w": 2351,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -1182,6 +1514,10 @@
         "category": "Soda & Juice",
         "likePct": 96,
         "likeCount": 46,
+        "reviewCount": 166,
+        "w": 894,
+        "h": 412,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -1198,6 +1534,10 @@
         "category": "Soda & Juice",
         "likePct": 95,
         "likeCount": 33,
+        "reviewCount": 277,
+        "w": 512,
+        "h": 338,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1212,7 +1552,11 @@
         "image": "/Menu/Express%20Mart/Reese's%20Oreo%20Peanut%20Butter%20Cups%20(King%20Size).jpg",
         "category": "Chocolate & Candy",
         "likePct": 85,
-        "likeCount": 35
+        "likeCount": 35,
+        "reviewCount": 389,
+        "w": 894,
+        "h": 274,
+        "hq": false
       },
       {
         "id": "express-mart-31",
@@ -1222,7 +1566,11 @@
         "image": "/Menu/Express%20Mart/Reese's%20Oreo%20Peanut%20Butter%20Cups%20(Regular%20Size).jpg",
         "category": "Chocolate & Candy",
         "likePct": 86,
-        "likeCount": 60
+        "likeCount": 60,
+        "reviewCount": 222,
+        "w": 834,
+        "h": 420,
+        "hq": true
       },
       {
         "id": "express-mart-32",
@@ -1232,7 +1580,11 @@
         "image": "/Menu/Express%20Mart/Reese's%20PB%26J%20Grape%20Big%20Cup.jpg",
         "category": "Chocolate & Candy",
         "likePct": 90,
-        "likeCount": 16
+        "likeCount": 16,
+        "reviewCount": 196,
+        "w": 1156,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "express-mart-33",
@@ -1242,7 +1594,11 @@
         "image": "/Menu/Express%20Mart/Sour%20Patch%20Extreme%20Candy.jpg",
         "category": "Chocolate & Candy",
         "likePct": 87,
-        "likeCount": 67
+        "likeCount": 67,
+        "reviewCount": 469,
+        "w": 1000,
+        "h": 1214,
+        "hq": true
       },
       {
         "id": "express-mart-34",
@@ -1253,6 +1609,10 @@
         "category": "Soda & Juice",
         "likePct": 91,
         "likeCount": 41,
+        "reviewCount": 207,
+        "w": 456,
+        "h": 537,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -1268,6 +1628,10 @@
         "category": "Chocolate & Candy",
         "likePct": 89,
         "likeCount": 27,
+        "reviewCount": 101,
+        "w": 1000,
+        "h": 1244,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1282,7 +1646,11 @@
         "image": "/Menu/Express%20Mart/Van%20Holten's%20Dill%20Pickle.jpg",
         "category": "Chips & Snacks",
         "likePct": 97,
-        "likeCount": 59
+        "likeCount": 59,
+        "reviewCount": 475,
+        "w": 585,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "express-mart-37",
@@ -1292,7 +1660,11 @@
         "image": "/Menu/Express%20Mart/Van%20Holten's%20Sour%20Cream%20Pickle.jpg",
         "category": "Chocolate & Candy",
         "likePct": 99,
-        "likeCount": 61
+        "likeCount": 61,
+        "reviewCount": 37,
+        "w": 374,
+        "h": 600,
+        "hq": true
       },
       {
         "id": "express-mart-38",
@@ -1303,6 +1675,10 @@
         "category": "Chips & Snacks",
         "likePct": 87,
         "likeCount": 43,
+        "reviewCount": 287,
+        "w": 244,
+        "h": 400,
+        "hq": false,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1314,9 +1690,12 @@
   "K1 Floral Studio": {
     "slug": "k1-floral-studio",
     "folder": "Florio Studio",
+    "department": "Flowers",
     "banner": "/stores/k1-floral-studio/banner.jpg",
+    "bannerHq": false,
     "rating": 4.6,
     "ratingCount": "500+",
+    "reviewCount": 93,
     "address": "2151 Yonge St, Markham, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -1374,6 +1753,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 90,
         "likeCount": 40,
+        "reviewCount": 168,
+        "w": 768,
+        "h": 1024,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -1388,7 +1771,11 @@
         "image": "/Menu/Florio%20Studio/Blue%20Delight.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 86,
-        "likeCount": 24
+        "likeCount": 24,
+        "reviewCount": 316,
+        "w": 768,
+        "h": 1024,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-2",
@@ -1398,7 +1785,11 @@
         "image": "/Menu/Florio%20Studio/Bold%20%26%20beautiful.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 85,
-        "likeCount": 11
+        "likeCount": 11,
+        "reviewCount": 259,
+        "w": 1000,
+        "h": 1333,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-3",
@@ -1408,7 +1799,11 @@
         "image": "/Menu/Florio%20Studio/Box%20of%20love.jpg",
         "category": "Gift Boxes",
         "likePct": 83,
-        "likeCount": 9
+        "likeCount": 9,
+        "reviewCount": 169,
+        "w": 1333,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-4",
@@ -1419,6 +1814,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 97,
         "likeCount": 35,
+        "reviewCount": 461,
+        "w": 768,
+        "h": 1024,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -1433,7 +1832,11 @@
         "image": "/Menu/Florio%20Studio/Celebration%20of%20Life.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 94,
-        "likeCount": 38
+        "likeCount": 38,
+        "reviewCount": 258,
+        "w": 1333,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-6",
@@ -1443,7 +1846,11 @@
         "image": "/Menu/Florio%20Studio/Dancing%20Purple.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 99,
-        "likeCount": 13
+        "likeCount": 13,
+        "reviewCount": 239,
+        "w": 768,
+        "h": 1024,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-7",
@@ -1453,7 +1860,11 @@
         "image": "/Menu/Florio%20Studio/Deep%20impression.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 84,
-        "likeCount": 28
+        "likeCount": 28,
+        "reviewCount": 38,
+        "w": 1000,
+        "h": 1333,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-8",
@@ -1464,6 +1875,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 85,
         "likeCount": 47,
+        "reviewCount": 337,
+        "w": 768,
+        "h": 1024,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -1479,6 +1894,10 @@
         "category": "Gift Boxes",
         "likePct": 97,
         "likeCount": 17,
+        "reviewCount": 275,
+        "w": 1000,
+        "h": 2496,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1493,7 +1912,11 @@
         "image": "/Menu/Florio%20Studio/Endless%20Love-001.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 99,
-        "likeCount": 37
+        "likeCount": 37,
+        "reviewCount": 103,
+        "w": 768,
+        "h": 1024,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-11",
@@ -1503,7 +1926,11 @@
         "image": "/Menu/Florio%20Studio/Endless%20Love.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 83,
-        "likeCount": 21
+        "likeCount": 21,
+        "reviewCount": 397,
+        "w": 1000,
+        "h": 1249,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-12",
@@ -1513,7 +1940,11 @@
         "image": "/Menu/Florio%20Studio/Everlasting%20Romance.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 46
+        "likeCount": 46,
+        "reviewCount": 264,
+        "w": 1000,
+        "h": 1333,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-13",
@@ -1524,6 +1955,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 90,
         "likeCount": 16,
+        "reviewCount": 272,
+        "w": 768,
+        "h": 1024,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -1538,6 +1973,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 89,
         "likeCount": 45,
+        "reviewCount": 257,
+        "w": 1000,
+        "h": 1333,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1553,6 +1992,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 94,
         "likeCount": 38,
+        "reviewCount": 358,
+        "w": 1000,
+        "h": 1333,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -1567,6 +2010,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 97,
         "likeCount": 35,
+        "reviewCount": 335,
+        "w": 1000,
+        "h": 1333,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -1581,7 +2028,11 @@
         "image": "/Menu/Florio%20Studio/Joyful%20heart.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 16
+        "likeCount": 16,
+        "reviewCount": 376,
+        "w": 1000,
+        "h": 1016,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-18",
@@ -1592,6 +2043,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 84,
         "likeCount": 46,
+        "reviewCount": 24,
+        "w": 1000,
+        "h": 1333,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -1606,7 +2061,11 @@
         "image": "/Menu/Florio%20Studio/Love%20you%20for%20ever.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 91,
-        "likeCount": 65
+        "likeCount": 65,
+        "reviewCount": 333,
+        "w": 1275,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-20",
@@ -1616,7 +2075,11 @@
         "image": "/Menu/Florio%20Studio/Peaceful%20Thought.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 93,
-        "likeCount": 67
+        "likeCount": 67,
+        "reviewCount": 475,
+        "w": 1000,
+        "h": 1333,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-21",
@@ -1626,7 +2089,11 @@
         "image": "/Menu/Florio%20Studio/Peaceful%20White%20Roses.jpg",
         "category": "Roses",
         "likePct": 91,
-        "likeCount": 35
+        "likeCount": 35,
+        "reviewCount": 467,
+        "w": 768,
+        "h": 1024,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-22",
@@ -1636,7 +2103,11 @@
         "image": "/Menu/Florio%20Studio/Pink%20and%20love.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 40
+        "likeCount": 40,
+        "reviewCount": 90,
+        "w": 1333,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-23",
@@ -1646,7 +2117,11 @@
         "image": "/Menu/Florio%20Studio/Pink%20Violets.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 83,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 75,
+        "w": 1000,
+        "h": 1078,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-24",
@@ -1656,7 +2131,11 @@
         "image": "/Menu/Florio%20Studio/Promise%20of%20love%202026.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 91,
-        "likeCount": 53
+        "likeCount": 53,
+        "reviewCount": 395,
+        "w": 1000,
+        "h": 1268,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-25",
@@ -1667,6 +2146,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 83,
         "likeCount": 63,
+        "reviewCount": 407,
+        "w": 1000,
+        "h": 1041,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1681,7 +2164,11 @@
         "image": "/Menu/Florio%20Studio/Sofia.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 95,
-        "likeCount": 57
+        "likeCount": 57,
+        "reviewCount": 353,
+        "w": 768,
+        "h": 1024,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-27",
@@ -1691,7 +2178,11 @@
         "image": "/Menu/Florio%20Studio/Sweet%20Smile.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 95,
-        "likeCount": 15
+        "likeCount": 15,
+        "reviewCount": 97,
+        "w": 768,
+        "h": 956,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-28",
@@ -1701,7 +2192,11 @@
         "image": "/Menu/Florio%20Studio/Sweetness%20and%20Romance.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 98,
-        "likeCount": 36
+        "likeCount": 36,
+        "reviewCount": 292,
+        "w": 1000,
+        "h": 1485,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-29",
@@ -1712,6 +2207,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 93,
         "likeCount": 61,
+        "reviewCount": 125,
+        "w": 1000,
+        "h": 1333,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1726,7 +2225,11 @@
         "image": "/Menu/Florio%20Studio/Whispers%20of%20Love%202026.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 93,
-        "likeCount": 67
+        "likeCount": 67,
+        "reviewCount": 315,
+        "w": 1000,
+        "h": 1333,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-31",
@@ -1736,7 +2239,11 @@
         "image": "/Menu/Florio%20Studio/White%20Delight.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "reviewCount": 429,
+        "w": 562,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-32",
@@ -1746,7 +2253,11 @@
         "image": "/Menu/Florio%20Studio/With%20all%20my%20heart.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 82,
-        "likeCount": 20
+        "likeCount": 20,
+        "reviewCount": 436,
+        "w": 888,
+        "h": 1600,
+        "hq": true
       },
       {
         "id": "k1-floral-studio-33",
@@ -1757,6 +2268,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 93,
         "likeCount": 43,
+        "reviewCount": 31,
+        "w": 768,
+        "h": 1024,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -1767,9 +2282,12 @@
   "Flowers Gifts and Balloons": {
     "slug": "flowers-gifts-and-balloons",
     "folder": "Flowers Gifts and Baloons",
+    "department": "Flowers",
     "banner": "/stores/flowers-gifts-and-balloons/banner.jpg",
+    "bannerHq": false,
     "rating": 4.6,
     "ratingCount": "500+",
+    "reviewCount": 344,
     "address": "6856 Bayview Ave, Thornhill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -1827,7 +2345,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/1%20red%20rose%20wrapped%20and%20tied%20with%20ribbon.%20(FGB326).jpg",
         "category": "Roses",
         "likePct": 85,
-        "likeCount": 53
+        "likeCount": 53,
+        "reviewCount": 157,
+        "w": 545,
+        "h": 800,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-1",
@@ -1837,7 +2359,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/24%20Premium%20Red%20Roses%20Bouquet%20(FGB628).jpg",
         "category": "Roses",
         "likePct": 92,
-        "likeCount": 48
+        "likeCount": 48,
+        "reviewCount": 26,
+        "w": 1000,
+        "h": 1333,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-2",
@@ -1847,7 +2373,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/24%20Red%20Roses%20Bouquet%20with%20Butterfly%20Charm_(%20FGB397).jpg",
         "category": "Roses",
         "likePct": 88,
-        "likeCount": 44
+        "likeCount": 44,
+        "reviewCount": 110,
+        "w": 1000,
+        "h": 1272,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-3",
@@ -1857,7 +2387,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/24%20White%20Roses%20with%20Congratulations%20Balloon_.jpg",
         "category": "Roses",
         "likePct": 98,
-        "likeCount": 30
+        "likeCount": 30,
+        "reviewCount": 202,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-4",
@@ -1868,6 +2402,10 @@
         "category": "Roses",
         "likePct": 87,
         "likeCount": 25,
+        "reviewCount": 65,
+        "w": 736,
+        "h": 981,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -1883,6 +2421,10 @@
         "category": "Roses",
         "likePct": 84,
         "likeCount": 40,
+        "reviewCount": 294,
+        "w": 900,
+        "h": 1052,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -1898,6 +2440,10 @@
         "category": "Gift Baskets",
         "likePct": 88,
         "likeCount": 32,
+        "reviewCount": 388,
+        "w": 400,
+        "h": 324,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -1912,7 +2458,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Adorable%20Bear.jpg",
         "category": "Gift Baskets",
         "likePct": 83,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 299,
+        "w": 1433,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-8",
@@ -1922,7 +2472,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Balloon%20Cluster%20with%20Floating%20Top%20Balloons%20(FGB582).jpg",
         "category": "Balloons",
         "likePct": 92,
-        "likeCount": 36
+        "likeCount": 36,
+        "reviewCount": 134,
+        "w": 522,
+        "h": 522,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-9",
@@ -1932,7 +2486,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Beautiful%20Day%20Bouquet%20(FGB338).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 97,
-        "likeCount": 35
+        "likeCount": 35,
+        "reviewCount": 351,
+        "w": 1000,
+        "h": 1126,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-10",
@@ -1942,7 +2500,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Birthday%20Celebration%20(FGB606).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 94,
-        "likeCount": 8
+        "likeCount": 8,
+        "reviewCount": 322,
+        "w": 1000,
+        "h": 1160,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-11",
@@ -1953,6 +2515,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 92,
         "likeCount": 30,
+        "reviewCount": 94,
+        "w": 732,
+        "h": 1500,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -1968,6 +2534,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 88,
         "likeCount": 44,
+        "reviewCount": 426,
+        "w": 1000,
+        "h": 1245,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -1983,7 +2553,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Blushing%20Elegance.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 83,
-        "likeCount": 15
+        "likeCount": 15,
+        "reviewCount": 129,
+        "w": 736,
+        "h": 736,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-14",
@@ -1994,6 +2568,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 97,
         "likeCount": 47,
+        "reviewCount": 179,
+        "w": 1000,
+        "h": 1162,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2007,7 +2585,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Blushing%20Harmony.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 89,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 391,
+        "w": 680,
+        "h": 794,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-16",
@@ -2017,7 +2599,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Bountiful%20Affection%20(FGB421).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 83,
-        "likeCount": 39
+        "likeCount": 39,
+        "reviewCount": 161,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-17",
@@ -2028,6 +2614,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 90,
         "likeCount": 28,
+        "reviewCount": 216,
+        "w": 680,
+        "h": 794,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -2042,6 +2632,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 94,
         "likeCount": 26,
+        "reviewCount": 130,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -2057,7 +2651,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Classic%20Bouquet%20(FGB502).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 97,
-        "likeCount": 17
+        "likeCount": 17,
+        "reviewCount": 165,
+        "w": 389,
+        "h": 284,
+        "hq": false
       },
       {
         "id": "flowers-gifts-and-balloons-20",
@@ -2067,7 +2665,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Eid%20Mubarak%20Balloons%2C.jpg",
         "category": "Balloons",
         "likePct": 82,
-        "likeCount": 62
+        "likeCount": 62,
+        "reviewCount": 270,
+        "w": 800,
+        "h": 800,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-21",
@@ -2077,7 +2679,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Elegant%202%20dozen%20Pink%20Roses.jpg",
         "category": "Roses",
         "likePct": 85,
-        "likeCount": 47
+        "likeCount": 47,
+        "reviewCount": 313,
+        "w": 736,
+        "h": 981,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-22",
@@ -2087,7 +2693,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Elegant%20Affection.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 86,
-        "likeCount": 24
+        "likeCount": 24,
+        "reviewCount": 244,
+        "w": 736,
+        "h": 684,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-23",
@@ -2098,6 +2708,10 @@
         "category": "Roses",
         "likePct": 94,
         "likeCount": 50,
+        "reviewCount": 102,
+        "w": 368,
+        "h": 432,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -2112,7 +2726,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Ferrero%20Birthday%20Bouquet.jpg",
         "category": "Gift Baskets",
         "likePct": 90,
-        "likeCount": 40
+        "likeCount": 40,
+        "reviewCount": 246,
+        "w": 735,
+        "h": 937,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-25",
@@ -2122,7 +2740,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Fresh%20Real%20Red%20Rose%20Petals.jpg",
         "category": "Roses",
         "likePct": 82,
-        "likeCount": 38
+        "likeCount": 38,
+        "reviewCount": 414,
+        "w": 1056,
+        "h": 800,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-26",
@@ -2132,7 +2754,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Gourmet%20Snacks%20%26%20Sweets%20Gift%20Basket%20(FGB804).jpg",
         "category": "Gift Baskets",
         "likePct": 86,
-        "likeCount": 12
+        "likeCount": 12,
+        "reviewCount": 176,
+        "w": 470,
+        "h": 712,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-27",
@@ -2143,6 +2769,10 @@
         "category": "Roses",
         "likePct": 87,
         "likeCount": 43,
+        "reviewCount": 315,
+        "w": 376,
+        "h": 514,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2156,7 +2786,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Happy%20Birthday%20Celebration%20(FGB574).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 82,
-        "likeCount": 26
+        "likeCount": 26,
+        "reviewCount": 86,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-29",
@@ -2166,7 +2800,11 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/Harmony%20in%20Bloom%20(FGB485).jpg",
         "category": "Bouquets & Flowers",
         "likePct": 90,
-        "likeCount": 52
+        "likeCount": 52,
+        "reviewCount": 196,
+        "w": 480,
+        "h": 576,
+        "hq": true
       },
       {
         "id": "flowers-gifts-and-balloons-30",
@@ -2177,6 +2815,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 98,
         "likeCount": 12,
+        "reviewCount": 254,
+        "w": 1000,
+        "h": 1522,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -2193,6 +2835,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 96,
         "likeCount": 28,
+        "reviewCount": 168,
+        "w": 362,
+        "h": 392,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2208,6 +2854,10 @@
         "category": "Bouquets & Flowers",
         "likePct": 84,
         "likeCount": 64,
+        "reviewCount": 176,
+        "w": 600,
+        "h": 700,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -2223,16 +2873,23 @@
         "image": "/Menu/Flowers%20Gifts%20and%20Baloons/_Graceful%20Blooms.jpg",
         "category": "Bouquets & Flowers",
         "likePct": 82,
-        "likeCount": 38
+        "likeCount": 38,
+        "reviewCount": 18,
+        "w": 736,
+        "h": 981,
+        "hq": true
       }
     ]
   },
   "Waterford Convenience": {
     "slug": "waterford-convenience",
     "folder": "Waterford Convience",
+    "department": "Convenience",
     "banner": "/stores/waterford-convenience/banner.jpg",
+    "bannerHq": false,
     "rating": 4.5,
     "ratingCount": "500+",
+    "reviewCount": 59,
     "address": "3465 Bayview Ave, Markham, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -2293,7 +2950,11 @@
         "image": "/Menu/Waterford%20Convience/10pc%20Disposable%20Face%20Masks.jpg",
         "category": "Health & Medicine",
         "likePct": 91,
-        "likeCount": 29
+        "likeCount": 29,
+        "reviewCount": 283,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "waterford-convenience-1",
@@ -2303,7 +2964,11 @@
         "image": "/Menu/Waterford%20Convience/5%20pc%20Disposable%20Face%20Mask.jpg",
         "category": "Health & Medicine",
         "likePct": 82,
-        "likeCount": 14
+        "likeCount": 14,
+        "reviewCount": 428,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "waterford-convenience-2",
@@ -2314,6 +2979,10 @@
         "category": "Soda & Juice",
         "likePct": 91,
         "likeCount": 59,
+        "reviewCount": 259,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2328,6 +2997,10 @@
         "category": "Health & Medicine",
         "likePct": 89,
         "likeCount": 15,
+        "reviewCount": 187,
+        "w": 630,
+        "h": 465,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2342,6 +3015,10 @@
         "category": "Soda & Juice",
         "likePct": 85,
         "likeCount": 23,
+        "reviewCount": 443,
+        "w": 597,
+        "h": 477,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2355,7 +3032,11 @@
         "image": "/Menu/Waterford%20Convience/Aquafina%20Pure%20Water%20(1.5%20L).jpg",
         "category": "Water",
         "likePct": 89,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 177,
+        "w": 1000,
+        "h": 2746,
+        "hq": true
       },
       {
         "id": "waterford-convenience-6",
@@ -2366,6 +3047,10 @@
         "category": "Water",
         "likePct": 87,
         "likeCount": 25,
+        "reviewCount": 295,
+        "w": 938,
+        "h": 750,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2380,6 +3065,10 @@
         "category": "Water",
         "likePct": 82,
         "likeCount": 26,
+        "reviewCount": 84,
+        "w": 1126,
+        "h": 900,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -2394,7 +3083,11 @@
         "image": "/Menu/Waterford%20Convience/Aquafina%20Water%20591%20ml.jpg",
         "category": "Water",
         "likePct": 96,
-        "likeCount": 28
+        "likeCount": 28,
+        "reviewCount": 256,
+        "w": 998,
+        "h": 798,
+        "hq": true
       },
       {
         "id": "waterford-convenience-9",
@@ -2405,6 +3098,10 @@
         "category": "Soda & Juice",
         "likePct": 89,
         "likeCount": 51,
+        "reviewCount": 253,
+        "w": 1000,
+        "h": 2018,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -2419,7 +3116,11 @@
         "image": "/Menu/Waterford%20Convience/Brookside%20Blood%20Orange%20%26%20Peach%20235g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 91,
-        "likeCount": 41
+        "likeCount": 41,
+        "reviewCount": 69,
+        "w": 600,
+        "h": 600,
+        "hq": true
       },
       {
         "id": "waterford-convenience-11",
@@ -2429,7 +3130,11 @@
         "image": "/Menu/Waterford%20Convience/Brookside%20Cherry%20Flavour%20200g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 90,
-        "likeCount": 28
+        "likeCount": 28,
+        "reviewCount": 104,
+        "w": 917,
+        "h": 1127,
+        "hq": true
       },
       {
         "id": "waterford-convenience-12",
@@ -2439,7 +3144,11 @@
         "image": "/Menu/Waterford%20Convience/Cascade%20Dishwasher%20Detergent%20ActionPacs%20924g.jpg",
         "category": "Household",
         "likePct": 88,
-        "likeCount": 8
+        "likeCount": 8,
+        "reviewCount": 480,
+        "w": 713,
+        "h": 570,
+        "hq": true
       },
       {
         "id": "waterford-convenience-13",
@@ -2450,6 +3159,10 @@
         "category": "Household",
         "likePct": 90,
         "likeCount": 40,
+        "reviewCount": 442,
+        "w": 460,
+        "h": 460,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2464,7 +3177,11 @@
         "image": "/Menu/Waterford%20Convience/Cascade%20Platinum%20Dishwasher%20Detergent%20ActionPacs616g.jpg",
         "category": "Household",
         "likePct": 82,
-        "likeCount": 38
+        "likeCount": 38,
+        "reviewCount": 70,
+        "w": 900,
+        "h": 900,
+        "hq": true
       },
       {
         "id": "waterford-convenience-15",
@@ -2475,6 +3192,10 @@
         "category": "Household",
         "likePct": 93,
         "likeCount": 55,
+        "reviewCount": 347,
+        "w": 892,
+        "h": 713,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2489,6 +3210,10 @@
         "category": "Health & Medicine",
         "likePct": 94,
         "likeCount": 20,
+        "reviewCount": 26,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2504,6 +3229,10 @@
         "category": "Water",
         "likePct": 93,
         "likeCount": 19,
+        "reviewCount": 81,
+        "w": 550,
+        "h": 550,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2518,7 +3247,11 @@
         "image": "/Menu/Waterford%20Convience/Dawn%20Ultra%20Dishwashing%20Liquid%20473ml.jpg",
         "category": "Household",
         "likePct": 93,
-        "likeCount": 61
+        "likeCount": 61,
+        "reviewCount": 31,
+        "w": 900,
+        "h": 900,
+        "hq": true
       },
       {
         "id": "waterford-convenience-19",
@@ -2528,7 +3261,11 @@
         "image": "/Menu/Waterford%20Convience/DayQuil%20Cold%26Flu%2016%20Liquid%20Capsules.jpg",
         "category": "Health & Medicine",
         "likePct": 90,
-        "likeCount": 34
+        "likeCount": 34,
+        "reviewCount": 100,
+        "w": 703,
+        "h": 556,
+        "hq": true
       },
       {
         "id": "waterford-convenience-20",
@@ -2538,7 +3275,11 @@
         "image": "/Menu/Waterford%20Convience/Disposable%20Face%20Mask%20(50%20Piece%20Box).jpg",
         "category": "Health & Medicine",
         "likePct": 85,
-        "likeCount": 59
+        "likeCount": 59,
+        "reviewCount": 395,
+        "w": 745,
+        "h": 553,
+        "hq": true
       },
       {
         "id": "waterford-convenience-21",
@@ -2549,6 +3290,10 @@
         "category": "Health & Medicine",
         "likePct": 90,
         "likeCount": 10,
+        "reviewCount": 306,
+        "w": 813,
+        "h": 650,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -2565,6 +3310,10 @@
         "category": "Water",
         "likePct": 82,
         "likeCount": 62,
+        "reviewCount": 474,
+        "w": 966,
+        "h": 772,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -2580,6 +3329,10 @@
         "category": "Water",
         "likePct": 89,
         "likeCount": 33,
+        "reviewCount": 175,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2595,6 +3348,10 @@
         "category": "Water",
         "likePct": 93,
         "likeCount": 31,
+        "reviewCount": 381,
+        "w": 252,
+        "h": 735,
+        "hq": false,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2608,7 +3365,11 @@
         "image": "/Menu/Waterford%20Convience/Hockey%20SP%202020-21.jpg",
         "category": "Trading Cards",
         "likePct": 95,
-        "likeCount": 57
+        "likeCount": 57,
+        "reviewCount": 443,
+        "w": 365,
+        "h": 450,
+        "hq": true
       },
       {
         "id": "waterford-convenience-26",
@@ -2619,6 +3380,10 @@
         "category": "Trading Cards",
         "likePct": 83,
         "likeCount": 51,
+        "reviewCount": 411,
+        "w": 733,
+        "h": 1100,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2634,6 +3399,10 @@
         "category": "Trading Cards",
         "likePct": 93,
         "likeCount": 31,
+        "reviewCount": 457,
+        "w": 437,
+        "h": 939,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2649,6 +3418,10 @@
         "category": "Trading Cards",
         "likePct": 99,
         "likeCount": 25,
+        "reviewCount": 17,
+        "w": 1000,
+        "h": 1314,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2664,6 +3437,10 @@
         "category": "Trading Cards",
         "likePct": 99,
         "likeCount": 61,
+        "reviewCount": 405,
+        "w": 859,
+        "h": 1476,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2677,7 +3454,11 @@
         "image": "/Menu/Waterford%20Convience/Hockey%20SP%202025-26.jpg",
         "category": "Trading Cards",
         "likePct": 91,
-        "likeCount": 35
+        "likeCount": 35,
+        "reviewCount": 275,
+        "w": 474,
+        "h": 783,
+        "hq": true
       },
       {
         "id": "waterford-convenience-31",
@@ -2688,6 +3469,10 @@
         "category": "Health & Medicine",
         "likePct": 91,
         "likeCount": 59,
+        "reviewCount": 33,
+        "w": 900,
+        "h": 900,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2701,7 +3486,11 @@
         "image": "/Menu/Waterford%20Convience/IsopropylAlcohol%20500ml.jpg",
         "category": "Health & Medicine",
         "likePct": 82,
-        "likeCount": 38
+        "likeCount": 38,
+        "reviewCount": 396,
+        "w": 745,
+        "h": 596,
+        "hq": true
       },
       {
         "id": "waterford-convenience-33",
@@ -2712,6 +3501,10 @@
         "category": "Soda & Juice",
         "likePct": 89,
         "likeCount": 63,
+        "reviewCount": 179,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -2726,6 +3519,10 @@
         "category": "Chocolate & Candy",
         "likePct": 96,
         "likeCount": 16,
+        "reviewCount": 258,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2740,7 +3537,11 @@
         "image": "/Menu/Waterford%20Convience/M%20%26%20M's%20%20Caramel%20155g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 90,
-        "likeCount": 10
+        "likeCount": 10,
+        "reviewCount": 48,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "waterford-convenience-36",
@@ -2751,6 +3552,10 @@
         "category": "Soda & Juice",
         "likePct": 96,
         "likeCount": 46,
+        "reviewCount": 158,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2766,6 +3571,10 @@
         "category": "Soda & Juice",
         "likePct": 87,
         "likeCount": 37,
+        "reviewCount": 289,
+        "w": 863,
+        "h": 690,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2781,6 +3590,10 @@
         "category": "Chocolate & Candy",
         "likePct": 96,
         "likeCount": 46,
+        "reviewCount": 86,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2796,6 +3609,10 @@
         "category": "Chocolate & Candy",
         "likePct": 98,
         "likeCount": 24,
+        "reviewCount": 332,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -2811,6 +3628,10 @@
         "category": "Chocolate & Candy",
         "likePct": 89,
         "likeCount": 21,
+        "reviewCount": 61,
+        "w": 550,
+        "h": 440,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -2825,7 +3646,11 @@
         "image": "/Menu/Waterford%20Convience/M%26M's%20Almond%2C%20Take%20Home%20Size%20(185%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 97,
-        "likeCount": 65
+        "likeCount": 65,
+        "reviewCount": 409,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "waterford-convenience-42",
@@ -2835,7 +3660,11 @@
         "image": "/Menu/Waterford%20Convience/M%26M's%20Minis%20Milk%20Chocolate%20100g.jpg",
         "category": "Soda & Juice",
         "likePct": 88,
-        "likeCount": 32
+        "likeCount": 32,
+        "reviewCount": 466,
+        "w": 440,
+        "h": 669,
+        "hq": true
       },
       {
         "id": "waterford-convenience-43",
@@ -2845,7 +3674,11 @@
         "image": "/Menu/Waterford%20Convience/Maltesers%20100g.jpg",
         "category": "Chocolate & Candy",
         "likePct": 99,
-        "likeCount": 37
+        "likeCount": 37,
+        "reviewCount": 353,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "waterford-convenience-44",
@@ -2855,7 +3688,11 @@
         "image": "/Menu/Waterford%20Convience/Maltesers%20Stand%20Up%20Pouch%20(165%20g).jpg",
         "category": "Chocolate & Candy",
         "likePct": 97,
-        "likeCount": 47
+        "likeCount": 47,
+        "reviewCount": 311,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "waterford-convenience-45",
@@ -2865,7 +3702,11 @@
         "image": "/Menu/Waterford%20Convience/NBA%20HOOPS%20Basketball%202024-25(15%20cards%20inside).jpg",
         "category": "Trading Cards",
         "likePct": 92,
-        "likeCount": 30
+        "likeCount": 30,
+        "reviewCount": 186,
+        "w": 315,
+        "h": 499,
+        "hq": false
       },
       {
         "id": "waterford-convenience-46",
@@ -2876,6 +3717,10 @@
         "category": "Health & Medicine",
         "likePct": 99,
         "likeCount": 67,
+        "reviewCount": 203,
+        "w": 693,
+        "h": 554,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -2890,7 +3735,11 @@
         "image": "/Menu/Waterford%20Convience/Nyquil%20Complete%20Cold%26Flu%20Liquid%20354ml.jpg",
         "category": "Health & Medicine",
         "likePct": 88,
-        "likeCount": 20
+        "likeCount": 20,
+        "reviewCount": 462,
+        "w": 362,
+        "h": 330,
+        "hq": true
       },
       {
         "id": "waterford-convenience-48",
@@ -2901,6 +3750,10 @@
         "category": "Health & Medicine",
         "likePct": 91,
         "likeCount": 35,
+        "reviewCount": 19,
+        "w": 900,
+        "h": 900,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -2915,7 +3768,11 @@
         "image": "/Menu/Waterford%20Convience/Ocean%20Spray%20Original%20Juice%20Cocktail%2C%20Cranberry%20(1.89%20L).jpg",
         "category": "Soda & Juice",
         "likePct": 96,
-        "likeCount": 34
+        "likeCount": 34,
+        "reviewCount": 252,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "waterford-convenience-50",
@@ -2925,7 +3782,11 @@
         "image": "/Menu/Waterford%20Convience/Ocean%20Spray-Cran-Raspberry%201.89L.jpg",
         "category": "Snacks",
         "likePct": 82,
-        "likeCount": 14
+        "likeCount": 14,
+        "reviewCount": 350,
+        "w": 550,
+        "h": 440,
+        "hq": true
       },
       {
         "id": "waterford-convenience-51",
@@ -2936,6 +3797,10 @@
         "category": "Health & Medicine",
         "likePct": 89,
         "likeCount": 39,
+        "reviewCount": 321,
+        "w": 900,
+        "h": 900,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -2950,16 +3815,23 @@
         "image": "/Menu/Waterford%20Convience/Palmolive%20Orange%20Dish%20Liquid%20%20828%20ml.jpg",
         "category": "Household",
         "likePct": 83,
-        "likeCount": 45
+        "likeCount": 45,
+        "reviewCount": 347,
+        "w": 550,
+        "h": 440,
+        "hq": true
       }
     ]
   },
   "Razi Pharmacy": {
     "slug": "razi-pharmacy",
     "folder": "RAZI pharmacy",
+    "department": "Pharmacy",
     "banner": "/stores/razi-pharmacy/banner.jpg",
+    "bannerHq": false,
     "rating": 4.5,
     "ratingCount": "500+",
+    "reviewCount": 297,
     "address": "6215 Hwy 7, North York, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -3020,6 +3892,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 86,
         "likeCount": 24,
+        "reviewCount": 66,
+        "w": 564,
+        "h": 941,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -3035,6 +3911,10 @@
         "category": "Oral Care",
         "likePct": 82,
         "likeCount": 20,
+        "reviewCount": 120,
+        "w": 380,
+        "h": 303,
+        "hq": false,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -3049,7 +3929,11 @@
         "image": "/Menu/RAZI%20pharmacy/Astroglide%20gel%20%20Sensitive%20Skin%20Lubricant%2090%20g.jpg",
         "category": "Sexual Wellness",
         "likePct": 90,
-        "likeCount": 16
+        "likeCount": 16,
+        "reviewCount": 74,
+        "w": 256,
+        "h": 500,
+        "hq": false
       },
       {
         "id": "razi-pharmacy-3",
@@ -3060,6 +3944,10 @@
         "category": "Sexual Wellness",
         "likePct": 91,
         "likeCount": 11,
+        "reviewCount": 385,
+        "w": 499,
+        "h": 829,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3074,7 +3962,11 @@
         "image": "/Menu/RAZI%20pharmacy/Blistex%20Berry%20Lip%20balm.jpg",
         "category": "Lip Care",
         "likePct": 89,
-        "likeCount": 39
+        "likeCount": 39,
+        "reviewCount": 481,
+        "w": 640,
+        "h": 804,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-5",
@@ -3085,6 +3977,10 @@
         "category": "Lip Care",
         "likePct": 88,
         "likeCount": 56,
+        "reviewCount": 318,
+        "w": 765,
+        "h": 800,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -3100,6 +3996,10 @@
         "category": "Lip Care",
         "likePct": 97,
         "likeCount": 41,
+        "reviewCount": 111,
+        "w": 1000,
+        "h": 1057,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3114,7 +4014,11 @@
         "image": "/Menu/RAZI%20pharmacy/Colgate%20Kids%20T_P%20(75%20ml).jpg",
         "category": "Oral Care",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "reviewCount": 113,
+        "w": 380,
+        "h": 967,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-8",
@@ -3124,7 +4028,11 @@
         "image": "/Menu/RAZI%20pharmacy/Colgate%20PreviDent%205000%20Plus%2039%20ml.jpg",
         "category": "Oral Care",
         "likePct": 83,
-        "likeCount": 21
+        "likeCount": 21,
+        "reviewCount": 67,
+        "w": 800,
+        "h": 301,
+        "hq": false
       },
       {
         "id": "razi-pharmacy-9",
@@ -3135,6 +4043,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 91,
         "likeCount": 17,
+        "reviewCount": 85,
+        "w": 593,
+        "h": 418,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -3149,7 +4061,11 @@
         "image": "/Menu/RAZI%20pharmacy/D%20urex%20Intense%20Orgasmic%2010%20C%20ondoms.jpg",
         "category": "Sexual Wellness",
         "likePct": 94,
-        "likeCount": 26
+        "likeCount": 26,
+        "reviewCount": 396,
+        "w": 696,
+        "h": 1058,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-11",
@@ -3159,7 +4075,11 @@
         "image": "/Menu/RAZI%20pharmacy/D%20urex%20Original%20Lubricant%20%20100%20ml.jpg",
         "category": "Health & Wellness",
         "likePct": 92,
-        "likeCount": 54
+        "likeCount": 54,
+        "reviewCount": 110,
+        "w": 483,
+        "h": 1497,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-12",
@@ -3169,7 +4089,11 @@
         "image": "/Menu/RAZI%20pharmacy/D%20urex%20Play%20Massage%202%20in%201%20Aloe%20Vera%20200%20ml.jpg",
         "category": "Sexual Wellness",
         "likePct": 84,
-        "likeCount": 64
+        "likeCount": 64,
+        "reviewCount": 172,
+        "w": 308,
+        "h": 800,
+        "hq": false
       },
       {
         "id": "razi-pharmacy-13",
@@ -3179,7 +4103,11 @@
         "image": "/Menu/RAZI%20pharmacy/Durex%20Pleasure%20Ring%20(10%20g).jpg",
         "category": "Sexual Wellness",
         "likePct": 89,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 43,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-14",
@@ -3189,7 +4117,11 @@
         "image": "/Menu/RAZI%20pharmacy/Durex%20Sensi-Thin%20Ultra%20Fine%20Lubricated%20Condoms%20(12%20ct).jpg",
         "category": "Sexual Wellness",
         "likePct": 90,
-        "likeCount": 40
+        "likeCount": 40,
+        "reviewCount": 412,
+        "w": 976,
+        "h": 1599,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-15",
@@ -3199,7 +4131,11 @@
         "image": "/Menu/RAZI%20pharmacy/Emergen-C%201000%20mg%20Vit%20C%20%2B%207%20B%20Vitamins%2030%20Sachets%20(Raspberry).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 97,
-        "likeCount": 17
+        "likeCount": 17,
+        "reviewCount": 469,
+        "w": 1000,
+        "h": 797,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-16",
@@ -3209,7 +4145,11 @@
         "image": "/Menu/RAZI%20pharmacy/Emergen-C%201000%20mg%20Vit%20C%20%2B%207B%20Vitamins%2030%20Sachets%20(Tangerine).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 88,
-        "likeCount": 20
+        "likeCount": 20,
+        "reviewCount": 390,
+        "w": 1000,
+        "h": 747,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-17",
@@ -3219,7 +4159,11 @@
         "image": "/Menu/RAZI%20pharmacy/Emergen-C%20Vitamin%20C%201000%20mg%20Drink%20Mix%2C%20Orange%20(30%20ct).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 95,
-        "likeCount": 39
+        "likeCount": 39,
+        "reviewCount": 257,
+        "w": 1294,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-18",
@@ -3230,6 +4174,10 @@
         "category": "Oral Care",
         "likePct": 91,
         "likeCount": 11,
+        "reviewCount": 345,
+        "w": 1347,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -3244,6 +4192,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 87,
         "likeCount": 49,
+        "reviewCount": 219,
+        "w": 1000,
+        "h": 1072,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -3258,7 +4210,11 @@
         "image": "/Menu/RAZI%20pharmacy/FeraMax%20150%20(30's%20capsules).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 95,
-        "likeCount": 9
+        "likeCount": 9,
+        "reviewCount": 475,
+        "w": 1438,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-21",
@@ -3268,7 +4224,11 @@
         "image": "/Menu/RAZI%20pharmacy/FeraMax%2045%20Maintenance%20(30%20Chewable%20Tabs).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 90,
-        "likeCount": 28
+        "likeCount": 28,
+        "reviewCount": 120,
+        "w": 970,
+        "h": 600,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-22",
@@ -3279,6 +4239,10 @@
         "category": "Oral Care",
         "likePct": 88,
         "likeCount": 50,
+        "reviewCount": 36,
+        "w": 742,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -3293,7 +4257,11 @@
         "image": "/Menu/RAZI%20pharmacy/GUM%20Professional%20Clean%20Flosser%20Picks%20(90%20ct).jpg",
         "category": "Oral Care",
         "likePct": 99,
-        "likeCount": 61
+        "likeCount": 61,
+        "reviewCount": 111,
+        "w": 460,
+        "h": 460,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-24",
@@ -3304,6 +4272,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 89,
         "likeCount": 45,
+        "reviewCount": 261,
+        "w": 614,
+        "h": 899,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -3317,7 +4289,11 @@
         "image": "/Menu/RAZI%20pharmacy/Jamieson%20Vitamin%20B12%20Metabolic%20Support%20Timed%20Release%20Tablets%201200%20Mcg%20(80%20ct).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 94,
-        "likeCount": 50
+        "likeCount": 50,
+        "reviewCount": 290,
+        "w": 270,
+        "h": 455,
+        "hq": false
       },
       {
         "id": "razi-pharmacy-26",
@@ -3328,6 +4304,10 @@
         "category": "Candy & Snacks",
         "likePct": 89,
         "likeCount": 39,
+        "reviewCount": 381,
+        "w": 462,
+        "h": 201,
+        "hq": false,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -3342,6 +4322,10 @@
         "category": "Candy & Snacks",
         "likePct": 89,
         "likeCount": 39,
+        "reviewCount": 157,
+        "w": 570,
+        "h": 281,
+        "hq": false,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3357,6 +4341,10 @@
         "category": "Candy & Snacks",
         "likePct": 88,
         "likeCount": 56,
+        "reviewCount": 456,
+        "w": 500,
+        "h": 500,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -3370,7 +4358,11 @@
         "image": "/Menu/RAZI%20pharmacy/KitKat%20Chunky%20Rolo%20Chocolate%20Bar%20(42%20g).jpg",
         "category": "Candy & Snacks",
         "likePct": 96,
-        "likeCount": 22
+        "likeCount": 22,
+        "reviewCount": 202,
+        "w": 2780,
+        "h": 809,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-30",
@@ -3381,6 +4373,10 @@
         "category": "Candy & Snacks",
         "likePct": 93,
         "likeCount": 13,
+        "reviewCount": 183,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -3395,6 +4391,10 @@
         "category": "Candy & Snacks",
         "likePct": 91,
         "likeCount": 59,
+        "reviewCount": 219,
+        "w": 565,
+        "h": 281,
+        "hq": false,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -3408,7 +4408,11 @@
         "image": "/Menu/RAZI%20pharmacy/Nivea%20Caring%20Lip%20Balm.jpg",
         "category": "Lip Care",
         "likePct": 99,
-        "likeCount": 67
+        "likeCount": 67,
+        "reviewCount": 377,
+        "w": 854,
+        "h": 1200,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-33",
@@ -3418,7 +4422,11 @@
         "image": "/Menu/RAZI%20pharmacy/Orajel%203_Medicated%20Cold%20sores%205.3g.jpg",
         "category": "Oral Care",
         "likePct": 98,
-        "likeCount": 30
+        "likeCount": 30,
+        "reviewCount": 26,
+        "w": 360,
+        "h": 324,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-34",
@@ -3429,6 +4437,10 @@
         "category": "Oral Care",
         "likePct": 94,
         "likeCount": 8,
+        "reviewCount": 374,
+        "w": 512,
+        "h": 614,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -3442,7 +4454,11 @@
         "image": "/Menu/RAZI%20pharmacy/Orajel%20Maximum%20Liquid%20Toothache%20relief%2013ml.jpg",
         "category": "Oral Care",
         "likePct": 91,
-        "likeCount": 59
+        "likeCount": 59,
+        "reviewCount": 253,
+        "w": 800,
+        "h": 800,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-36",
@@ -3452,7 +4468,11 @@
         "image": "/Menu/RAZI%20pharmacy/Orajel%20Maximum%20PM%20Toothache%20relief%205.3g.jpg",
         "category": "Oral Care",
         "likePct": 98,
-        "likeCount": 60
+        "likeCount": 60,
+        "reviewCount": 230,
+        "w": 998,
+        "h": 1280,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-37",
@@ -3463,6 +4483,10 @@
         "category": "Oral Care",
         "likePct": 99,
         "likeCount": 31,
+        "reviewCount": 41,
+        "w": 324,
+        "h": 1480,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3478,6 +4502,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 86,
         "likeCount": 12,
+        "reviewCount": 358,
+        "w": 957,
+        "h": 650,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -3492,6 +4520,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 86,
         "likeCount": 54,
+        "reviewCount": 26,
+        "w": 553,
+        "h": 337,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -3507,6 +4539,10 @@
         "category": "Vitamins & Supplements",
         "likePct": 91,
         "likeCount": 41,
+        "reviewCount": 395,
+        "w": 543,
+        "h": 405,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3521,7 +4557,11 @@
         "image": "/Menu/RAZI%20pharmacy/Plan%20B%20Emergency%20Contraceptive%20Levonorgestrel%20Tablet%201.5%20mg%2C%20Women.jpg",
         "category": "Vitamins & Supplements",
         "likePct": 89,
-        "likeCount": 33
+        "likeCount": 33,
+        "reviewCount": 317,
+        "w": 963,
+        "h": 1280,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-42",
@@ -3531,7 +4571,11 @@
         "image": "/Menu/RAZI%20pharmacy/Polyride%20ultra%20350%20mg%20%2B%20B12%20%2B%20Vit%20C%20(30%20Vegan%20Caps).jpg",
         "category": "Vitamins & Supplements",
         "likePct": 90,
-        "likeCount": 16
+        "likeCount": 16,
+        "reviewCount": 436,
+        "w": 522,
+        "h": 998,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-43",
@@ -3542,6 +4586,10 @@
         "category": "Oral Care",
         "likePct": 94,
         "likeCount": 56,
+        "reviewCount": 102,
+        "w": 400,
+        "h": 231,
+        "hq": false,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -3555,7 +4603,11 @@
         "image": "/Menu/RAZI%20pharmacy/Toblerone%20Swiss%20Milk%20Chocolate%20Bar%20(35%20g).jpg",
         "category": "Candy & Snacks",
         "likePct": 96,
-        "likeCount": 28
+        "likeCount": 28,
+        "reviewCount": 296,
+        "w": 2234,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-45",
@@ -3566,6 +4618,10 @@
         "category": "Sexual Wellness",
         "likePct": 84,
         "likeCount": 28,
+        "reviewCount": 248,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -3580,7 +4636,11 @@
         "image": "/Menu/RAZI%20pharmacy/Trojan%20Pleasure%20Pack%2012%20C%20ondoms.jpg",
         "category": "Sexual Wellness",
         "likePct": 97,
-        "likeCount": 53
+        "likeCount": 53,
+        "reviewCount": 119,
+        "w": 425,
+        "h": 688,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-47",
@@ -3591,6 +4651,10 @@
         "category": "Sexual Wellness",
         "likePct": 98,
         "likeCount": 30,
+        "reviewCount": 106,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -3605,6 +4669,10 @@
         "category": "Sexual Wellness",
         "likePct": 90,
         "likeCount": 64,
+        "reviewCount": 454,
+        "w": 460,
+        "h": 460,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -3619,7 +4687,11 @@
         "image": "/Menu/RAZI%20pharmacy/Vagisil%20Healthy%20Protect%20Wash%20(360%20ml).jpg",
         "category": "Sexual Wellness",
         "likePct": 88,
-        "likeCount": 8
+        "likeCount": 8,
+        "reviewCount": 96,
+        "w": 460,
+        "h": 460,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-50",
@@ -3629,7 +4701,11 @@
         "image": "/Menu/RAZI%20pharmacy/Vagisil%20Odour%20Controlling%20Desodorisant%20Daily%20Intimate%20Wash%20(360%20g).jpg",
         "category": "Sexual Wellness",
         "likePct": 85,
-        "likeCount": 17
+        "likeCount": 17,
+        "reviewCount": 145,
+        "w": 460,
+        "h": 460,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-51",
@@ -3639,7 +4715,11 @@
         "image": "/Menu/RAZI%20pharmacy/WakeUps%20%20100%20mg%20Caffeine%2050%20Tablets.jpg",
         "category": "Vitamins & Supplements",
         "likePct": 95,
-        "likeCount": 39
+        "likeCount": 39,
+        "reviewCount": 115,
+        "w": 1000,
+        "h": 1920,
+        "hq": true
       },
       {
         "id": "razi-pharmacy-52",
@@ -3649,16 +4729,23 @@
         "image": "/Menu/RAZI%20pharmacy/WakeUps%20%20200%20mg%20Caffeine%2050%20Tablets.jpg",
         "category": "Vitamins & Supplements",
         "likePct": 96,
-        "likeCount": 22
+        "likeCount": 22,
+        "reviewCount": 154,
+        "w": 1026,
+        "h": 1000,
+        "hq": true
       }
     ]
   },
   "Ambrosia Thornhills": {
     "slug": "ambrosia-thornhills",
     "folder": "Ambrosia",
+    "department": "Grocery",
     "banner": "/stores/ambrosia-thornhills/banner.jpg",
+    "bannerHq": false,
     "rating": 4.7,
     "ratingCount": "500+",
+    "reviewCount": 61,
     "address": "8367 Bathurst St, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -3717,6 +4804,10 @@
         "category": "Snacks & Nuts",
         "likePct": 92,
         "likeCount": 66,
+        "reviewCount": 458,
+        "w": 1202,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -3732,6 +4823,10 @@
         "category": "Snacks & Nuts",
         "likePct": 90,
         "likeCount": 52,
+        "reviewCount": 202,
+        "w": 896,
+        "h": 828,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -3748,6 +4843,10 @@
         "category": "Snacks & Nuts",
         "likePct": 97,
         "likeCount": 23,
+        "reviewCount": 453,
+        "w": 1000,
+        "h": 1112,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3762,7 +4861,11 @@
         "image": "/Menu/Ambrosia/Ambrosia%20-%20Organic%20Chamomile%20Flowers%20-%2028g.jpg",
         "category": "Organic & Herbs",
         "likePct": 94,
-        "likeCount": 26
+        "likeCount": 26,
+        "reviewCount": 396,
+        "w": 1000,
+        "h": 1309,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-4",
@@ -3772,7 +4875,11 @@
         "image": "/Menu/Ambrosia/Ambrosia%20-%20Organic%20Dandelion%20Leaf%20-%2028g.jpg",
         "category": "Organic & Herbs",
         "likePct": 95,
-        "likeCount": 15
+        "likeCount": 15,
+        "reviewCount": 233,
+        "w": 1000,
+        "h": 1132,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-5",
@@ -3782,7 +4889,11 @@
         "image": "/Menu/Ambrosia/Ambrosia%20-%20Organic%20Raw%20Pumpkin%20Seeds%20-%20454g.jpg",
         "category": "Snacks & Nuts",
         "likePct": 98,
-        "likeCount": 12
+        "likeCount": 12,
+        "reviewCount": 446,
+        "w": 1000,
+        "h": 1296,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-6",
@@ -3792,7 +4903,11 @@
         "image": "/Menu/Ambrosia/Ambrosia%20-%20Organic%20Whole%20Raw%20Cashew%20-%20227g.jpg",
         "category": "Snacks & Nuts",
         "likePct": 84,
-        "likeCount": 10
+        "likeCount": 10,
+        "reviewCount": 70,
+        "w": 1000,
+        "h": 1353,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-7",
@@ -3803,6 +4918,10 @@
         "category": "Snacks & Nuts",
         "likePct": 86,
         "likeCount": 48,
+        "reviewCount": 326,
+        "w": 698,
+        "h": 1074,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -3818,7 +4937,11 @@
         "image": "/Menu/Ambrosia/Better%20Bovine%20100%25%20Grass%20Fed%20Extra%20Lean%20Beef%20Jerky%20(50%20g).jpg",
         "category": "Snacks & Nuts",
         "likePct": 91,
-        "likeCount": 11
+        "likeCount": 11,
+        "reviewCount": 311,
+        "w": 963,
+        "h": 1200,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-9",
@@ -3829,6 +4952,10 @@
         "category": "Snacks & Nuts",
         "likePct": 97,
         "likeCount": 35,
+        "reviewCount": 423,
+        "w": 979,
+        "h": 1200,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -3844,6 +4971,10 @@
         "category": "Pantry",
         "likePct": 84,
         "likeCount": 58,
+        "reviewCount": 314,
+        "w": 1000,
+        "h": 1084,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -3858,6 +4989,10 @@
         "category": "Drinks",
         "likePct": 97,
         "likeCount": 41,
+        "reviewCount": 267,
+        "w": 1367,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -3873,6 +5008,10 @@
         "category": "Drinks",
         "likePct": 87,
         "likeCount": 43,
+        "reviewCount": 203,
+        "w": 640,
+        "h": 960,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3887,7 +5026,11 @@
         "image": "/Menu/Ambrosia/Brothers%20Strawberry%20Crisps%20(7.5%20g).jpg",
         "category": "Snacks & Nuts",
         "likePct": 85,
-        "likeCount": 23
+        "likeCount": 23,
+        "reviewCount": 95,
+        "w": 667,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-14",
@@ -3897,7 +5040,11 @@
         "image": "/Menu/Ambrosia/Bulk%20-%20Dry%20Roasted%20Cashews%20Salted%20-%20_1.00%20lbs%20(REG%20%248.99).jpg",
         "category": "Snacks & Nuts",
         "likePct": 92,
-        "likeCount": 54
+        "likeCount": 54,
+        "reviewCount": 122,
+        "w": 476,
+        "h": 276,
+        "hq": false
       },
       {
         "id": "ambrosia-thornhills-15",
@@ -3908,6 +5055,10 @@
         "category": "Snacks & Nuts",
         "likePct": 87,
         "likeCount": 55,
+        "reviewCount": 233,
+        "w": 500,
+        "h": 296,
+        "hq": false,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -3922,7 +5073,11 @@
         "image": "/Menu/Ambrosia/Cookstown%20Greens%20Organic%20Micro%20Broccoli%20(75%20g).jpg",
         "category": "Organic & Herbs",
         "likePct": 86,
-        "likeCount": 18
+        "likeCount": 18,
+        "reviewCount": 352,
+        "w": 1000,
+        "h": 923,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-17",
@@ -3933,6 +5088,10 @@
         "category": "Drinks",
         "likePct": 92,
         "likeCount": 54,
+        "reviewCount": 472,
+        "w": 342,
+        "h": 610,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -3947,7 +5106,11 @@
         "image": "/Menu/Ambrosia/Cove%20Drinks%20Soda%2C%20Cherry%20(355%20ml).jpg",
         "category": "Drinks",
         "likePct": 98,
-        "likeCount": 66
+        "likeCount": 66,
+        "reviewCount": 110,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ambrosia-thornhills-19",
@@ -3958,6 +5121,10 @@
         "category": "Drinks",
         "likePct": 86,
         "likeCount": 66,
+        "reviewCount": 174,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 3,
@@ -3974,6 +5141,10 @@
         "category": "Drinks",
         "likePct": 91,
         "likeCount": 29,
+        "reviewCount": 355,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -3984,9 +5155,12 @@
   "Ashario Pets North York": {
     "slug": "ashario-pets",
     "folder": "Ashario Pets",
+    "department": "Pets",
     "banner": "/stores/ashario-pets/banner.jpg",
+    "bannerHq": false,
     "rating": 4.5,
     "ratingCount": "500+",
+    "reviewCount": 111,
     "address": "4865 Bayview Ave, Markham, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sun 9:00 a.m. – 9:00 p.m.",
@@ -4046,7 +5220,11 @@
         "image": "/Menu/Ashario%20Pets/5Strands%20-%20Pet%20Raw%20Food%20and%20Environmental%20Intolerance%20Test%20Kit.jpg",
         "category": "Dog Food",
         "likePct": 88,
-        "likeCount": 20
+        "likeCount": 20,
+        "reviewCount": 434,
+        "w": 1080,
+        "h": 855,
+        "hq": true
       },
       {
         "id": "ashario-pets-1",
@@ -4056,7 +5234,11 @@
         "image": "/Menu/Ashario%20Pets/ACANA%20Adult%20Chicken%20Dry%20Dog%20Food.jpg",
         "category": "Dog Food",
         "likePct": 89,
-        "likeCount": 63
+        "likeCount": 63,
+        "reviewCount": 419,
+        "w": 550,
+        "h": 550,
+        "hq": true
       },
       {
         "id": "ashario-pets-2",
@@ -4067,6 +5249,10 @@
         "category": "Dog Food",
         "likePct": 93,
         "likeCount": 37,
+        "reviewCount": 149,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "first_order",
           "value": 20,
@@ -4082,6 +5268,10 @@
         "category": "Dog Food",
         "likePct": 92,
         "likeCount": 24,
+        "reviewCount": 236,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -4097,6 +5287,10 @@
         "category": "Dog Food",
         "likePct": 87,
         "likeCount": 13,
+        "reviewCount": 305,
+        "w": 550,
+        "h": 550,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -4111,6 +5305,10 @@
         "category": "Health & Wellness",
         "likePct": 90,
         "likeCount": 46,
+        "reviewCount": 254,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -4124,7 +5322,11 @@
         "image": "/Menu/Ashario%20Pets/Advantage%20II%20-%20Flea%20%26%20Tick%20Medicine%20-%20Medium%20Dog.jpg",
         "category": "Health & Wellness",
         "likePct": 96,
-        "likeCount": 16
+        "likeCount": 16,
+        "reviewCount": 230,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-7",
@@ -4134,7 +5336,11 @@
         "image": "/Menu/Ashario%20Pets/Aikiou%20-%20Hexa%20Blue%20Slow%20Feeder.jpg",
         "category": "Toys & Play",
         "likePct": 92,
-        "likeCount": 48
+        "likeCount": 48,
+        "reviewCount": 406,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-8",
@@ -4145,6 +5351,10 @@
         "category": "Toys & Play",
         "likePct": 90,
         "likeCount": 10,
+        "reviewCount": 230,
+        "w": 550,
+        "h": 528,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -4158,7 +5368,11 @@
         "image": "/Menu/Ashario%20Pets/Ashario%20Pets%20-%20Dog%20Toy%20-%20Teeth%20Cleaning%20Ring%20-%20Small.jpg",
         "category": "Toys & Play",
         "likePct": 93,
-        "likeCount": 25
+        "likeCount": 25,
+        "reviewCount": 453,
+        "w": 550,
+        "h": 528,
+        "hq": true
       },
       {
         "id": "ashario-pets-10",
@@ -4169,6 +5383,10 @@
         "category": "Carriers & Beds",
         "likePct": 93,
         "likeCount": 37,
+        "reviewCount": 141,
+        "w": 935,
+        "h": 893,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -4182,7 +5400,11 @@
         "image": "/Menu/Ashario%20Pets/Baci%2B%20-%20Probio%2B%20Vivoflora%20Action%2B%20For%20Dogs%20-%2014%20Grams.jpg",
         "category": "Health & Wellness",
         "likePct": 85,
-        "likeCount": 23
+        "likeCount": 23,
+        "reviewCount": 361,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-12",
@@ -4193,6 +5415,10 @@
         "category": "Health & Wellness",
         "likePct": 97,
         "likeCount": 17,
+        "reviewCount": 195,
+        "w": 1000,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -4207,7 +5433,11 @@
         "image": "/Menu/Ashario%20Pets/Baci%2B%20Probio%20Intestinal%20Health%20For%20Dogs%20(14%20g).jpg",
         "category": "Health & Wellness",
         "likePct": 84,
-        "likeCount": 64
+        "likeCount": 64,
+        "reviewCount": 270,
+        "w": 550,
+        "h": 550,
+        "hq": true
       },
       {
         "id": "ashario-pets-14",
@@ -4217,7 +5447,11 @@
         "image": "/Menu/Ashario%20Pets/Beco%20-%20Recycled%20Plastic%20Poop%20Bag%20Dispenser%20-%2015%20Count.jpg",
         "category": "Pet Supplies",
         "likePct": 97,
-        "likeCount": 11
+        "likeCount": 11,
+        "reviewCount": 319,
+        "w": 1253,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-15",
@@ -4228,6 +5462,10 @@
         "category": "Dog Treats",
         "likePct": 98,
         "likeCount": 48,
+        "reviewCount": 456,
+        "w": 1000,
+        "h": 1043,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -4243,7 +5481,11 @@
         "image": "/Menu/Ashario%20Pets/Benko%20-%20Mini%20Dino%20Dog%20Bone.jpg",
         "category": "Dog Treats",
         "likePct": 94,
-        "likeCount": 14
+        "likeCount": 14,
+        "reviewCount": 338,
+        "w": 1000,
+        "h": 1254,
+        "hq": true
       },
       {
         "id": "ashario-pets-17",
@@ -4253,7 +5495,11 @@
         "image": "/Menu/Ashario%20Pets/Benko%20Beef%20Sticks%20With%20Garlic%20Dog%20Treats%20(12%20ct).jpg",
         "category": "Dog Treats",
         "likePct": 87,
-        "likeCount": 43
+        "likeCount": 43,
+        "reviewCount": 151,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-18",
@@ -4263,7 +5509,11 @@
         "image": "/Menu/Ashario%20Pets/Benko%20Mini%20Beef%20Bite%20Knuckle%20Dog%20Treat.jpg",
         "category": "Dog Treats",
         "likePct": 92,
-        "likeCount": 48
+        "likeCount": 48,
+        "reviewCount": 406,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-19",
@@ -4273,7 +5523,11 @@
         "image": "/Menu/Ashario%20Pets/Bergamo%20-%20Gipsy%20Eco%20Metal%20Door%20Carrier%20For%20Large%20Pets%20-%20Green.jpg",
         "category": "Carriers & Beds",
         "likePct": 85,
-        "likeCount": 23
+        "likeCount": 23,
+        "reviewCount": 153,
+        "w": 1117,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-20",
@@ -4283,7 +5537,11 @@
         "image": "/Menu/Ashario%20Pets/Bergamo%20-%20Gipsy%20Eco%20Metal%20Door%20Carrier%20For%20Large%20Pets%20-%20Ice%20Blue.jpg",
         "category": "Carriers & Beds",
         "likePct": 85,
-        "likeCount": 23
+        "likeCount": 23,
+        "reviewCount": 225,
+        "w": 1117,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-21",
@@ -4293,7 +5551,11 @@
         "image": "/Menu/Ashario%20Pets/Big%20Country%20Raw%20-%20Bag%20Of%20Marrow%20Bones%20Dog%20Treats%20-%20Large.jpg",
         "category": "Dog Treats",
         "likePct": 83,
-        "likeCount": 9
+        "likeCount": 9,
+        "reviewCount": 207,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-22",
@@ -4303,7 +5565,11 @@
         "image": "/Menu/Ashario%20Pets/Big%20Country%20Raw%20-%20Turkey%20Dinner%20Carton%20Raw%20Dog%20Food%20-%204%20lb.jpg",
         "category": "Dog Food",
         "likePct": 84,
-        "likeCount": 52
+        "likeCount": 52,
+        "reviewCount": 418,
+        "w": 1000,
+        "h": 1000,
+        "hq": true
       },
       {
         "id": "ashario-pets-23",
@@ -4314,6 +5580,10 @@
         "category": "Carriers & Beds",
         "likePct": 95,
         "likeCount": 27,
+        "reviewCount": 67,
+        "w": 1115,
+        "h": 1000,
+        "hq": true,
         "deal": {
           "type": "bogo",
           "label": "Buy 1 Get 1 Free"
@@ -4327,16 +5597,23 @@
         "image": "/Menu/Ashario%20Pets/Carino%20-%20Seal%20Oil%20-%20500%20mL.jpg",
         "category": "Health & Wellness",
         "likePct": 84,
-        "likeCount": 34
+        "likeCount": 34,
+        "reviewCount": 186,
+        "w": 533,
+        "h": 536,
+        "hq": true
       }
     ]
   },
   "Comfort Air HVAC": {
     "slug": "comfort-air-hvac",
     "folder": "Services photos",
+    "department": "Home Services",
     "banner": "/Menu/Services%20photos/hvac%20business%20photo.jpg",
+    "bannerHq": true,
     "rating": 4.9,
     "ratingCount": "200+",
+    "reviewCount": 313,
     "address": "1459 Bathurst St, Thornhill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4380,6 +5657,10 @@
         "category": "Home Services",
         "likePct": 90,
         "likeCount": 31,
+        "reviewCount": 34,
+        "w": 547,
+        "h": 365,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 10,
@@ -4392,9 +5673,12 @@
   "Reliable Flow Plumbing": {
     "slug": "reliable-flow-plumbing",
     "folder": "Services photos",
+    "department": "Home Services",
     "banner": "/Menu/Services%20photos/Plumbing%20buissness%20photo.jpg",
+    "bannerHq": true,
     "rating": 4.7,
     "ratingCount": "200+",
+    "reviewCount": 235,
     "address": "9913 Major Mackenzie Dr, Toronto, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4438,6 +5722,10 @@
         "category": "Home Services",
         "likePct": 93,
         "likeCount": 45,
+        "reviewCount": 212,
+        "w": 1920,
+        "h": 1280,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -4450,9 +5738,12 @@
   "GreenScape Landscaping": {
     "slug": "greenscape-landscaping",
     "folder": "Services photos",
+    "department": "Home Services",
     "banner": "/Menu/Services%20photos/landscaping%20business.jpg",
+    "bannerHq": true,
     "rating": 4.7,
     "ratingCount": "200+",
+    "reviewCount": 121,
     "address": "7581 Major Mackenzie Dr, Thornhill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4495,7 +5786,11 @@
         "image": "/Menu/Services%20photos/landscaping%20business.jpg",
         "category": "Home Services",
         "likePct": 92,
-        "likeCount": 33
+        "likeCount": 33,
+        "reviewCount": 41,
+        "w": 640,
+        "h": 480,
+        "hq": true
       }
     ],
     "isService": true
@@ -4503,9 +5798,12 @@
   "Summit Home Renovations": {
     "slug": "summit-home-renovations",
     "folder": "Services photos",
+    "department": "Home Services",
     "banner": "/Menu/Services%20photos/renovation%20buisness.jpg",
+    "bannerHq": true,
     "rating": 4.7,
     "ratingCount": "200+",
+    "reviewCount": 19,
     "address": "1493 Yonge St, North York, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4548,7 +5846,11 @@
         "image": "/Menu/Services%20photos/renovation%20buisness.jpg",
         "category": "Home Services",
         "likePct": 97,
-        "likeCount": 25
+        "likeCount": 25,
+        "reviewCount": 127,
+        "w": 1663,
+        "h": 800,
+        "hq": true
       }
     ],
     "isService": true
@@ -4556,9 +5858,12 @@
   "Sharp Fade Barbershop": {
     "slug": "sharp-fade-barbershop",
     "folder": "Services photos",
+    "department": "Grooming",
     "banner": "/Menu/Services%20photos/Barber.jpg",
+    "bannerHq": true,
     "rating": 4.7,
     "ratingCount": "200+",
+    "reviewCount": 381,
     "address": "4285 Major Mackenzie Dr, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4602,6 +5907,10 @@
         "category": "Grooming",
         "likePct": 90,
         "likeCount": 17,
+        "reviewCount": 439,
+        "w": 335,
+        "h": 597,
+        "hq": true,
         "deal": {
           "type": "free_delivery",
           "threshold": 25,
@@ -4614,9 +5923,12 @@
   "Polished Nail Studio": {
     "slug": "polished-nail-studio",
     "folder": "Services photos",
+    "department": "Beauty",
     "banner": "/Menu/Services%20photos/nails.jpg",
+    "bannerHq": true,
     "rating": 4.9,
     "ratingCount": "200+",
+    "reviewCount": 481,
     "address": "7727 Bayview Ave, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4660,6 +5972,10 @@
         "category": "Beauty",
         "likePct": 94,
         "likeCount": 19,
+        "reviewCount": 388,
+        "w": 335,
+        "h": 597,
+        "hq": true,
         "deal": {
           "type": "percent",
           "value": 15,
@@ -4672,9 +5988,12 @@
   "Serenity Massage Therapy": {
     "slug": "serenity-massage-therapy",
     "folder": "Services photos",
+    "department": "Wellness",
     "banner": "/Menu/Services%20photos/Massage.jpg",
+    "bannerHq": true,
     "rating": 4.6,
     "ratingCount": "200+",
+    "reviewCount": 380,
     "address": "1152 Yonge St, Toronto, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4718,6 +6037,10 @@
         "category": "Wellness",
         "likePct": 98,
         "likeCount": 44,
+        "reviewCount": 196,
+        "w": 678,
+        "h": 452,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -4729,9 +6052,12 @@
   "Peak Personal Training": {
     "slug": "peak-personal-training",
     "folder": "Services photos",
+    "department": "Fitness",
     "banner": "/Menu/Services%20photos/personal%20fitnes%20instructor.jpg",
+    "bannerHq": true,
     "rating": 4.8,
     "ratingCount": "200+",
+    "reviewCount": 122,
     "address": "9322 Major Mackenzie Dr, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4775,6 +6101,10 @@
         "category": "Fitness",
         "likePct": 96,
         "likeCount": 14,
+        "reviewCount": 232,
+        "w": 1400,
+        "h": 2100,
+        "hq": true,
         "deal": {
           "type": "bundle",
           "label": "Combo deal"
@@ -4786,9 +6116,12 @@
   "Sparkle Home Cleaning": {
     "slug": "sparkle-home-cleaning",
     "folder": "Services photos",
+    "department": "Cleaning",
     "banner": "/Menu/Services%20photos/Home-Cleaning-Services-Richmond-Hill.jpg",
+    "bannerHq": true,
     "rating": 4.7,
     "ratingCount": "200+",
+    "reviewCount": 203,
     "address": "3653 Hwy 7, North York, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4831,7 +6164,11 @@
         "image": "/Menu/Services%20photos/Home-Cleaning-Services-Richmond-Hill.jpg",
         "category": "Cleaning",
         "likePct": 97,
-        "likeCount": 25
+        "likeCount": 25,
+        "reviewCount": 96,
+        "w": 750,
+        "h": 500,
+        "hq": true
       }
     ],
     "isService": true
@@ -4839,9 +6176,12 @@
   "ClearWash Pressure Washing": {
     "slug": "clearwash-pressure-washing",
     "folder": "Services photos",
+    "department": "Home Services",
     "banner": "/Menu/Services%20photos/Pressure%20washing.jpg",
+    "bannerHq": true,
     "rating": 4.9,
     "ratingCount": "200+",
+    "reviewCount": 193,
     "address": "2163 Bathurst St, Richmond Hill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4885,6 +6225,10 @@
         "category": "Home Services",
         "likePct": 92,
         "likeCount": 15,
+        "reviewCount": 334,
+        "w": 678,
+        "h": 452,
+        "hq": true,
         "deal": {
           "type": "dollar_off",
           "value": 8,
@@ -4898,9 +6242,12 @@
   "FreshCoat Painting": {
     "slug": "freshcoat-painting",
     "folder": "Services photos",
+    "department": "Home Services",
     "banner": "/Menu/Services%20photos/home-painting-service-main-thumbnail.webp",
+    "bannerHq": true,
     "rating": 4.9,
     "ratingCount": "200+",
+    "reviewCount": 31,
     "address": "4383 Bayview Ave, Thornhill, ON",
     "availability": "Available today",
     "hoursLabel": "Mon–Sat 8:00 a.m. – 6:00 p.m.",
@@ -4943,7 +6290,11 @@
         "image": "/Menu/Services%20photos/home-painting-service-main-thumbnail.webp",
         "category": "Home Services",
         "likePct": 98,
-        "likeCount": 35
+        "likeCount": 35,
+        "reviewCount": 278,
+        "w": 3840,
+        "h": 2658,
+        "hq": true
       }
     ],
     "isService": true

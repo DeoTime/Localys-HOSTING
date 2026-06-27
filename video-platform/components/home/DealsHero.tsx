@@ -1,27 +1,23 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Thumb } from './Thumb';
-import { useHomeData } from './HomeData';
+import { useHomeData, useHomeFeed } from './HomeData';
 import type { LocalBusiness } from '@/lib/supabase/featured';
 
 /**
  * (A) Walmart-style top block: ONE large featured business that auto-shifts
- * every ~5s, surrounded by a grid of smaller business tiles. All REAL seeded
- * businesses — no mock deals. Businesses with photos are preferred for the hero.
+ * every ~5s, surrounded by a grid of smaller business tiles. Uses the shared
+ * feed's reserved hero set, so its photos are unique and not repeated below.
  */
 export function DealsHero() {
-  const { businesses, loading } = useHomeData();
+  const { loading } = useHomeData();
+  const { heroBusinesses } = useHomeFeed();
 
-  // prefer businesses that actually have a photo for the big hero slide
-  const ordered = useMemo(
-    () => businesses.slice().sort((a, b) => Number(!!b.image) - Number(!!a.image)),
-    [businesses]
-  );
-  const featured = ordered.slice(0, 4);
-  const surrounding = ordered.slice(4, 8);
+  const featured = heroBusinesses.slice(0, 4);
+  const surrounding = heroBusinesses.slice(4, 8);
 
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);

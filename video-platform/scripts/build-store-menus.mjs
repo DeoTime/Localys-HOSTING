@@ -11,13 +11,16 @@
  *
  * Re-running is stable: all generated values are hashed off the item name.
  */
+import sharp from 'sharp';
 import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+const PUBLIC = join(ROOT, 'public');
 const MENU_DIR = join(ROOT, 'public', 'Menu');
+const HQ_MIN = 320; // images whose smaller side is below this read as blurry on the home cards
 
 /* ----------------------------- helpers ----------------------------- */
 const norm = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -95,6 +98,29 @@ const dealFor = (name) => {
     default: return undefined;
   }
 };
+
+// Read pixel dimensions for a /public URL path; null on failure.
+async function imgDims(publicUrlPath) {
+  if (!publicUrlPath) return null;
+  try {
+    const rel = decodeURIComponent(publicUrlPath.replace(/^\//, ''));
+    const buf = readFileSync(join(PUBLIC, rel));
+    const m = await sharp(buf, { limitInputPixels: false }).metadata();
+    return { w: m.width || 0, h: m.height || 0 };
+  } catch { return null; }
+}
+const isHq = (d) => !!d && Math.min(d.w, d.h) >= HQ_MIN;
+
+// Business-level department (drives the themed home rows). Reliable here because
+// the live Supabase `businesses.category` isn't always readable by the anon client.
+const DEPT = {
+  pho: 'Restaurants', bbq: 'Restaurants', restaurant: 'Restaurants',
+  flowers: 'Flowers', pets: 'Pets', pharmacy: 'Pharmacy',
+  grocery: 'Grocery', convenience: 'Convenience',
+};
+
+// Realistic, varied (non-round) review counts, stable per seed.
+const reviewCountFor = (seed) => 15 + (hash('rc' + seed) % 470);
 
 /* ----------------------------- per-store config ----------------------------- */
 // kind drives price range, description templates, and category rules.
@@ -196,17 +222,22 @@ const SERVICES = [
   { name: 'FreshCoat Painting', slug: 'freshcoat-painting', photo: 'home-painting-service-main-thumbnail.webp', item: 'Interior Room Painting', cat: 'Home Services', price: 300 },
 ];
 
-function buildService(s) {
+async function buildService(s) {
   const img = encPath(SERVICES_DIR, s.photo);
+  const d = await imgDims(img);
+  const hq = isHq(d);
   const item = {
     id: `${s.slug}-0`, name: s.item, price: s.price,
     description: 'Professional service, book online.', image: img, category: s.cat,
     likePct: 90 + (hash(s.slug) % 9), likeCount: 12 + (hash(s.slug) % 40),
+    reviewCount: reviewCountFor(s.item),
+    w: d?.w || 0, h: d?.h || 0, hq,
     deal: dealFor(s.item),
   };
   return {
-    slug: s.slug, folder: SERVICES_DIR, banner: img,
+    slug: s.slug, folder: SERVICES_DIR, department: s.cat, banner: img, bannerHq: hq,
     rating: Number((4.6 + (hash(s.slug) % 4) / 10).toFixed(1)), ratingCount: '200+',
+    reviewCount: reviewCountFor(s.slug),
     address: genAddress(s.slug), availability: 'Available today',
     hoursLabel: 'Mon–Sat 8:00 a.m. – 6:00 p.m.', deliveryTime: 'By appointment',
     reviews: genReviews(s.slug), categories: [s.cat],
@@ -217,7 +248,7 @@ function buildService(s) {
 const storeImages = existsSync(join(ROOT, 'data', 'store-images.json'))
   ? JSON.parse(readFileSync(join(ROOT, 'data', 'store-images.json'), 'utf8')) : {};
 
-function build(store) {
+async function build(store) {
   const dir = join(MENU_DIR, store.folder);
   const files = readdirSync(dir).filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
 
@@ -239,11 +270,14 @@ function build(store) {
   const [range, style] = PRICE[store.kind] || PRICE.restaurant;
   const ov = store.overrides || {};
 
+  const itemDims = await Promise.all(itemFiles.map((f) => imgDims(encPath(store.folder, f))));
+
   const items = itemFiles.map((file, i) => {
     const rawName = file.replace(/\.[^.]+$/, '').replace(/_/g, ' ').trim();
     let description = descFor(rawName, store.kind);
     if (ov.descriptions) { const hit = ov.descriptions.find(([p]) => rawName.startsWith(p) || rawName.includes(p)); if (hit) description = hit[1]; }
     const h = hash(rawName);
+    const d = itemDims[i];
     return {
       id: `${store.slug}-${i}`,
       name: rawName,
@@ -253,6 +287,8 @@ function build(store) {
       category: categorize(rawName, store.kind),
       likePct: 82 + (h % 18),          // 82–99%
       likeCount: 8 + (h % 60),         // 8–67
+      reviewCount: reviewCountFor(rawName),
+      w: d?.w || 0, h: d?.h || 0, hq: isHq(d),
       deal: dealFor(rawName),
     };
   });
@@ -271,12 +307,17 @@ function build(store) {
   const picked = items.filter((it) => !featuredIds.has(it.id)).slice(0, 6);
   if (picked.length < 4) picked.push(...items.slice(0, 6 - picked.length));
 
+  const bannerHq = isHq(await imgDims(banner));
+
   return {
     slug: store.slug,
     folder: store.folder,
+    department: DEPT[store.kind] || 'Shop',
     banner,
+    bannerHq,
     rating: ov.rating ?? Number((4.5 + (hash(store.slug) % 5) / 10).toFixed(1)), // 4.5–4.9
     ratingCount: ov.ratingCount ?? '500+',
+    reviewCount: reviewCountFor(store.slug), // varied numeric count for home cards
     address: ov.address ?? genAddress(store.slug),
     availability: ov.availability ?? 'Available today',
     hoursLabel: ov.hoursLabel ?? 'Mon–Sun 9:00 a.m. – 9:00 p.m.',
@@ -293,18 +334,18 @@ function build(store) {
 const manifest = {};
 for (const store of STORES) {
   try {
-    manifest[store.name] = build(store);
+    manifest[store.name] = await build(store);
     const m = manifest[store.name];
-    const deals = m.items.filter((it) => it.deal).length;
-    console.log(`OK  ${store.name.padEnd(30)} ${m.items.length} items · ${m.categories.length} cats · ${deals} deals`);
+    const hq = m.items.filter((it) => it.hq).length;
+    console.log(`OK  ${store.name.padEnd(30)} ${m.items.length} items · ${hq} hq · banner ${m.bannerHq ? 'hq' : 'soft'}`);
   } catch (e) {
     console.error(`x   ${store.name}: ${e.message}`);
   }
 }
 for (const s of SERVICES) {
   try {
-    manifest[s.name] = buildService(s);
-    console.log(`OK  ${s.name.padEnd(30)} service · 1 item`);
+    manifest[s.name] = await buildService(s);
+    console.log(`OK  ${s.name.padEnd(30)} service · 1 item · banner ${manifest[s.name].bannerHq ? 'hq' : 'soft'}`);
   } catch (e) {
     console.error(`x   ${s.name}: ${e.message}`);
   }
