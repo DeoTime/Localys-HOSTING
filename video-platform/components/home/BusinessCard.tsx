@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import { MapPin } from 'lucide-react';
 import { Thumb } from './Thumb';
 import { Stars } from './Stars';
 import type { LocalBusiness } from '@/lib/supabase/featured';
+import { useStoreDistance } from '@/lib/utils/useStoreDistance';
 
 /**
  * A business-focused card (real seeded business): photo, name, department, and
@@ -13,6 +15,7 @@ export function BusinessCard({ business }: { business: LocalBusiness }) {
   const fromPrice = business.products.length
     ? business.products.slice().sort((a, b) => a.price - b.price)[0].price
     : null;
+  const { label: distanceLabel, etaLabel } = useStoreDistance(business.address);
 
   return (
     <Link
@@ -44,6 +47,13 @@ export function BusinessCard({ business }: { business: LocalBusiness }) {
           <Stars rating={business.rating} reviewCount={business.reviewCount} />
         ) : (
           <span className="text-xs font-medium text-[#f97316]">New</span>
+        )}
+        {distanceLabel && (
+          <span className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
+            <MapPin className="h-3 w-3 shrink-0 text-[#f97316]" />
+            {distanceLabel}
+            {etaLabel ? <span className="text-gray-400">· {etaLabel}</span> : null}
+          </span>
         )}
       </div>
     </Link>

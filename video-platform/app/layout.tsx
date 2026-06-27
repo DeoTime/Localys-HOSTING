@@ -6,6 +6,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ActivityProvider } from "@/contexts/ActivityContext";
+import { DeliveryLocationProvider } from "@/contexts/DeliveryLocationContext";
 import { AppChrome } from "@/components/AppChrome";
 
 const outfit = Outfit({
@@ -62,7 +63,9 @@ export default function RootLayout({
             <LanguageProvider>
               <CartProvider>
                 <ActivityProvider>
-                  <AppChrome>{children}</AppChrome>
+                  <DeliveryLocationProvider>
+                    <AppChrome>{children}</AppChrome>
+                  </DeliveryLocationProvider>
                 </ActivityProvider>
               </CartProvider>
             </LanguageProvider>

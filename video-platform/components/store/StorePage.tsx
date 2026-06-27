@@ -1,15 +1,18 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Heart, MoreHorizontal, Search, Users, ChevronLeft, ChevronRight,
-  Info, Clock, Plus, Star, ThumbsUp, Check, DollarSign, X, MapPin, Phone,
+  Info, Clock, Plus, Star, ThumbsUp, Check, DollarSign, X, MapPin, Phone, MessageCircle,
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { GoogleMap } from '@/components/GoogleMap';
 import { geocodeAddress } from '@/lib/utils/googleGeocode';
 import { haversineDistance } from '@/lib/utils/geo';
+import { useStoreDistance } from '@/lib/utils/useStoreDistance';
+import { getOrCreateOneToOneChat } from '@/lib/supabase/messaging';
 
 /* ----------------------------- types ----------------------------- */
 export interface StoreDeal {
@@ -334,7 +337,29 @@ function InfoModal({ menu, storeName, onClose }: { menu: StoreMenu; storeName: s
 /* ----------------------------- main ----------------------------- */
 export function StorePage({ storeName, sellerId, menu }: { storeName: string; sellerId: string; menu: StoreMenu }) {
   const { add, added } = useAdd(sellerId);
+  const { user } = useAuth();
+  const router = useRouter();
+  const { label: distanceLabel } = useStoreDistance(menu.address);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [messagingLoading, setMessagingLoading] = useState(false);
+
+  const handleMessageClick = async () => {
+    if (!user) { router.push('/login'); return; }
+    if (!sellerId || sellerId === user.id) return;
+    setMessagingLoading(true);
+    try {
+      const { data, error } = await getOrCreateOneToOneChat(user.id, sellerId);
+      if (error || !data?.id) {
+        console.error('Could not start chat with business:', error);
+        return;
+      }
+      router.push(`/chats/${data.id}`);
+    } catch (err) {
+      console.error('Unexpected error starting chat:', err);
+    } finally {
+      setMessagingLoading(false);
+    }
+  };
   const byId = useMemo(() => new Map(menu.items.map((it) => [it.id, it])), [menu.items]);
   const featured = menu.featuredIds.map((id) => byId.get(id)).filter(Boolean) as StoreItem[];
   const picked = menu.pickedIds.map((id) => byId.get(id)).filter(Boolean) as StoreItem[];
@@ -399,8 +424,22 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
                 {menu.rating.toFixed(1)} <Star className="h-3.5 w-3.5" style={{ fill: '#000', color: '#000' }} />
               </span>
               <span className="text-gray-500">({menu.ratingCount})</span>
+              <button
+                onClick={handleMessageClick}
+                disabled={messagingLoading}
+                className="inline-flex items-center gap-1 font-medium text-black underline-offset-2 hover:underline disabled:opacity-60"
+              >
+                <MessageCircle className="h-3.5 w-3.5 text-[#f97316]" strokeWidth={2} />
+                {messagingLoading ? 'Opening…' : 'Message'}
+              </button>
               <button onClick={() => setShowInfoModal(true)} className="font-medium text-black underline-offset-2 hover:underline">Info</button>
             </div>
+            {distanceLabel && (
+              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-600">
+                <MapPin className="h-4 w-4 shrink-0 text-[#f97316]" strokeWidth={2} />
+                <span className="text-black">{distanceLabel}</span>
+              </div>
+            )}
             <div className="mt-1.5 flex items-start gap-1.5 text-sm text-gray-600">
               <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gray-500" strokeWidth={2} />
               <div>

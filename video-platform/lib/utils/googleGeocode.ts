@@ -24,3 +24,23 @@ export async function geocodeAddress(
     return null;
   }
 }
+
+/**
+ * Best-effort reverse geocoding: lat/lng → a human-readable address string.
+ * Returns null on any failure so callers can fall back to "Lat, Lng" text.
+ */
+export async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
+  if (!KEY) return null;
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${KEY}`,
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.status !== 'OK' || !json.results?.length) return null;
+    const formatted = json.results[0].formatted_address;
+    return typeof formatted === 'string' ? formatted : null;
+  } catch {
+    return null;
+  }
+}

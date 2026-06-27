@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronUp, ChevronDown, MessageSquare, Plus, Users, Share2
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { CommunityAvatar } from '@/components/communities/CommunityAvatar';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
   'richmondhill-eats': '/Communities/Richmond Hill.jpg',
@@ -96,11 +97,7 @@ function CommunityContent() {
             All Communities
           </Link>
           <div className="flex items-center gap-3">
-            <img
-              src={COMMUNITY_IMAGES[community.id] || ''}
-              alt={community.name}
-              className="h-12 w-12 shrink-0 rounded-full object-cover border border-gray-200"
-            />
+            <CommunityAvatar src={COMMUNITY_IMAGES[community.id]} name={community.name} className="h-12 w-12 shrink-0 text-lg" />
             <div className="flex-1 min-w-0">
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">r/{community.name}</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">{community.description}</p>
@@ -160,11 +157,7 @@ function CommunityContent() {
               >
                 {/* Post header */}
                 <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
-                  <img
-                    src={COMMUNITY_IMAGES[community.id] || ''}
-                    alt={community.name}
-                    className="h-6 w-6 rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0"
-                  />
+                  <CommunityAvatar src={COMMUNITY_IMAGES[community.id]} name={community.name} className="h-6 w-6 shrink-0 text-[11px]" />
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-x-1 gap-y-0">
                       <span className="text-[12px] font-bold text-gray-900 dark:text-white">r/{community.name}</span>

@@ -3,14 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, ChevronDown, Coins, User, ShoppingCart, Settings, LogOut, Check, Building2 } from 'lucide-react';
+import { MapPin, ChevronDown, Coins, User, ShoppingCart, Settings, LogOut, Building2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { SearchDropdown } from './SearchDropdown';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDeliveryLocation } from '@/contexts/DeliveryLocationContext';
 import { supabase } from '@/lib/supabase/client';
+import dynamic from 'next/dynamic';
 
-const LOCATIONS = ['Richmond Hill, ON', 'Toronto, ON', 'Markham, ON', 'Vaughan, ON', 'Mississauga, ON'];
+const LocationPickerMap = dynamic(
+  () => import('@/components/LocationPickerMap').then((m) => m.LocationPickerMap),
+  { ssr: false },
+);
+
 const LANGUAGES = [
   { code: 'EN', label: 'English' },
   { code: 'FR', label: 'Français' },
@@ -33,8 +39,8 @@ export function TopHeader() {
   const router = useRouter();
   const { getCartCount } = useCart();
   const { signOut, user } = useAuth();
+  const { location, detecting, setLocation, detectLocation } = useDeliveryLocation();
 
-  const [location, setLocation] = useState(LOCATIONS[0]);
   const [lang, setLang] = useState('EN');
   const [openMenu, setOpenMenu] = useState<null | 'location' | 'lang' | 'profile'>(null);
   const [coins, setCoins] = useState<number | null>(null);
@@ -72,24 +78,23 @@ export function TopHeader() {
             <MapPin className="h-5 w-5 shrink-0 text-[#f97316]" />
             <span className="hidden leading-tight md:block">
               <span className="block text-[11px] text-black dark:text-white">How do you want your items?</span>
-              <span className="block text-sm font-semibold text-gray-900 dark:text-white">Deliver to {location}</span>
+              <span className="block max-w-[200px] truncate text-sm font-semibold text-gray-900 dark:text-white">
+                {location ? `Deliver to ${location.address}` : 'Set delivery location'}
+              </span>
             </span>
             <ChevronDown className="hidden h-4 w-4 text-black md:block" />
           </button>
           {openMenu === 'location' && (
-            <div className="absolute left-0 top-full mt-2 w-64 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-              <p className="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-black">Choose location</p>
-              {LOCATIONS.map((loc) => (
-                <button
-                  key={loc}
-                  type="button"
-                  onClick={() => { setLocation(loc); setOpenMenu(null); }}
-                  className="flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800"
-                >
-                  {loc}
-                  {loc === location && <Check className="h-4 w-4 text-[#f97316]" />}
-                </button>
-              ))}
+            <div className="absolute left-0 top-full z-50 mt-2 w-[320px] rounded-2xl border border-gray-200 bg-white p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+              <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-black dark:text-white">
+                Where do you want your items delivered?
+              </p>
+              <LocationPickerMap
+                initial={location}
+                detecting={detecting}
+                onUseCurrent={detectLocation}
+                onConfirm={(loc) => { setLocation(loc); setOpenMenu(null); }}
+              />
             </div>
           )}
         </div>

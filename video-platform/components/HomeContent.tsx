@@ -9,6 +9,7 @@ import { BusinessItemsRail } from '@/components/feed/BusinessItemsRail';
 import { getBusinessAlias, getPhoXeLuaItems, type AliasItem } from '@/lib/businessAliases';
 import { buildFeedVideos } from '@/lib/demoVideos';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDeliveryLocation } from '@/contexts/DeliveryLocationContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
@@ -88,6 +89,7 @@ interface HomeContentProps {
 
 export function HomeContent({ isActive }: HomeContentProps) {
   const { user } = useAuth();
+  const { location: deliveryLocation } = useDeliveryLocation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [videos, setVideos] = useState<Video[]>([]);
@@ -263,7 +265,13 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
   }, [searchParams, videos.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The user's confirmed delivery location (set in the top-left picker) takes
+  // priority for distance across the app; fall back to raw geolocation otherwise.
   useEffect(() => {
+    if (deliveryLocation) {
+      setUserLocation({ lat: deliveryLocation.lat, lng: deliveryLocation.lng });
+      return;
+    }
     if (!navigator.geolocation) return;
 
     navigator.geolocation.getCurrentPosition(
@@ -278,7 +286,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
-  }, []);
+  }, [deliveryLocation]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {

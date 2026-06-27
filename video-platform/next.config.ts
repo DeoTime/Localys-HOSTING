@@ -5,21 +5,24 @@ const nextConfig: NextConfig = {
     const isDev = process.env.NODE_ENV !== 'production';
 
     // Dev needs 'unsafe-eval' for React/Next.js hot-reload; strip it in prod.
+    // Google Maps JS API + its web-workers also require 'unsafe-eval', so allow it
+    // in prod too (scoped to maps.googleapis.com loading the SDK).
     const scriptSrc = isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com"
-      : "script-src 'self' 'unsafe-inline' js.stripe.com";
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com maps.googleapis.com"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com maps.googleapis.com";
 
     const csp = [
       "default-src 'self'",
       scriptSrc,
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: *.supabase.co *.cloudfront.net img.icons8.com via.placeholder.com",
+      "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+      "img-src 'self' data: blob: *.supabase.co *.cloudfront.net img.icons8.com via.placeholder.com maps.googleapis.com maps.gstatic.com *.gstatic.com *.googleapis.com",
       // media-src must explicitly allow Supabase storage + blob: or <video> elements
       // with cross-origin src will throw NotSupportedError (no supported sources).
       "media-src 'self' blob: data: *.supabase.co *.cloudfront.net",
-      "connect-src 'self' *.supabase.co wss://*.supabase.co api.stripe.com challenges.cloudflare.com *.tile.openstreetmap.org",
-      "frame-src js.stripe.com *.stripe.com challenges.cloudflare.com",
-      "font-src 'self'",
+      "connect-src 'self' *.supabase.co wss://*.supabase.co api.stripe.com challenges.cloudflare.com *.tile.openstreetmap.org maps.googleapis.com",
+      // www.google.com hosts the Maps Embed iframe; maps.googleapis.com for JS map frames.
+      "frame-src js.stripe.com *.stripe.com challenges.cloudflare.com www.google.com maps.googleapis.com",
+      "font-src 'self' fonts.gstatic.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

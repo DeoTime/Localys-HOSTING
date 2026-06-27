@@ -7,6 +7,7 @@ import { MessageSquare, Plus, Share2, ChevronUp, ChevronDown } from 'lucide-reac
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { CommunityAvatar } from '@/components/communities/CommunityAvatar';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
   'richmondhill-eats': '/Communities/Richmond Hill.jpg',
@@ -122,11 +123,7 @@ function CommunitiesContent() {
               {suggestedCommunities.map(c => (
                 <div key={c.id} className="flex items-center gap-3">
                   <Link href={`/communities/${c.id}`} className="shrink-0">
-                    <img
-                      src={COMMUNITY_IMAGES[c.id] || ''}
-                      alt={c.name}
-                      className="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                    />
+                    <CommunityAvatar src={COMMUNITY_IMAGES[c.id]} name={c.name} className="h-10 w-10" />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link href={`/communities/${c.id}`} className="block text-sm font-semibold text-gray-900 dark:text-white hover:underline truncate">
@@ -162,11 +159,7 @@ function CommunitiesContent() {
               {/* Post header */}
               <div className="flex items-start gap-2 px-3 pt-3 pb-1.5">
                 <Link href={`/communities/${t.communityId}`} onClick={(e) => e.stopPropagation()} className="shrink-0 mt-0.5">
-                  <img
-                    src={COMMUNITY_IMAGES[t.communityId] || ''}
-                    alt={t.communityName}
-                    className="h-6 w-6 rounded-full object-cover border border-gray-200 dark:border-gray-700"
-                  />
+                  <CommunityAvatar src={COMMUNITY_IMAGES[t.communityId]} name={t.communityName} className="h-6 w-6 text-[11px]" />
                 </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-x-1 gap-y-0">

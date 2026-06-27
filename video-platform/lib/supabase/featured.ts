@@ -21,6 +21,7 @@ interface ManifestStore {
   slug: string; department?: string; banner?: string | null; bannerHq?: boolean;
   rating: number; ratingCount: string; reviewCount?: number; categories: string[];
   featuredIds: string[]; pickedIds: string[]; items: ManifestItem[]; isService?: boolean;
+  address?: string;
 }
 const MENUS = storeMenus as Record<string, ManifestStore>;
 
@@ -34,6 +35,7 @@ export interface LocalBusiness {
   href: string; // /profile/<username>
   rating: number;
   reviewCount: number;
+  address?: string; // street address (used to compute distance from the user)
   products: Product[]; // its menu items, mapped to product cards
 }
 
@@ -80,7 +82,7 @@ function menuToBusiness(
     hq: it.hq,
   }));
 
-  return { id, username, name, image, category, type, href, rating, reviewCount, products };
+  return { id, username, name, image, category, type, href, rating, reviewCount, address: menu.address, products };
 }
 
 export async function getLocalBusinesses(): Promise<LocalBusiness[]> {
