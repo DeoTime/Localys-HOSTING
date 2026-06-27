@@ -7,6 +7,9 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { GoogleMap } from '@/components/GoogleMap';
+import { geocodeAddress } from '@/lib/utils/googleGeocode';
+import { haversineDistance } from '@/lib/utils/geo';
 
 /* ----------------------------- types ----------------------------- */
 export interface StoreDeal {
@@ -176,54 +179,151 @@ function formatTime(t: string): string {
   return `${h % 12 || 12}:${m.toString().padStart(2, '0')} ${ampm}`;
 }
 
+type GeoState = 'idle' | 'loading' | 'granted' | 'denied';
+
 function InfoModal({ menu, storeName, onClose }: { menu: StoreMenu; storeName: string; onClose: () => void }) {
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [geoState, setGeoState] = useState<GeoState>('idle');
+  const [storeCoords, setStoreCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  // Ask for the user's location once when the pop-up opens (graceful if denied).
+  useEffect(() => {
+    if (!menu.address) return;
+    if (!navigator.geolocation) { setGeoState('denied'); return; }
+    setGeoState('loading');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { setUserLoc({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setGeoState('granted'); },
+      () => setGeoState('denied'),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, [menu.address]);
+
+  // Best-effort geocode of the store address → straight-line distance text.
+  useEffect(() => {
+    if (!menu.address) return;
+    let active = true;
+    geocodeAddress(menu.address).then((c) => { if (active && c) setStoreCoords(c); }).catch(() => {});
+    return () => { active = false; };
+  }, [menu.address]);
+
+  const focusMap = () => mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  const straightKm =
+    geoState === 'granted' && userLoc && storeCoords
+      ? haversineDistance(storeCoords.lat, storeCoords.lng, userLoc.lat, userLoc.lng)
+      : null;
+  const distanceLabel =
+    straightKm == null ? null
+      : straightKm < 1 ? `${Math.round(straightKm * 1000)} m away`
+      : `${straightKm.toFixed(1)} km away`;
+
+  const reviewCount = menu.reviews?.length ?? 0;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl">
+        {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <h2 className="text-base font-bold text-black">{storeName}</h2>
-          <button onClick={onClose} className="text-gray-400 transition-colors hover:text-black"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} aria-label="Close" className="text-gray-400 transition-colors hover:text-black">
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-4">
-          {menu.address && (
-            <div className="flex gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#f97316]" />
-              <p className="text-sm text-black">{menu.address}</p>
-            </div>
-          )}
-          {menu.phone && (
-            <div className="flex gap-3">
-              <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#f97316]" />
-              <p className="text-sm text-black">{menu.phone}</p>
-            </div>
-          )}
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <Clock className="h-4 w-4 shrink-0 text-[#f97316]" />
-              <p className="text-sm font-semibold text-black">Hours</p>
-            </div>
-            {menu.businessHours ? (
-              <div className="ml-6 space-y-1">
-                {HOUR_DAYS.map((day) => {
-                  const h = menu.businessHours![day];
-                  return (
-                    <div key={day} className="flex justify-between text-sm">
-                      <span className="capitalize text-gray-500">{day}</span>
-                      {h?.closed ? (
-                        <span className="text-gray-400">Closed</span>
-                      ) : h?.open && h?.close ? (
-                        <span className="font-medium text-black">{formatTime(h.open)} – {formatTime(h.close)}</span>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="ml-6 text-sm text-black">{menu.hoursLabel}</p>
+
+        <div className="overflow-y-auto">
+          {/* TOP: Google Map (store marker; route + driving time once location granted) */}
+          <div ref={mapRef}>
+            <GoogleMap
+              title={`${storeName} location`}
+              query={menu.address}
+              origin={geoState === 'granted' ? userLoc : null}
+              className="h-[260px] w-full sm:h-[300px]"
+            />
+          </div>
+
+          {/* Distance / route status */}
+          <div className="border-b border-gray-100 px-5 py-3">
+            {geoState === 'loading' && (
+              <span className="inline-flex items-center gap-2 text-sm text-gray-500">
+                <span className="h-4 w-4 animate-spin rounded-full border-b-2 border-[#f97316]" />
+                Finding how far you are...
+              </span>
             )}
+            {geoState === 'granted' && (
+              <span className="text-sm text-black">
+                {distanceLabel ? `${distanceLabel} · driving route and time on the map above` : 'Driving route and time shown on the map above'}
+              </span>
+            )}
+            {geoState === 'denied' && (
+              <span className="text-sm text-gray-500">Location off — showing the store location only.</span>
+            )}
+            {geoState === 'idle' && (
+              <span className="text-sm text-gray-500">Store location shown above.</span>
+            )}
+          </div>
+
+          {/* BELOW: store details */}
+          <div className="space-y-4 px-5 py-4">
+            {/* Rating + reviews */}
+            <div className="flex items-center gap-2">
+              <Stars value={menu.rating} />
+              <span className="text-sm font-semibold text-black">{menu.rating.toFixed(1)}</span>
+              <span className="text-sm text-gray-500">
+                ({reviewCount > 0 ? `${reviewCount} ` : ''}{menu.ratingCount} reviews)
+              </span>
+            </div>
+
+            {/* Address — click to focus the map */}
+            {menu.address && (
+              <button
+                type="button"
+                onClick={focusMap}
+                className="flex w-full gap-3 text-left"
+                aria-label="Focus map on store location"
+              >
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#f97316]" />
+                <span className="text-sm text-black underline-offset-2 hover:underline">{menu.address}</span>
+              </button>
+            )}
+
+            {/* Phone */}
+            {menu.phone && (
+              <a href={`tel:${menu.phone.replace(/[^0-9+]/g, '')}`} className="flex gap-3">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[#f97316]" />
+                <span className="text-sm text-black underline-offset-2 hover:underline">{menu.phone}</span>
+              </a>
+            )}
+
+            {/* Hours */}
+            <div>
+              <div className="mb-2 flex items-center gap-2">
+                <Clock className="h-4 w-4 shrink-0 text-[#f97316]" />
+                <p className="text-sm font-semibold text-black">Hours</p>
+              </div>
+              {menu.businessHours ? (
+                <div className="ml-6 space-y-1">
+                  {HOUR_DAYS.map((day) => {
+                    const h = menu.businessHours![day];
+                    return (
+                      <div key={day} className="flex justify-between text-sm">
+                        <span className="capitalize text-gray-500">{day}</span>
+                        {h?.closed ? (
+                          <span className="text-gray-400">Closed</span>
+                        ) : h?.open && h?.close ? (
+                          <span className="font-medium text-black">{formatTime(h.open)} – {formatTime(h.close)}</span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="ml-6 text-sm text-black">{menu.hoursLabel}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

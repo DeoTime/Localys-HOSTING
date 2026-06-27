@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Anton, Inter, Outfit, JetBrains_Mono } from "next/font/google";
-import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
