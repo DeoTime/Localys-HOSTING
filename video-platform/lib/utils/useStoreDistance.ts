@@ -4,35 +4,49 @@ import { useEffect, useState } from 'react';
 import { useDeliveryLocation } from '@/contexts/DeliveryLocationContext';
 import { geocodeAddress } from '@/lib/utils/googleGeocode';
 import { haversineDistance } from '@/lib/utils/geo';
+import { formatDistanceKm, etaMinutes } from '@/lib/utils/distance';
 
 /**
- * Resolves the straight-line distance (km) + a rough driving ETA (min) from the
- * user's confirmed delivery location to a store address. Geocoded coordinates are
- * cached (in-memory + localStorage) so each address is only looked up once.
+ * useStoreDistance — React hook that resolves how far a store is from the user's
+ * confirmed delivery location and returns ready-to-render distance/ETA labels.
  *
- * Returns `{ km: null, label: null }` when the user has no location set or the
- * address can't be geocoded — callers should hide the distance in that case.
+ * The store's street address is geocoded to coordinates (best effort) and the
+ * straight-line haversine distance is taken from the saved delivery location.
+ * Geocoded coordinates are cached in-memory and in localStorage so each unique
+ * address is only looked up once across the whole session.
+ *
+ * Returns all-null fields when the user has no location set or the address can't
+ * be geocoded — callers should simply hide the distance in that case.
  */
-const CACHE_KEY = 'localys:geocodeCache';
-const memCache = new Map<string, { lat: number; lng: number }>();
+interface LatLng {
+  lat: number;
+  lng: number;
+}
 
-function readDiskCache(addr: string): { lat: number; lng: number } | null {
+const GEOCODE_CACHE_KEY = 'localys:geocodeCache';
+
+/** Process-lifetime cache so repeated cards don't re-read storage or re-geocode. */
+const memoryCache = new Map<string, LatLng>();
+
+/** Read a previously geocoded address from localStorage (null if absent/unreadable). */
+function readCachedCoords(address: string): LatLng | null {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = localStorage.getItem(GEOCODE_CACHE_KEY);
     if (!raw) return null;
-    const map = JSON.parse(raw) as Record<string, { lat: number; lng: number }>;
-    return map[addr] ?? null;
+    const cache = JSON.parse(raw) as Record<string, LatLng>;
+    return cache[address] ?? null;
   } catch {
     return null;
   }
 }
 
-function writeDiskCache(addr: string, coords: { lat: number; lng: number }) {
+/** Persist a freshly geocoded address so future visits skip the network call. */
+function writeCachedCoords(address: string, coords: LatLng) {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    const map = raw ? (JSON.parse(raw) as Record<string, { lat: number; lng: number }>) : {};
-    map[addr] = coords;
-    localStorage.setItem(CACHE_KEY, JSON.stringify(map));
+    const raw = localStorage.getItem(GEOCODE_CACHE_KEY);
+    const cache = raw ? (JSON.parse(raw) as Record<string, LatLng>) : {};
+    cache[address] = coords;
+    localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(cache));
   } catch {
     /* storage unavailable — keep the in-memory cache only */
   }
@@ -46,31 +60,34 @@ export interface StoreDistance {
 
 export function useStoreDistance(address: string | undefined): StoreDistance {
   const { location } = useDeliveryLocation();
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [storeCoords, setStoreCoords] = useState<LatLng | null>(null);
 
+  // Resolve the store's coordinates (memory → localStorage → network geocode).
   useEffect(() => {
     if (!address) return;
     let active = true;
-    // Resolve through one async path (mem → disk → network) so we never call
-    // setState synchronously inside the effect body.
+    // Resolve through one async path so we never call setState synchronously
+    // inside the effect body (avoids cascading renders).
     void (async () => {
-      let c: { lat: number; lng: number } | null = memCache.get(address) ?? readDiskCache(address);
-      if (!c) {
-        c = await geocodeAddress(address);
-        if (c) writeDiskCache(address, c);
+      let coords: LatLng | null = memoryCache.get(address) ?? readCachedCoords(address);
+      if (!coords) {
+        coords = await geocodeAddress(address);
+        if (coords) writeCachedCoords(address, coords);
       }
-      if (c) memCache.set(address, c);
-      if (active) setCoords(c);
+      if (coords) memoryCache.set(address, coords);
+      if (active) setStoreCoords(coords);
     })();
     return () => {
       active = false;
     };
   }, [address]);
 
-  if (!location || !coords) return { km: null, label: null, etaLabel: null };
+  if (!location || !storeCoords) return { km: null, label: null, etaLabel: null };
 
-  const km = haversineDistance(location.lat, location.lng, coords.lat, coords.lng);
-  const label = km < 1 ? `${Math.round(km * 1000)} m away` : `${km.toFixed(1)} km away`;
-  const etaLabel = `${Math.max(4, Math.round((km / 35) * 60))} min`;
-  return { km, label, etaLabel };
+  const km = haversineDistance(location.lat, location.lng, storeCoords.lat, storeCoords.lng);
+  return {
+    km,
+    label: `${formatDistanceKm(km)} away`,
+    etaLabel: `${etaMinutes(km)} min`,
+  };
 }

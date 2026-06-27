@@ -18,6 +18,7 @@ const CommentModal = dynamic(() => import('@/components/CommentModal').then(mod 
 import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
 import { haversineDistance } from '@/lib/utils/geo';
+import { formatDistanceKm, etaMinutes } from '@/lib/utils/distance';
 import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/pricing';
 
 /** Compact count display: 11100 → "11.1K", 2_300_000 → "2.3M". */
@@ -976,16 +977,13 @@ export function HomeContent({ isActive }: HomeContentProps) {
     return haversineDistance(userLocation.lat, userLocation.lng, nearestLocation.latitude, nearestLocation.longitude);
   };
 
-  const formatDistanceLabel = (distanceKm: number | null) => {
-    if (distanceKm === null) return '';
-    if (distanceKm < 1) return `${Math.round(distanceKm * 1000)} m`;
-    return `${distanceKm.toFixed(1)} km`;
-  };
+  // Thin, null-safe wrappers over the shared distance formatters so the feed
+  // shows the same "3.2 km" / ETA values as the rest of the app.
+  const formatDistanceLabel = (distanceKm: number | null) =>
+    distanceKm === null ? '' : formatDistanceKm(distanceKm);
 
-  const getEtaMinutes = (distanceKm: number | null) => {
-    if (distanceKm === null) return null;
-    return Math.max(4, Math.round((distanceKm / 35) * 60));
-  };
+  const getEtaMinutes = (distanceKm: number | null) =>
+    distanceKm === null ? null : etaMinutes(distanceKm);
 
   const currentDistanceKm = getDistanceForVideo(currentVideo);
   const distance = formatDistanceLabel(currentDistanceKm);
