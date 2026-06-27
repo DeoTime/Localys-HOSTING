@@ -56,6 +56,13 @@ function stableCount(id: string, salt: string, min: number, max: number): number
   return min + (h % (max - min + 1));
 }
 
+/** Like count derived from comment count so the ratio is always ~10–15× comments. */
+function stableLikeCount(id: string): number {
+  const comments = stableCount(id, 'cmt', 12, 520);
+  const multiplier = 10 + (hashString(id + ':lmul') % 6);
+  return comments * multiplier;
+}
+
 interface Video {
   id: string;
   user_id?: string;
@@ -788,7 +795,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
         setLikeCounts(prev => ({
           ...prev,
-          [likeKey]: Math.max(0, (prev[likeKey] || 0) - 1)
+          [likeKey]: Math.max(0, (prev[likeKey] ?? stableLikeCount(videoId)) - 1)
         }));
       } else {
         if (demo) {
@@ -802,7 +809,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
         setLikeCounts(prev => ({
           ...prev,
-          [likeKey]: (prev[likeKey] || 0) + 1
+          [likeKey]: (prev[likeKey] ?? stableLikeCount(videoId)) + 1
         }));
       }
     } catch (error) {
@@ -1171,8 +1178,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
                   <div className="relative flex items-center gap-2">
                     {/* Volume slider — opens to the left of the icon */}
                     {showVolumeSlider && (
-                      <div className="flex items-center gap-2 rounded-2xl bg-black/80 px-3 py-2 backdrop-blur-md shadow-xl">
-                        <span className="text-[10px] font-bold text-white/50 w-5 text-right">0</span>
+                      <div className="flex items-center gap-2 rounded-2xl bg-white/90 border border-black/10 px-3 py-2 backdrop-blur-md shadow-xl">
+                        <span className="text-[10px] font-bold text-black/40 w-5 text-right">0</span>
                         <input
                           type="range"
                           min={0}
@@ -1182,7 +1189,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
                           className="w-24 cursor-pointer"
                           style={{ accentColor: '#f97316' }}
                         />
-                        <span className="text-[10px] font-bold text-white w-8">{Math.round(volume * 100)}%</span>
+                        <span className="text-[10px] font-bold text-black w-8">{Math.round(volume * 100)}%</span>
                       </div>
                     )}
                     <button
@@ -1298,7 +1305,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
             </svg>
           </div>
           <span className="text-black text-[10px] sm:text-xs font-semibold">
-            {formatCount(likeCounts[likeKey] || stableCount(currentVideo.id, 'like', 47, 980))}
+            {formatCount(likeCounts[likeKey] ?? stableLikeCount(currentVideo.id))}
           </span>
         </button>
 
@@ -1317,9 +1324,18 @@ export function HomeContent({ isActive }: HomeContentProps) {
           <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || stableCount(currentVideo.id, 'cmt', 12, 520))}</span>
         </button>
 
-        {/* Location Button — opens map modal */}
+        {/* Location Button — computes distance and opens map modal */}
         <button
-          onClick={() => setLocationModalOpen(true)}
+          onClick={() => {
+            if (!userLocation && navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => {},
+                { enableHighAccuracy: true, timeout: 8000 }
+              );
+            }
+            setLocationModalOpen(true);
+          }}
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label={distance ? `Distance: ${distance}` : 'Location'}
         >

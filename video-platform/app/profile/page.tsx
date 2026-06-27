@@ -22,7 +22,9 @@ import { OrderHistory } from '@/components/OrderHistory';
 import { RankSection } from '@/components/RankSection';
 import { getUserCoins } from '@/lib/supabase/profiles';
 import { getUserBookmarkedVideos } from '@/lib/supabase/videos';
-import { getSavedItems, subscribeEngagement, type SavedItem } from '@/lib/clientEngagement';
+import { getSavedItems, getLikedItemIds, subscribeEngagement, type SavedItem } from '@/lib/clientEngagement';
+import { isDemoId } from '@/lib/utils/ids';
+import { DEMO_VIDEOS } from '@/lib/demoVideos';
 import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award } from 'lucide-react';
 
 // ── Badge system ──────────────────────────────────────────────────────────────
@@ -105,91 +107,221 @@ export default function ProfilePage() {
   );
 }
 
-// ── Saved / bookmarked section ──────────────────────────────────────────────────
-/**
- * Shows the user's saved content: bookmarked videos from Supabase merged with
- * client-side demo saves (bookmarked demo videos + liked demo businesses), so
- * anything the user saves — real or demo — appears here.
- */
-function SavedSection({ userId }: { userId: string }) {
-  const [items, setItems] = useState<SavedItem[]>([]);
-  const [loading, setLoading] = useState(true);
+// ── Saved / Liked section with toggle ─────────────────────────────────────────
 
+interface LikedBusiness {
+  id: string;
+  name: string;
+  image?: string;
+  slug: string;
+}
+
+type BookmarkedVideo = {
+  id: string;
+  caption?: string | null;
+  businesses?: { business_name?: string | null; profile_picture_url?: string | null } | null;
+};
+
+function SavedLikedSection({ userId }: { userId: string }) {
+  const router = useRouter();
+  const [tab, setTab] = useState<'saved' | 'liked'>('saved');
+
+  // — Saved tab state —
+  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [savedLoading, setSavedLoading] = useState(true);
+
+  // — Liked tab state —
+  const [likedBiz, setLikedBiz] = useState<LikedBusiness[]>([]);
+  const [likedLoading, setLikedLoading] = useState(true);
+
+  const buildSavedList = (realVideos: BookmarkedVideo[]): SavedItem[] => {
+    const real: SavedItem[] = realVideos.map((v) => ({
+      id: v.id,
+      type: 'video',
+      name: v.businesses?.business_name || v.caption || 'Saved video',
+      image: v.businesses?.profile_picture_url || undefined,
+    }));
+    const seen = new Set(real.map((r) => r.id));
+    const demo = getSavedItems().filter((d) => !seen.has(d.id));
+    return [...real, ...demo];
+  };
+
+  // Load saved (bookmarked) videos
   useEffect(() => {
     let active = true;
-
-    type BookmarkedVideo = {
-      id: string;
-      caption?: string | null;
-      businesses?: { business_name?: string | null; profile_picture_url?: string | null } | null;
-    };
-
-    const buildList = (realVideos: BookmarkedVideo[]): SavedItem[] => {
-      const real: SavedItem[] = realVideos.map((v) => ({
-        id: v.id,
-        type: 'video',
-        name: v.businesses?.business_name || v.caption || 'Saved video',
-        image: v.businesses?.profile_picture_url || undefined,
-      }));
-      // Dedupe demo + real by id (real wins).
-      const seen = new Set(real.map((r) => r.id));
-      const demo = getSavedItems().filter((d) => !seen.has(d.id));
-      return [...real, ...demo];
-    };
-
     const load = async () => {
       const { data } = await getUserBookmarkedVideos(userId);
       if (!active) return;
-      setItems(buildList(data || []));
-      setLoading(false);
+      setSavedItems(buildSavedList(data || []));
+      setSavedLoading(false);
     };
     load();
-
-    // Re-render when demo saves change.
     const unsub = subscribeEngagement(() => {
       getUserBookmarkedVideos(userId).then(({ data }) => {
-        if (active) setItems(buildList(data || []));
+        if (active) setSavedItems(buildSavedList(data || []));
       });
     });
+    return () => { active = false; unsub(); };
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    return () => {
-      active = false;
-      unsub();
+  // Load liked businesses (real from Supabase + demo from localStorage)
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const results: LikedBusiness[] = [];
+
+      // Real liked businesses from Supabase
+      const { data: likeRows } = await supabase
+        .from('likes')
+        .select('business_id')
+        .eq('user_id', userId)
+        .not('business_id', 'is', null);
+
+      const realBizIds = (likeRows || [])
+        .map((r: { business_id: string | null }) => r.business_id)
+        .filter((id): id is string => !!id && !isDemoId(id));
+
+      if (realBizIds.length > 0) {
+        const { data: bizRows } = await supabase
+          .from('businesses')
+          .select('id, business_name, profile_picture_url, owner_id')
+          .in('id', realBizIds);
+
+        const ownerIds = [...new Set((bizRows || []).map((b: any) => b.owner_id).filter(Boolean))];
+        let profileMap: Record<string, string> = {};
+        if (ownerIds.length > 0) {
+          const { data: profRows } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .in('id', ownerIds);
+          profileMap = Object.fromEntries((profRows || []).map((p: any) => [p.id, p.username]));
+        }
+
+        (bizRows || []).forEach((b: any) => {
+          results.push({
+            id: b.id,
+            name: b.business_name || 'Business',
+            image: b.profile_picture_url || undefined,
+            slug: profileMap[b.owner_id] || b.id,
+          });
+        });
+      }
+
+      // Demo liked businesses from localStorage
+      const demoLikedIds = getLikedItemIds().filter((id) => isDemoId(id));
+      const demoBizSlugs = new Set(DEMO_VIDEOS.map((v) => v.businessSlug));
+      const seenSlugs = new Set<string>();
+      demoLikedIds.forEach((id) => {
+        if (!demoBizSlugs.has(id) || seenSlugs.has(id)) return;
+        seenSlugs.add(id);
+        const dv = DEMO_VIDEOS.find((v) => v.businessSlug === id);
+        if (dv) {
+          results.push({
+            id,
+            name: dv.businessName,
+            image: undefined,
+            slug: dv.businessSlug,
+          });
+        }
+      });
+
+      if (active) {
+        setLikedBiz(results);
+        setLikedLoading(false);
+      }
     };
-  }, [userId]);
+    load();
+    // Re-check when demo likes change
+    const unsub = subscribeEngagement(() => { if (active) load(); });
+    return () => { active = false; unsub(); };
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading) return null;
+  if (savedLoading && likedLoading) return null;
 
   return (
     <section className="mb-6">
-      <h3 className="text-base font-semibold text-gray-900 mb-3">Saved</h3>
+      <h3 className="text-base font-semibold text-gray-900 mb-3">My Activity</h3>
+      {/* Tab toggle */}
+      <div className="flex gap-1 mb-3 rounded-xl bg-gray-100 p-1">
+        <button
+          onClick={() => setTab('saved')}
+          className={`flex-1 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+            tab === 'saved' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Saved
+        </button>
+        <button
+          onClick={() => setTab('liked')}
+          className={`flex-1 py-1.5 text-sm font-semibold rounded-lg transition-colors ${
+            tab === 'liked' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          Liked
+        </button>
+      </div>
+
       <div className="bg-white border border-gray-200 rounded-2xl p-4">
-        {items.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            Nothing saved yet. Tap the bookmark or heart on a video or business to save it here.
-          </p>
+        {tab === 'saved' ? (
+          savedItems.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              Nothing saved yet. Tap the bookmark on a video to save it here.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {savedItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => router.push(`/feed?videoId=${encodeURIComponent(item.id)}`)}
+                  className="rounded-xl border border-gray-200 overflow-hidden bg-white text-left transition-transform active:scale-95 hover:border-[#f97316]/40"
+                >
+                  <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {item.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Heart className="h-6 w-6 text-[#f97316]" />
+                    )}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
+                    <p className="text-[10px] text-[#f97316] font-medium">Watch video</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="rounded-xl border border-gray-200 overflow-hidden bg-white"
-              >
-                <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
-                  {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Heart className="h-6 w-6 text-[#f97316]" />
-                  )}
-                </div>
-                <div className="p-2">
-                  <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
-                  <p className="text-[10px] text-gray-500 capitalize">{item.type}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          likedBiz.length === 0 ? (
+            <p className="text-sm text-gray-500">
+              No liked stores yet. Tap the heart on a business in Discover to add it here.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {likedBiz.map((biz) => (
+                <button
+                  key={biz.id}
+                  type="button"
+                  onClick={() => router.push(`/profile/${biz.slug}`)}
+                  className="rounded-xl border border-gray-200 overflow-hidden bg-white text-left transition-transform active:scale-95 hover:border-[#f97316]/40"
+                >
+                  <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {biz.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={biz.image} alt={biz.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Store className="h-6 w-6 text-[#f97316]" />
+                    )}
+                  </div>
+                  <div className="p-2">
+                    <p className="text-xs font-semibold text-gray-900 truncate">{biz.name}</p>
+                    <p className="text-[10px] text-[#f97316] font-medium">View store</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )
         )}
       </div>
     </section>
@@ -376,8 +508,8 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
         {t('profile.edit_profile')}
       </button>
 
-      {/* Saved / bookmarked content */}
-      <SavedSection userId={user.id} />
+      {/* Saved videos / Liked stores toggle */}
+      <SavedLikedSection userId={user.id} />
 
       {/* Order History */}
       <section className="mb-6">

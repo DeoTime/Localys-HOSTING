@@ -97,7 +97,7 @@ export function MenuPopup({
                     }}
                     className="inline-flex items-center gap-1 rounded-full border border-[#f97316] px-2.5 py-1 text-xs font-semibold text-[#f97316] transition hover:bg-[#f97316] hover:text-white"
                   >
-                    {addedId === item.id ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                    {addedId === item.id ? <Check className="h-4 w-4 shrink-0" /> : <Plus className="h-4 w-4 shrink-0" />}
                     {addedId === item.id ? 'Added' : 'Add'}
                   </button>
                 </li>

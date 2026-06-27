@@ -105,11 +105,24 @@ export interface FeedVideo {
     business_name: string;
     category: string;
     average_rating?: number;
+    latitude?: number;
+    longitude?: number;
   };
   like_count: number;
   /** Menu items for the feed's left rail (BusinessItemsRail `items` prop). */
   localItems?: AliasItem[];
 }
+
+// Approximate coordinates for each demo business (Ottawa area).
+// Used by the Discover feed's haversine distance calculation so the
+// "Near" button shows a real computed distance instead of "Set location".
+const DEMO_COORDS: Record<string, { latitude: number; longitude: number }> = {
+  'jays-burger':           { latitude: 45.4215, longitude: -75.6972 },
+  'sharp-fade-barbershop': { latitude: 45.4220, longitude: -75.7015 },
+  'k1-floral-studio':      { latitude: 45.4230, longitude: -75.6950 },
+  'holy-smoke-barbecue':   { latitude: 45.4200, longitude: -75.6980 },
+  'pho-nga-son':           { latitude: 45.4225, longitude: -75.6940 },
+};
 
 /** Synthetic Discover-feed entries for every local video (prepended to the feed). */
 export function buildFeedVideos(): FeedVideo[] {
@@ -125,6 +138,7 @@ export function buildFeedVideos(): FeedVideo[] {
       business_name: v.businessName,
       category: v.category,
       average_rating: MENUS[v.manifestKey]?.rating ?? 4.8,
+      ...DEMO_COORDS[v.businessSlug],
     },
     like_count: 0,
     localItems: getAliasItems(v.manifestKey),
