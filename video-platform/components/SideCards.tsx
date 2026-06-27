@@ -59,8 +59,8 @@ export function SideCards({ userId }: SideCardsProps) {
     <>
       {/* Left card */}
       {showLeft && (
-        <div className="hidden xl:block fixed left-4 top-[32%] w-48 z-30 pointer-events-auto">
-          <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
+        <div className="hidden xl:block fixed left-4 top-[32%] w-56 z-30 pointer-events-auto">
+          <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg p-5">
             <button
               onClick={() => setShowLeft(false)}
               className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-700 transition-colors"
@@ -71,36 +71,36 @@ export function SideCards({ userId }: SideCardsProps) {
 
             {showOrderCard ? (
               <>
-                <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-3 pr-7">Order Again</p>
-                <p className="text-sm font-semibold text-gray-900 mb-0.5 line-clamp-2 leading-snug">
+                <p className="text-xs font-bold text-black uppercase tracking-widest mb-3 pr-8">Order Again</p>
+                <p className="text-sm font-semibold text-black mb-0.5 line-clamp-2 leading-snug">
                   {lastOrder!.item_name}
                 </p>
-                <p className="text-[#f97316] font-bold text-sm mb-3">${lastOrder!.price.toFixed(2)}</p>
+                <p className="text-[#f97316] font-bold text-base mb-3">${lastOrder!.price.toFixed(2)}</p>
                 <button
                   onClick={() =>
                     router.push(
                       `/checkout?itemId=${lastOrder!.item_id}&itemName=${encodeURIComponent(lastOrder!.item_name)}&itemPrice=${lastOrder!.price}&sellerId=${lastOrder!.seller_id}&buyerId=${userId}`
                     )
                   }
-                  className="w-full bg-[#f97316] text-white text-xs font-semibold py-2 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
+                  className="w-full bg-[#f97316] text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-1.5"
                 >
-                  <RefreshCw className="h-3 w-3" />
+                  <RefreshCw className="h-3.5 w-3.5" />
                   Re-order
                 </button>
               </>
             ) : (
               <>
-                <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-3 pr-7">Browse Local</p>
-                <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center mb-2">
-                  <Store className="h-4 w-4 text-gray-600" />
+                <p className="text-xs font-bold text-black uppercase tracking-widest mb-3 pr-8">Browse Local</p>
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-2">
+                  <Store className="h-5 w-5 text-gray-600" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">Local businesses</p>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm font-semibold text-black mb-1">Local businesses</p>
+                <p className="text-xs text-black leading-relaxed mb-3">
                   Discover shops, food and services near you.
                 </p>
                 <button
                   onClick={() => router.push('/home')}
-                  className="w-full bg-gray-900 text-white text-xs font-semibold py-2 rounded-xl hover:opacity-80 transition-opacity"
+                  className="w-full bg-black text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-80 transition-opacity"
                 >
                   Explore
                 </button>
@@ -112,8 +112,8 @@ export function SideCards({ userId }: SideCardsProps) {
 
       {/* Right card */}
       {showRight && (
-        <div className="hidden xl:block fixed right-4 top-[32%] w-48 z-30 pointer-events-auto">
-          <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
+        <div className="hidden xl:block fixed right-4 top-[32%] w-56 z-30 pointer-events-auto">
+          <div className="relative bg-white border border-gray-200 rounded-2xl shadow-lg p-5">
             <button
               onClick={() => setShowRight(false)}
               className="absolute top-2.5 right-2.5 text-gray-400 hover:text-gray-700 transition-colors"
@@ -124,34 +124,34 @@ export function SideCards({ userId }: SideCardsProps) {
 
             {rightCard === 'deals' ? (
               <>
-                <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-3 pr-7">Local Deals</p>
-                <div className="w-8 h-8 rounded-xl bg-[#f97316]/10 flex items-center justify-center mb-2">
-                  <Tag className="h-4 w-4 text-[#f97316]" />
+                <p className="text-xs font-bold text-black uppercase tracking-widest mb-3 pr-8">Local Deals</p>
+                <div className="w-10 h-10 rounded-xl bg-[#f97316]/10 flex items-center justify-center mb-2">
+                  <Tag className="h-5 w-5 text-[#f97316]" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">Deals near you</p>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm font-semibold text-black mb-1">Deals near you</p>
+                <p className="text-xs text-black leading-relaxed mb-3">
                   Browse coupons and offers from local businesses.
                 </p>
                 <button
                   onClick={() => router.push('/feed')}
-                  className="w-full bg-gray-900 text-white text-xs font-semibold py-2 rounded-xl hover:opacity-80 transition-opacity"
+                  className="w-full bg-black text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-80 transition-opacity"
                 >
                   Browse Deals
                 </button>
               </>
             ) : (
               <>
-                <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest mb-3 pr-7">Communities</p>
-                <div className="w-8 h-8 rounded-xl bg-[#f97316]/10 flex items-center justify-center mb-2">
-                  <Users className="h-4 w-4 text-[#f97316]" />
+                <p className="text-xs font-bold text-black uppercase tracking-widest mb-3 pr-8">Communities</p>
+                <div className="w-10 h-10 rounded-xl bg-[#f97316]/10 flex items-center justify-center mb-2">
+                  <Users className="h-5 w-5 text-[#f97316]" />
                 </div>
-                <p className="text-sm font-semibold text-gray-900 mb-1">Your community</p>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                <p className="text-sm font-semibold text-black mb-1">Your community</p>
+                <p className="text-xs text-black leading-relaxed mb-3">
                   Connect with locals and share your finds.
                 </p>
                 <button
                   onClick={() => router.push('/communities')}
-                  className="w-full bg-[#f97316] text-white text-xs font-semibold py-2 rounded-xl hover:opacity-90 transition-opacity"
+                  className="w-full bg-[#f97316] text-white text-sm font-semibold py-2.5 rounded-xl hover:opacity-90 transition-opacity"
                 >
                   Join Discussion
                 </button>

@@ -6,11 +6,11 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronUp, ChevronDown, MessageSquare, Plus, Users } from 'lucide-react';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
-  'richmondhill-eats': '/communities/Richmond Hill.jpg',
-  'local-services': '/communities/Local services.jpg',
-  'support-local': '/communities/SupportLocal.png',
-  'markham': '/communities/Markham.png',
-  'vaughan': '/communities/Vaughan.jpg',
+  'richmondhill-eats': '/Communities/Richmond Hill.jpg',
+  'local-services': '/Communities/Local services.jpg',
+  'support-local': '/Communities/SupportLocal.png',
+  'markham': '/Communities/Markham.png',
+  'vaughan': '/Communities/Vaughan.jpg',
 };
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';

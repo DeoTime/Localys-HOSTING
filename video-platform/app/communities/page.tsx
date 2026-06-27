@@ -6,11 +6,11 @@ import Link from 'next/link';
 import { ChevronUp, ChevronDown, MessageSquare, Plus } from 'lucide-react';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
-  'richmondhill-eats': '/communities/Richmond Hill.jpg',
-  'local-services': '/communities/Local services.jpg',
-  'support-local': '/communities/SupportLocal.png',
-  'markham': '/communities/Markham.png',
-  'vaughan': '/communities/Vaughan.jpg',
+  'richmondhill-eats': '/Communities/Richmond Hill.jpg',
+  'local-services': '/Communities/Local services.jpg',
+  'support-local': '/Communities/SupportLocal.png',
+  'markham': '/Communities/Markham.png',
+  'vaughan': '/Communities/Vaughan.jpg',
 };
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
@@ -234,7 +234,7 @@ function CommunitiesContent() {
                   >
                     <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                       <Link
-                        href={`/communities/${t.communityId}`}
+                        href={`/Communities/${t.communityId}`}
                         onClick={(e) => e.stopPropagation()}
                         className="text-xs font-semibold text-[#f97316] hover:underline"
                       >

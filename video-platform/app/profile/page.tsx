@@ -70,22 +70,22 @@ function BadgesSection({ userId }: { userId: string }) {
   if (loading) return null;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
-      <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">Achievements</h3>
-      <div className="grid grid-cols-3 gap-2.5">
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4">
+      <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-2.5">Achievements</h3>
+      <div className="grid grid-cols-3 gap-2">
         {BADGE_DEFS.map(({ id, Icon, name, desc, check }) => {
           const earned = check(stats);
           return (
             <div
               key={id}
-              className={`flex flex-col items-center text-center gap-1.5 p-2.5 rounded-xl border transition-colors ${
+              className={`flex flex-col items-center text-center gap-1 p-2 rounded-xl border transition-colors ${
                 earned ? 'border-[#f97316]/20 bg-[#f97316]/5' : 'border-gray-100 bg-gray-50 opacity-50'
               }`}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
-                <Icon className={`h-5 w-5 ${earned ? 'text-white' : 'text-gray-400'}`} />
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
+                <Icon className={`h-4 w-4 ${earned ? 'text-white' : 'text-gray-400'}`} />
               </div>
-              <p className={`text-[11px] font-bold leading-tight ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
+              <p className={`text-[10px] font-bold leading-tight ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
               <p className={`text-[10px] leading-tight ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
             </div>
           );
@@ -238,35 +238,30 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
 
       {/* Impact stats */}
       {!statsLoading && (bizCount > 0 || moneySpent > 0) && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
-          <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">Your Local Impact</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
-                <Store className="h-4.5 w-4.5 text-[#f97316]" />
+        <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4">
+          <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-2.5">Your Local Impact</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
+                <Store className="h-4 w-4 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 leading-none">{bizCount}</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-xl font-bold text-gray-900 leading-none">{bizCount}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">
                   {bizCount === 1 ? 'business' : 'businesses'} supported
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
-                <DollarSign className="h-4.5 w-4.5 text-[#f97316]" />
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900 leading-none">${moneySpent.toFixed(0)}</p>
-                <p className="text-xs text-gray-500 mt-0.5">kept in your community</p>
+                <p className="text-xl font-bold text-gray-900 leading-none">${moneySpent.toFixed(0)}</p>
+                <p className="text-[11px] text-gray-500 mt-0.5">kept in community</p>
               </div>
             </div>
           </div>
-          {bizCount > 0 && (
-            <p className="text-xs text-gray-400 mt-4 leading-relaxed">
-              You've supported {bizCount} local {bizCount === 1 ? 'business' : 'businesses'} and kept ${moneySpent.toFixed(2)} in your community.
-            </p>
-          )}
         </div>
       )}
 
@@ -280,14 +275,6 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
       >
         {t('profile.edit_profile')}
       </button>
-
-      {/* Posted Videos */}
-      <section className="mb-6">
-        <h3 className="text-base font-semibold text-gray-900 mb-3">{t('profile.videos')}</h3>
-        <div className="bg-white border border-gray-200 rounded-2xl p-4">
-          <PostedVideos userId={user.id} isOwnProfile={true} />
-        </div>
-      </section>
 
       {/* Bookmarked Videos */}
       <section className="mb-6">

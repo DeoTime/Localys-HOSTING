@@ -7,13 +7,10 @@ export function ExpressDelivery() {
     <section className="relative flex min-h-[160px] overflow-hidden rounded-2xl bg-[#ea6c00] text-white">
       {/* Left — white chip: lightning bolt + stacked "Express / Delivery" */}
       <div className="flex shrink-0 items-center px-4 py-4 sm:px-7">
-        <div className="rounded-xl bg-white px-3 py-2 shadow-sm">
-          <div className="flex items-center gap-1.5">
-            <Zap className="h-5 w-5 shrink-0 fill-[#f97316] text-[#f97316] sm:h-6 sm:w-6" />
-            <div>
-              <p className="text-sm font-extrabold leading-none text-[#f97316] sm:text-base">Express</p>
-              <p className="text-sm font-extrabold leading-none text-[#f97316] sm:text-base">Delivery</p>
-            </div>
+        <div className="rounded-xl bg-white px-2.5 py-1.5 shadow-sm text-center">
+          <div className="flex items-center gap-1">
+            <Zap className="h-4 w-4 shrink-0 fill-[#f97316] text-[#f97316]" />
+            <span className="text-sm font-extrabold text-[#f97316] leading-tight">Express<br />Delivery</span>
           </div>
         </div>
       </div>
