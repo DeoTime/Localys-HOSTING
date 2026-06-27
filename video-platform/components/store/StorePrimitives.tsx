@@ -6,20 +6,47 @@
  * fractional star-rating display. Kept separate so the page and item cards can
  * share them without duplicating markup.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
 
 /** Brand orange — single constant so the accent colour stays consistent. */
 export const ORANGE = '#f97316';
 
 /**
- * Item/banner image that falls back to a neutral placeholder icon when the
- * source is missing or fails to load, so the layout never shows a broken image.
+ * Item/banner image that falls back — first to `fallbackSrc` (e.g. the store
+ * banner) when the primary source is missing/broken, then to a neutral
+ * placeholder icon — so the layout never shows a broken image.
  */
-export function ItemImage({ src, alt, className }: { src?: string; alt: string; className?: string }) {
-  const [failed, setFailed] = useState(false);
+export function ItemImage({
+  src,
+  alt,
+  className,
+  fallbackSrc,
+}: {
+  src?: string;
+  alt: string;
+  className?: string;
+  fallbackSrc?: string;
+}) {
+  // Effective source: primary if present, otherwise the fallback (banner).
+  const initial = src || fallbackSrc;
+  const [current, setCurrent] = useState<string | undefined>(initial);
 
-  if (!src || failed) {
+  // Reset when the incoming source changes (e.g. menu loads after mount).
+  useEffect(() => {
+    setCurrent(src || fallbackSrc);
+  }, [src, fallbackSrc]);
+
+  const handleError = () => {
+    // On the primary failing, try the fallback once; then give up to placeholder.
+    if (current !== fallbackSrc && fallbackSrc) {
+      setCurrent(fallbackSrc);
+    } else {
+      setCurrent(undefined);
+    }
+  };
+
+  if (!current) {
     return (
       <div className={`flex items-center justify-center bg-gray-100 ${className}`}>
         <svg className="h-1/3 w-1/3 text-gray-300" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" aria-hidden>
@@ -30,7 +57,7 @@ export function ItemImage({ src, alt, className }: { src?: string; alt: string; 
   }
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} />;
+  return <img src={current} alt={alt} className={className} onError={handleError} />;
 }
 
 /**

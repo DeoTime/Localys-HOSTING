@@ -49,7 +49,9 @@ export function AddToCartButton({ item, onAdd, isAdded }: { item: StoreItem; onA
       type="button"
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdd(item); }}
       aria-label={`Add ${item.name}`}
-      className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 bg-white text-black shadow-sm transition hover:border-[#f97316] hover:text-[#f97316]"
+      className={`flex h-8 w-8 items-center justify-center rounded-full border bg-white text-black shadow-sm transition active:scale-95 ${
+        isAdded ? 'add-to-cart-pulse border-[#f97316] text-[#f97316]' : 'border-gray-200 hover:border-[#f97316] hover:text-[#f97316]'
+      }`}
     >
       {isAdded ? <Check className="h-4 w-4 text-[#f97316]" strokeWidth={2.5} /> : <Plus className="h-4 w-4" strokeWidth={2.5} />}
     </button>
@@ -57,11 +59,11 @@ export function AddToCartButton({ item, onAdd, isAdded }: { item: StoreItem; onA
 }
 
 /** Wide "Featured items" carousel card: large image, rank/deal badges, price + likes. */
-export function FeaturedItemCard({ item, rank, onAdd, isAdded }: { item: StoreItem; rank: number; onAdd: (item: StoreItem) => void; isAdded: boolean }) {
+export function FeaturedItemCard({ item, rank, onAdd, isAdded, bannerSrc }: { item: StoreItem; rank: number; onAdd: (item: StoreItem) => void; isAdded: boolean; bannerSrc?: string }) {
   return (
     <div className="flex w-[240px] shrink-0 flex-col">
       <div className="relative">
-        <ItemImage src={item.image} alt={item.name} className="h-[150px] w-full rounded-xl object-cover" />
+        <ItemImage src={item.image} fallbackSrc={bannerSrc} alt={item.name} className="h-[150px] w-full rounded-xl object-cover" />
         {rank <= 3 && (
           <span className="absolute left-2 top-2 rounded-md bg-black px-1.5 py-0.5 text-[11px] font-semibold text-white">
             #{rank} most liked
@@ -92,7 +94,7 @@ export function FeaturedItemCard({ item, rank, onAdd, isAdded }: { item: StoreIt
 }
 
 /** Compact menu list row: name, price, optional deal/description, and a thumbnail. */
-export function MenuItemRow({ item, onAdd, isAdded }: { item: StoreItem; onAdd: (item: StoreItem) => void; isAdded: boolean }) {
+export function MenuItemRow({ item, onAdd, isAdded, bannerSrc }: { item: StoreItem; onAdd: (item: StoreItem) => void; isAdded: boolean; bannerSrc?: string }) {
   return (
     <div className="flex items-stretch justify-between gap-3 rounded-xl border border-gray-200 p-3 transition hover:border-gray-300 hover:shadow-sm">
       <div className="flex min-w-0 flex-col">
@@ -106,7 +108,7 @@ export function MenuItemRow({ item, onAdd, isAdded }: { item: StoreItem; onAdd: 
         {item.description && <p className="mt-1 line-clamp-2 text-xs text-gray-500">{item.description}</p>}
       </div>
       <div className="relative h-[90px] w-[90px] shrink-0">
-        <ItemImage src={item.image} alt={item.name} className="h-[90px] w-[90px] rounded-lg object-cover" />
+        <ItemImage src={item.image} fallbackSrc={bannerSrc} alt={item.name} className="h-[90px] w-[90px] rounded-lg object-cover" />
         <div className="absolute -bottom-1 -right-1">
           <AddToCartButton item={item} onAdd={onAdd} isAdded={isAdded} />
         </div>

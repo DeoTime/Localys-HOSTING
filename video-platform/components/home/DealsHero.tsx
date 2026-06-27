@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Plus, Check } from 'lucide-react';
 import { Thumb } from './Thumb';
 import { useHomeData, useHomeFeed } from './HomeData';
 import type { LocalBusiness } from '@/lib/supabase/featured';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * (A) Walmart-style top block: ONE large featured business that auto-shifts
@@ -15,12 +18,34 @@ import type { LocalBusiness } from '@/lib/supabase/featured';
 export function DealsHero() {
   const { loading } = useHomeData();
   const { heroBusinesses } = useHomeFeed();
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [addedId, setAddedId] = useState<string | null>(null);
 
   const featured = heroBusinesses.slice(0, 4);
   const surrounding = heroBusinesses.slice(4, 8);
 
   const [i, setI] = useState(0);
   const [paused, setPaused] = useState(false);
+
+  const handleAdd = (e: React.MouseEvent, biz: LocalBusiness) => {
+    e.preventDefault();
+    const cheapest = biz.products.length
+      ? biz.products.slice().sort((a, b) => a.price - b.price)[0]
+      : null;
+    if (!cheapest) return;
+    addToCart({
+      itemId: cheapest.id,
+      itemName: cheapest.title,
+      itemPrice: cheapest.price,
+      itemImage: cheapest.image,
+      sellerId: biz.id,
+      buyerId: user?.id ?? 'guest',
+      quantity: 1,
+    });
+    setAddedId(biz.id);
+    window.setTimeout(() => setAddedId(null), 1200);
+  };
 
   useEffect(() => {
     if (paused || featured.length === 0) return;
@@ -90,20 +115,31 @@ export function DealsHero() {
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
           {surrounding.map((biz) => {
             const p = fromPrice(biz);
+            const isAdded = addedId === biz.id;
             return (
-              <Link
-                key={biz.id}
-                href={biz.href}
-                className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900"
-              >
-                <Thumb src={biz.image} label={biz.name} alt={biz.name} className="h-14 w-14 shrink-0 rounded-xl" />
-                <span className="min-w-0">
-                  <span className="block truncate font-semibold text-black dark:text-white">{biz.name}</span>
+              <div key={biz.id} className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-900">
+                <Link href={biz.href} className="shrink-0">
+                  <Thumb src={biz.image} label={biz.name} alt={biz.name} className="h-14 w-14 rounded-xl" />
+                </Link>
+                <span className="min-w-0 flex-1">
+                  <Link href={biz.href} className="block truncate font-semibold text-black dark:text-white hover:underline">{biz.name}</Link>
                   <span className="block truncate text-sm font-medium text-gray-500">
                     {biz.category}{p != null ? ` · from $${p.toFixed(2)}` : ''}
                   </span>
                 </span>
-              </Link>
+                {biz.products.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleAdd(e, biz)}
+                    className={`ml-auto shrink-0 inline-flex items-center gap-1 rounded-full border border-[#f97316] px-2.5 py-1 text-xs font-semibold transition active:scale-95 ${
+                      isAdded ? 'add-to-cart-pulse bg-[#f97316] text-white' : 'text-[#f97316] hover:bg-[#f97316] hover:text-white'
+                    }`}
+                  >
+                    {isAdded ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />}
+                    {isAdded ? 'Added' : 'Add'}
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>

@@ -56,7 +56,13 @@ export default function CartPage() {
         const { data } = await getShopCoupons(sid);
         if (data) all.push(...data);
       }
-      setCoupons(all);
+      // Dedupe so the same coupon never renders twice (and React keys stay unique).
+      const byKey = new Map<string, Coupon>();
+      for (const c of all) {
+        const key = c.id ?? c.code;
+        if (key && !byKey.has(key)) byKey.set(key, c);
+      }
+      setCoupons([...byKey.values()]);
       setLoadingCoupons(false);
     };
     fetchCoupons();
@@ -200,11 +206,11 @@ export default function CartPage() {
                 <span className="text-sm font-semibold text-gray-900">Promo Code</span>
               </div>
               {promoApplied ? (
-                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+                <div className="flex items-center justify-between bg-white border border-[#f97316] rounded-xl px-3 py-2.5">
                   <div className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-mono font-semibold text-green-700">{promoApplied.code}</span>
-                    <span className="text-xs text-green-600">
+                    <Check className="h-4 w-4 text-[#f97316]" />
+                    <span className="text-sm font-mono font-semibold text-black">{promoApplied.code}</span>
+                    <span className="text-xs text-[#f97316]">
                       {promoApplied.discount_type === 'percent' ? `${promoApplied.discount_value}% off` : `-$${promoApplied.discount_value.toFixed(2)}`} — saving ${promoDiscount.toFixed(2)}
                     </span>
                   </div>
@@ -232,17 +238,17 @@ export default function CartPage() {
 
             {/* ── Available Coupons ── */}
             {!loadingCoupons && coupons.length > 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+              <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4">
                 <h2 className="text-base font-semibold mb-1 text-gray-900">Available Coupons</h2>
                 <p className="text-gray-500 text-xs mb-3">Apply at checkout</p>
                 <div className="space-y-2">
-                  {coupons.map((coupon) => (
-                    <div key={coupon.id} className="flex items-center justify-between p-3 rounded-xl border border-green-200 bg-white">
+                  {coupons.map((coupon, idx) => (
+                    <div key={coupon.id ?? coupon.code ?? idx} className="flex items-center justify-between p-3 rounded-xl border border-gray-200 bg-white">
                       <div>
-                        <p className="font-semibold text-green-700">{coupon.code}</p>
+                        <p className="font-semibold text-[#f97316]">{coupon.code}</p>
                         <p className="text-gray-500 text-sm">{coupon.discount_percentage}% off</p>
                       </div>
-                      <span className="text-green-600 text-xs border border-green-200 px-2 py-1 rounded-lg">Apply at checkout</span>
+                      <span className="text-black text-xs border border-[#f97316] px-2 py-1 rounded-lg">Apply at checkout</span>
                     </div>
                   ))}
                 </div>
@@ -357,8 +363,8 @@ export default function CartPage() {
               </div>
               {promoDiscount > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-green-600">Promo ({promoApplied?.code})</span>
-                  <span className="font-medium text-green-600">-${promoDiscount.toFixed(2)}</span>
+                  <span className="text-[#f97316]">Promo ({promoApplied?.code})</span>
+                  <span className="font-medium text-[#f97316]">-${promoDiscount.toFixed(2)}</span>
                 </div>
               )}
               {scheduledAt && (

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Star, Check, Plus, ChevronUp, ChevronDown } from 'lucide-react';
+import { Star, Check, Plus, X } from 'lucide-react';
 import { BusinessItemsRail } from '@/components/feed/BusinessItemsRail';
 import { getBusinessAlias, getPhoXeLuaItems, type AliasItem } from '@/lib/businessAliases';
 import { buildFeedVideos } from '@/lib/demoVideos';
@@ -14,12 +14,20 @@ import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbo
 import { getUserCoins } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
 import dynamic from 'next/dynamic';
+import { GoogleMap } from '@/components/GoogleMap';
 const CommentModal = dynamic(() => import('@/components/CommentModal').then(mod => mod.CommentModal), { ssr: false });
 import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
 import { haversineDistance } from '@/lib/utils/geo';
 import { formatDistanceKm, etaMinutes } from '@/lib/utils/distance';
 import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/pricing';
+import { isDemoId } from '@/lib/utils/ids';
+import {
+  toggleItemLike,
+  toggleItemBookmark,
+  getLikedItemIds,
+  getSavedItems,
+} from '@/lib/clientEngagement';
 
 /** Compact count display: 11100 → "11.1K", 2_300_000 → "2.3M". */
 function formatCount(n: number): string {
@@ -105,6 +113,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string>('');
+  const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [userCoins, setUserCoins] = useState(100);
   const [showCoinBadge, setShowCoinBadge] = useState(false);
@@ -541,19 +550,21 @@ export function HomeContent({ isActive }: HomeContentProps) {
         });
       }
 
+      // Merge in client-side demo likes (slug/local content has no DB rows).
+      getLikedItemIds().forEach(id => likedSet.add(id));
       setLikedVideos(likedSet);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Loaded liked items:', Array.from(likedSet));
-      }
 
       const { data: bookmarks } = await supabase
         .from('video_bookmarks')
         .select('video_id')
         .eq('user_id', user.id);
 
-      if (bookmarks) {
-        setBookmarkedVideos(new Set(bookmarks.map((b: { video_id: string | null }) => b.video_id).filter(Boolean) as string[]));
-      }
+      const bookmarkSet = new Set<string>(
+        (bookmarks || []).map((b: { video_id: string | null }) => b.video_id).filter(Boolean) as string[]
+      );
+      // Merge in client-side demo bookmarks.
+      getSavedItems().forEach(item => bookmarkSet.add(item.id));
+      setBookmarkedVideos(bookmarkSet);
     } catch (error) {
       console.error('Error loading interactions:', error);
     }
@@ -756,10 +767,18 @@ export function HomeContent({ isActive }: HomeContentProps) {
       return;
     }
 
+    // Demo/slug content (e.g. "jays-burger") has no Supabase row — persist the
+    // like client-side instead of sending an invalid uuid to Postgres.
+    const demo = isDemoId(likeKey);
+
     try {
       if (isLiked) {
-        const { error } = await unlikeItem(user.id, likeKey, itemType as 'video' | 'business');
-        if (error) throw error;
+        if (demo) {
+          toggleItemLike(likeKey);
+        } else {
+          const { error } = await unlikeItem(user.id, likeKey, itemType as 'video' | 'business');
+          if (error) throw error;
+        }
 
         setLikedVideos(prev => {
           const next = new Set(prev);
@@ -772,8 +791,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
           [likeKey]: Math.max(0, (prev[likeKey] || 0) - 1)
         }));
       } else {
-        const { error } = await likeItem(user.id, likeKey, itemType as 'video' | 'business');
-        if (error) throw error;
+        if (demo) {
+          toggleItemLike(likeKey);
+        } else {
+          const { error } = await likeItem(user.id, likeKey, itemType as 'video' | 'business');
+          if (error) throw error;
+        }
 
         setLikedVideos(prev => new Set(prev).add(likeKey));
 
@@ -790,19 +813,27 @@ export function HomeContent({ isActive }: HomeContentProps) {
     setTimeout(() => setLikeAnimating(null), 300);
   };
 
-  const toggleBookmark = async (videoId: string, event?: React.MouseEvent) => {
+  const toggleBookmark = async (video: Video, event?: React.MouseEvent) => {
     if (!user) {
       setToastMessage('Please sign in to bookmark videos');
       return;
     }
 
+    const videoId = video.id;
     setBookmarkAnimating(videoId);
     const isBookmarked = bookmarkedVideos.has(videoId);
+    // Demo/slug videos have no Supabase row — persist a snapshot client-side
+    // so they still show up in the profile's Saved section.
+    const demo = isDemoId(videoId);
 
     try {
       if (isBookmarked) {
-        const { error } = await unbookmarkVideo(user.id, videoId);
-        if (error) throw error;
+        if (demo) {
+          toggleItemBookmark({ id: videoId, type: 'video', name: video.businesses?.business_name || video.caption || 'Saved video' });
+        } else {
+          const { error } = await unbookmarkVideo(user.id, videoId);
+          if (error) throw error;
+        }
         setBookmarkedVideos(prev => {
           const next = new Set(prev);
           next.delete(videoId);
@@ -810,8 +841,17 @@ export function HomeContent({ isActive }: HomeContentProps) {
         });
         setToastMessage('Bookmark removed');
       } else {
-        const { error } = await bookmarkVideo(user.id, videoId);
-        if (error) throw error;
+        if (demo) {
+          toggleItemBookmark({
+            id: videoId,
+            type: 'video',
+            name: video.businesses?.business_name || video.caption || 'Saved video',
+            image: video.businesses?.profile_picture_url || undefined,
+          });
+        } else {
+          const { error } = await bookmarkVideo(user.id, videoId);
+          if (error) throw error;
+        }
         setBookmarkedVideos(prev => new Set(prev).add(videoId));
         setToastMessage('Video bookmarked!');
       }
@@ -987,6 +1027,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
   const currentDistanceKm = getDistanceForVideo(currentVideo);
   const distance = formatDistanceLabel(currentDistanceKm);
+  const currentEta = getEtaMinutes(currentDistanceKm);
+  // Real distance (+ ETA) when we know the user's location; otherwise prompt
+  // them to set one instead of the vague "Near" label.
+  const distanceLabel = distance
+    ? (currentEta ? `${distance} · ${currentEta} min` : distance)
+    : 'Set location';
 
   return (
     <>
@@ -1198,24 +1244,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </div>
       </div>
 
-      {/* Up / Down navigation — right edge, above the interaction rail */}
-      <div className="absolute right-3 top-[13%] z-20 flex flex-col gap-3 md:right-5">
-        <button
-          onClick={goToPrev}
-          aria-label="Previous video"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-lg transition-colors hover:bg-white/90"
-        >
-          <ChevronUp className="h-5 w-5" />
-        </button>
-        <button
-          onClick={goToNext}
-          aria-label="Next video"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black shadow-lg transition-colors hover:bg-white/90"
-        >
-          <ChevronDown className="h-5 w-5" />
-        </button>
-      </div>
-
       {/* Right Side - Interaction Buttons */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
         {/* Profile Picture */}
@@ -1289,8 +1317,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
           <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || stableCount(currentVideo.id, 'cmt', 12, 520))}</span>
         </button>
 
-        {/* Location Button — always visible */}
+        {/* Location Button — opens map modal */}
         <button
+          onClick={() => setLocationModalOpen(true)}
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label={distance ? `Distance: ${distance}` : 'Location'}
         >
@@ -1300,12 +1329,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">{distance || 'Near'}</span>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{distanceLabel}</span>
         </button>
 
         {/* Bookmark Button */}
         <button
-          onClick={(e) => toggleBookmark(currentVideo.id, e)}
+          onClick={(e) => toggleBookmark(currentVideo, e)}
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
           aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark video'}
         >
@@ -1351,6 +1380,44 @@ export function HomeContent({ isActive }: HomeContentProps) {
         postId={commentPostId}
         businessName={currentBusiness?.business_name || currentVideo.profiles?.full_name}
       />
+
+      {/* Location Modal */}
+      {locationModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setLocationModalOpen(false)}
+        >
+          <div
+            className="relative w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div>
+                <h2 className="text-base font-semibold text-black">
+                  {currentBusiness?.business_name || 'Store Location'}
+                </h2>
+                {distance && <p className="text-xs text-gray-500 mt-0.5">{distance}</p>}
+              </div>
+              <button
+                onClick={() => setLocationModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close location"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            {currentBusiness?.business_name ? (
+              <GoogleMap
+                query={currentBusiness.business_name}
+                title={currentBusiness.business_name}
+                className="w-full h-64"
+              />
+            ) : (
+              <div className="p-6 text-center text-sm text-gray-500">No location data available.</div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (

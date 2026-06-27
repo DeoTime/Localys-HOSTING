@@ -1,28 +1,48 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
-import { MapPin } from 'lucide-react';
+import { MapPin, Plus, Check } from 'lucide-react';
 import { Thumb } from './Thumb';
 import { Stars } from './Stars';
 import type { LocalBusiness } from '@/lib/supabase/featured';
 import { useStoreDistance } from '@/lib/utils/useStoreDistance';
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * A business-focused card (real seeded business): photo, name, department, and
  * a from-price derived from its cheapest menu item. Links to the real profile.
  */
 export function BusinessCard({ business }: { business: LocalBusiness }) {
-  const fromPrice = business.products.length
-    ? business.products.slice().sort((a, b) => a.price - b.price)[0].price
+  const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [added, setAdded] = useState(false);
+
+  const cheapest = business.products.length
+    ? business.products.slice().sort((a, b) => a.price - b.price)[0]
     : null;
   const { label: distanceLabel, etaLabel } = useStoreDistance(business.address);
 
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!cheapest) return;
+    addToCart({
+      itemId: cheapest.id,
+      itemName: cheapest.title,
+      itemPrice: cheapest.price,
+      itemImage: cheapest.image,
+      sellerId: business.id,
+      buyerId: user?.id ?? 'guest',
+      quantity: 1,
+    });
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1200);
+  };
+
   return (
-    <Link
-      href={business.href}
-      className="group/card flex w-[170px] shrink-0 flex-col sm:w-[200px]"
-    >
-      <div className="relative block overflow-hidden rounded-2xl">
+    <div className="group/card flex w-[170px] shrink-0 flex-col sm:w-[200px]">
+      <Link href={business.href} className="relative block overflow-hidden rounded-2xl">
         <Thumb
           src={business.image}
           label={business.name}
@@ -33,15 +53,30 @@ export function BusinessCard({ business }: { business: LocalBusiness }) {
         <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-semibold text-black shadow-sm backdrop-blur dark:bg-gray-900/80 dark:text-white">
           {business.category}
         </span>
-      </div>
+      </Link>
 
       <div className="mt-2 flex flex-col gap-1">
-        <span className="line-clamp-1 text-sm font-semibold text-black group-hover/card:underline dark:text-white">
+        {cheapest && (
+          <button
+            type="button"
+            onClick={handleAdd}
+            className={`inline-flex w-fit items-center gap-1 rounded-full border border-[#f97316] px-3 py-1 text-sm font-semibold transition active:scale-95 ${
+              added ? 'add-to-cart-pulse bg-[#f97316] text-white' : 'text-[#f97316] hover:bg-[#f97316] hover:text-white'
+            }`}
+          >
+            {added ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Plus className="h-4 w-4" strokeWidth={2.5} />}
+            {added ? 'Added' : 'Add'}
+          </button>
+        )}
+        <Link
+          href={business.href}
+          className="line-clamp-1 text-sm font-semibold text-black hover:underline dark:text-white"
+        >
           {business.name}
-        </span>
+        </Link>
         <span className="text-xs text-gray-600 dark:text-gray-300">
           {business.products.length} item{business.products.length === 1 ? '' : 's'}
-          {fromPrice != null ? ` · from $${fromPrice.toFixed(2)}` : ''}
+          {cheapest != null ? ` · from $${cheapest.price.toFixed(2)}` : ''}
         </span>
         {business.reviewCount > 0 ? (
           <Stars rating={business.rating} reviewCount={business.reviewCount} />
@@ -56,6 +91,6 @@ export function BusinessCard({ business }: { business: LocalBusiness }) {
           </span>
         )}
       </div>
-    </Link>
+    </div>
   );
 }

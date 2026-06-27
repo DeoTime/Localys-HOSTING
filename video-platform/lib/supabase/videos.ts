@@ -4,6 +4,8 @@ import type { VideoMetadata } from '../../models/Video';
 
 export type { VideoMetadata };
 
+import { isDemoId } from '../utils/ids';
+
 const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || 'videos';
 
 /**
@@ -221,6 +223,8 @@ export async function uploadVideoFile(file: File, userId: string) {
  * Get like count for a business/video
  */
 export async function getLikeCount(businessId: string) {
+  // Demo/slug ids have no DB rows — avoid a uuid cast error, report 0.
+  if (isDemoId(businessId)) return { data: 0, error: null };
   try {
     const { count, error } = await supabase
       .from('likes')
@@ -250,14 +254,16 @@ export async function getLikeCounts(businessIds: string[]) {
       counts[id] = 0;
     });
 
-    if (businessIds.length === 0) {
+    // Only query real UUIDs; demo/slug ids stay at 0 (handled client-side).
+    const realIds = businessIds.filter(id => !isDemoId(id));
+    if (realIds.length === 0) {
       return { data: counts, error: null };
     }
 
     const { data, error } = await supabase
       .from('likes')
       .select('business_id')
-      .in('business_id', businessIds);
+      .in('business_id', realIds);
 
     if (error) {
       console.error('Error fetching like counts:', error);
@@ -329,6 +335,7 @@ export async function unlikeVideo(userId: string, businessId: string) {
  * Like a video or business (flexible - works with either video_id or business_id)
  */
 export async function likeItem(userId: string, itemId: string, itemType: 'video' | 'business' = 'video') {
+  if (isDemoId(itemId)) return { data: null, error: null };
   try {
     const insertData = { user_id: userId };
     if (itemType === 'business') {
@@ -344,13 +351,13 @@ export async function likeItem(userId: string, itemId: string, itemType: 'video'
       .single();
 
     if (error) {
-      console.error(`Error liking ${itemType}:`, error);
+      console.error(`Error liking ${itemType}:`, error.message || error.details || JSON.stringify(error));
       return { data: null, error };
     }
 
     return { data, error: null };
   } catch (error: any) {
-    console.error(`Exception liking ${itemType}:`, error);
+    console.error(`Exception liking ${itemType}:`, error?.message || String(error));
     return { data: null, error };
   }
 }
@@ -359,6 +366,7 @@ export async function likeItem(userId: string, itemId: string, itemType: 'video'
  * Unlike a video or business (flexible - works with either video_id or business_id)
  */
 export async function unlikeItem(userId: string, itemId: string, itemType: 'video' | 'business' = 'video') {
+  if (isDemoId(itemId)) return { data: null, error: null };
   try {
     let query = supabase
       .from('likes')
@@ -374,13 +382,13 @@ export async function unlikeItem(userId: string, itemId: string, itemType: 'vide
     const { data, error } = await query;
 
     if (error) {
-      console.error(`Error unliking ${itemType}:`, error);
+      console.error(`Error unliking ${itemType}:`, error.message || error.details || JSON.stringify(error));
       return { data: null, error };
     }
 
     return { data, error: null };
   } catch (error: any) {
-    console.error(`Exception unliking ${itemType}:`, error);
+    console.error(`Exception unliking ${itemType}:`, error?.message || String(error));
     return { data: null, error };
   }
 }
@@ -389,6 +397,7 @@ export async function unlikeItem(userId: string, itemId: string, itemType: 'vide
  * Bookmark a video
  */
 export async function bookmarkVideo(userId: string, videoId: string) {
+  if (isDemoId(videoId)) return { data: null, error: null };
   try {
     const { data, error } = await supabase
       .from('video_bookmarks')
@@ -397,13 +406,13 @@ export async function bookmarkVideo(userId: string, videoId: string) {
       .single();
 
     if (error) {
-      console.error('Error bookmarking video:', error);
+      console.error('Error bookmarking video:', error.message || error.details || JSON.stringify(error));
       return { data: null, error };
     }
 
     return { data, error: null };
   } catch (error: any) {
-    console.error('Exception bookmarking video:', error);
+    console.error('Exception bookmarking video:', error?.message || String(error));
     return { data: null, error };
   }
 }
@@ -412,6 +421,7 @@ export async function bookmarkVideo(userId: string, videoId: string) {
  * Unbookmark a video
  */
 export async function unbookmarkVideo(userId: string, videoId: string) {
+  if (isDemoId(videoId)) return { data: null, error: null };
   try {
     const { data, error } = await supabase
       .from('video_bookmarks')
@@ -420,13 +430,13 @@ export async function unbookmarkVideo(userId: string, videoId: string) {
       .eq('video_id', videoId);
 
     if (error) {
-      console.error('Error unbookmarking video:', error);
+      console.error('Error unbookmarking video:', error.message || error.details || JSON.stringify(error));
       return { data: null, error };
     }
 
     return { data, error: null };
   } catch (error: any) {
-    console.error('Exception unbookmarking video:', error);
+    console.error('Exception unbookmarking video:', error?.message || String(error));
     return { data: null, error };
   }
 }
@@ -761,6 +771,7 @@ export async function trackVideoView(
   userId?: string,
   ipAddress?: string
 ) {
+  if (isDemoId(videoId)) return { success: true, error: null };
   try {
     const { data, error } = await supabase.rpc(
       'increment_video_view_count',
@@ -772,13 +783,13 @@ export async function trackVideoView(
     );
 
     if (error) {
-      console.error('Error tracking video view:', error);
+      console.error('Error tracking video view:', error.message || error.details || JSON.stringify(error));
       return { success: false, error };
     }
 
     return { success: data === true, error: null };
   } catch (error: any) {
-    console.error('Exception tracking video view:', error);
+    console.error('Exception tracking video view:', error?.message || String(error));
     return { success: false, error };
   }
 }

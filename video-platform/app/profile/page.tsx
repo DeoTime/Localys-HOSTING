@@ -21,6 +21,8 @@ import {
 import { OrderHistory } from '@/components/OrderHistory';
 import { RankSection } from '@/components/RankSection';
 import { getUserCoins } from '@/lib/supabase/profiles';
+import { getUserBookmarkedVideos } from '@/lib/supabase/videos';
+import { getSavedItems, subscribeEngagement, type SavedItem } from '@/lib/clientEngagement';
 import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award } from 'lucide-react';
 
 // ── Badge system ──────────────────────────────────────────────────────────────
@@ -100,6 +102,97 @@ export default function ProfilePage() {
     <ProtectedRoute>
       <ProfileContent />
     </ProtectedRoute>
+  );
+}
+
+// ── Saved / bookmarked section ──────────────────────────────────────────────────
+/**
+ * Shows the user's saved content: bookmarked videos from Supabase merged with
+ * client-side demo saves (bookmarked demo videos + liked demo businesses), so
+ * anything the user saves — real or demo — appears here.
+ */
+function SavedSection({ userId }: { userId: string }) {
+  const [items, setItems] = useState<SavedItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    type BookmarkedVideo = {
+      id: string;
+      caption?: string | null;
+      businesses?: { business_name?: string | null; profile_picture_url?: string | null } | null;
+    };
+
+    const buildList = (realVideos: BookmarkedVideo[]): SavedItem[] => {
+      const real: SavedItem[] = realVideos.map((v) => ({
+        id: v.id,
+        type: 'video',
+        name: v.businesses?.business_name || v.caption || 'Saved video',
+        image: v.businesses?.profile_picture_url || undefined,
+      }));
+      // Dedupe demo + real by id (real wins).
+      const seen = new Set(real.map((r) => r.id));
+      const demo = getSavedItems().filter((d) => !seen.has(d.id));
+      return [...real, ...demo];
+    };
+
+    const load = async () => {
+      const { data } = await getUserBookmarkedVideos(userId);
+      if (!active) return;
+      setItems(buildList(data || []));
+      setLoading(false);
+    };
+    load();
+
+    // Re-render when demo saves change.
+    const unsub = subscribeEngagement(() => {
+      getUserBookmarkedVideos(userId).then(({ data }) => {
+        if (active) setItems(buildList(data || []));
+      });
+    });
+
+    return () => {
+      active = false;
+      unsub();
+    };
+  }, [userId]);
+
+  if (loading) return null;
+
+  return (
+    <section className="mb-6">
+      <h3 className="text-base font-semibold text-gray-900 mb-3">Saved</h3>
+      <div className="bg-white border border-gray-200 rounded-2xl p-4">
+        {items.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            Nothing saved yet. Tap the bookmark or heart on a video or business to save it here.
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-gray-200 overflow-hidden bg-white"
+              >
+                <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Heart className="h-6 w-6 text-[#f97316]" />
+                  )}
+                </div>
+                <div className="p-2">
+                  <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
+                  <p className="text-[10px] text-gray-500 capitalize">{item.type}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -282,6 +375,9 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
       >
         {t('profile.edit_profile')}
       </button>
+
+      {/* Saved / bookmarked content */}
+      <SavedSection userId={user.id} />
 
       {/* Order History */}
       <section className="mb-6">

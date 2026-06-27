@@ -180,7 +180,10 @@ export function TopHeader() {
           <ShoppingCart className="h-5 w-5" />
           <span className="hidden text-[11px] font-medium lg:block">Cart</span>
           {cartCount > 0 && (
-            <span className="absolute -right-0.5 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#f97316] px-1 text-[10px] font-bold text-white">
+            <span
+              key={cartCount}
+              className="cart-badge-bump absolute -right-0.5 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-[#f97316] px-1 text-[10px] font-bold text-white"
+            >
               {cartCount > 99 ? '99+' : cartCount}
             </span>
           )}

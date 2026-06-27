@@ -26,6 +26,7 @@ import { ItemImage, Stars } from './StorePrimitives';
 import { useAddToCart, FeaturedItemCard, MenuItemRow } from './StoreItemCards';
 import { InfoModal } from './InfoModal';
 import type { StoreItem, StoreMenu } from './types';
+import { isItemBookmarked, toggleItemBookmark } from '@/lib/clientEngagement';
 
 // Re-export the store types so existing importers (e.g. the profile page) keep
 // importing them from this module.
@@ -42,6 +43,42 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
   const { label: distanceLabel } = useStoreDistance(menu.address);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [messagingLoading, setMessagingLoading] = useState(false);
+
+  // Banner "save" (heart): persists the store to the client-side saves so it
+  // toggles, survives reload, and shows up in the profile's Saved section.
+  const [saved, setSaved] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  useEffect(() => {
+    setSaved(isItemBookmarked(sellerId));
+  }, [sellerId]);
+
+  const handleToggleSave = () => {
+    const next = toggleItemBookmark({
+      id: sellerId,
+      type: 'business',
+      name: storeName,
+      image: menu.banner || undefined,
+    });
+    setSaved(next);
+  };
+
+  const handleShare = async () => {
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const shareData = { title: storeName, text: `Check out ${storeName} on Localys`, url };
+    try {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        await navigator.share(shareData);
+        return;
+      }
+      if (typeof navigator !== 'undefined' && navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        setShareCopied(true);
+        setTimeout(() => setShareCopied(false), 1500);
+      }
+    } catch {
+      // user dismissed the share sheet — no-op
+    }
+  };
 
   // Open (or create) a 1:1 chat with this business and navigate to it. Guests are
   // sent to login; messaging yourself is a no-op.
@@ -111,11 +148,29 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
         <div className="relative mt-3 overflow-hidden rounded-xl">
           <ItemImage src={menu.banner || undefined} alt={storeName} className="h-[170px] w-full object-cover sm:h-[210px]" />
           <div className="absolute right-3 top-3 flex items-center gap-2">
-            <button aria-label="Save" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow backdrop-blur transition hover:text-[#f97316]">
-              <Heart className="h-5 w-5" strokeWidth={2} />
+            <button
+              onClick={handleToggleSave}
+              aria-label={saved ? 'Remove from saved' : 'Save'}
+              aria-pressed={saved}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow backdrop-blur transition hover:text-[#f97316]"
+            >
+              <Heart
+                className={`h-5 w-5 ${saved ? 'text-[#f97316]' : ''}`}
+                fill={saved ? '#f97316' : 'none'}
+                strokeWidth={2}
+              />
             </button>
-            <button aria-label="More" className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow backdrop-blur transition hover:text-[#f97316]">
+            <button
+              onClick={handleShare}
+              aria-label="Share"
+              className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-black shadow backdrop-blur transition hover:text-[#f97316]"
+            >
               <MoreHorizontal className="h-5 w-5" strokeWidth={2} />
+              {shareCopied && (
+                <span className="absolute -bottom-7 right-0 whitespace-nowrap rounded-md bg-black px-2 py-0.5 text-[11px] font-semibold text-white">
+                  Link copied
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -255,7 +310,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
                 </div>
                 <div ref={carouselRef} className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {featuredItems.map((item, i) => (
-                    <FeaturedItemCard key={item.id} item={item} rank={i + 1} onAdd={addItem} isAdded={!!addedById[item.id]} />
+                    <FeaturedItemCard key={item.id} item={item} rank={i + 1} onAdd={addItem} isAdded={!!addedById[item.id]} bannerSrc={menu.banner || undefined} />
                   ))}
                 </div>
               </section>
@@ -290,7 +345,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
               <section id="picked" className="mt-8 scroll-mt-24">
                 <h2 className="mb-3 text-2xl font-bold text-black">Picked for you</h2>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {pickedItems.map((item) => <MenuItemRow key={item.id} item={item} onAdd={addItem} isAdded={!!addedById[item.id]} />)}
+                  {pickedItems.map((item) => <MenuItemRow key={item.id} item={item} onAdd={addItem} isAdded={!!addedById[item.id]} bannerSrc={menu.banner || undefined} />)}
                 </div>
               </section>
             )}
@@ -300,7 +355,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
               <section key={category} id={categoryDomId(category)} className="mt-8 scroll-mt-24">
                 <h2 className="mb-3 text-2xl font-bold text-black">{category}</h2>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  {(itemsByCategory[category] || []).map((item) => <MenuItemRow key={item.id} item={item} onAdd={addItem} isAdded={!!addedById[item.id]} />)}
+                  {(itemsByCategory[category] || []).map((item) => <MenuItemRow key={item.id} item={item} onAdd={addItem} isAdded={!!addedById[item.id]} bannerSrc={menu.banner || undefined} />)}
                 </div>
               </section>
             ))}

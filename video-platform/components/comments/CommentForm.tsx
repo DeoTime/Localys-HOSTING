@@ -181,7 +181,7 @@ export default function CommentForm({
 
   if (!user) {
     return (
-      <div className="text-center py-4 text-gray-400">
+      <div className="text-center py-4 text-gray-500">
         <p className="text-sm">Please sign in to comment</p>
       </div>
     );
@@ -198,8 +198,8 @@ export default function CommentForm({
             className={`rounded-full object-cover ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}
           />
         ) : (
-          <div className={`rounded-full bg-white/10 flex items-center justify-center ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}>
-            <span className={`font-semibold ${compact ? 'text-xs' : 'text-sm'}`}>
+          <div className={`rounded-full bg-gray-100 flex items-center justify-center ${compact ? 'w-6 h-6' : 'w-8 h-8'}`}>
+            <span className={`font-semibold text-gray-700 ${compact ? 'text-xs' : 'text-sm'}`}>
               {user.email?.[0]?.toUpperCase() || '?'}
             </span>
           </div>
@@ -216,7 +216,7 @@ export default function CommentForm({
           placeholder={placeholder}
           disabled={loading}
           rows={compact ? 1 : 3}
-          className={`w-full bg-transparent border border-white/20 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-white/40 disabled:opacity-50 disabled:cursor-not-allowed resize-none ${
+          className={`w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-black placeholder-gray-400 focus:outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 disabled:opacity-50 disabled:cursor-not-allowed resize-none ${
             compact ? 'text-sm min-h-[32px]' : 'text-sm'
           }`}
           style={{ maxHeight: compact ? '80px' : '120px' }}
@@ -225,7 +225,7 @@ export default function CommentForm({
         {/* Star Rating */}
         {!compact && (
           <div className="flex items-center gap-2 mt-3 mb-2">
-            <span className="text-xs text-gray-400">Rate:</span>
+            <span className="text-xs text-gray-500">Rate:</span>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
@@ -248,7 +248,7 @@ export default function CommentForm({
                 </button>
               ))}
             </div>
-            {rating && <span className="text-xs text-gray-400">{rating}/5</span>}
+            {rating && <span className="text-xs text-gray-500">{rating}/5</span>}
           </div>
         )}
 
@@ -309,10 +309,8 @@ export default function CommentForm({
           <button
             type="submit"
             disabled={!content.trim() || loading || uploading}
-            className={`px-4 py-1.5 rounded-lg font-semibold text-sm disabled:bg-white/10 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 ${
-              compact
-                ? 'bg-white/20 text-white hover:bg-white/30 active:scale-95'
-                : 'bg-white/20 text-white hover:bg-white/30'
+            className={`px-4 py-1.5 rounded-lg font-semibold text-sm bg-[#f97316] text-white hover:bg-[#ea6a0c] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-200 ${
+              compact ? 'active:scale-95' : ''
             }`}
           >
             {loading || uploading ? (

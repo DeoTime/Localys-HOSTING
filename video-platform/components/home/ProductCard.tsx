@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Heart, Plus } from 'lucide-react';
+import { Heart, Plus, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Product } from '@/lib/home-data';
@@ -74,9 +74,11 @@ export function ProductCard({ product }: { product: Product }) {
         <button
           type="button"
           onClick={handleAdd}
-          className="inline-flex w-fit items-center gap-1 rounded-full border border-[#f97316] px-3 py-1 text-sm font-semibold text-[#f97316] transition hover:bg-[#f97316] hover:text-white"
+          className={`inline-flex w-fit items-center gap-1 rounded-full border border-[#f97316] px-3 py-1 text-sm font-semibold transition active:scale-95 ${
+            added ? 'add-to-cart-pulse bg-[#f97316] text-white' : 'text-[#f97316] hover:bg-[#f97316] hover:text-white'
+          }`}
         >
-          <Plus className="h-4 w-4" strokeWidth={2.5} />
+          {added ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Plus className="h-4 w-4" strokeWidth={2.5} />}
           {added ? 'Added' : 'Add'}
         </button>
 
