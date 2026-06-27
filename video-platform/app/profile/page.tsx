@@ -21,6 +21,8 @@ import {
   BYTES_TO_MB,
 } from '@/lib/supabase/profiles';
 import { OrderHistory } from '@/components/OrderHistory';
+import { RankSection } from '@/components/RankSection';
+import { getUserCoins } from '@/lib/supabase/profiles';
 import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award } from 'lucide-react';
 
 // ── Badge system ──────────────────────────────────────────────────────────────
@@ -190,20 +192,22 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
   const { t } = useTranslation();
   const [bizCount, setBizCount] = useState(0);
   const [moneySpent, setMoneySpent] = useState(0);
+  const [points, setPoints] = useState(0);
   const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
     const load = async () => {
-      const { data } = await supabase
-        .from('item_purchases')
-        .select('seller_id, price')
-        .eq('buyer_id', user.id);
+      const [{ data }, { data: coins }] = await Promise.all([
+        supabase.from('item_purchases').select('seller_id, price').eq('buyer_id', user.id),
+        getUserCoins(user.id),
+      ]);
       if (data) {
         const uniqueSellers = new Set(data.map((p: any) => p.seller_id));
         setBizCount(uniqueSellers.size);
         setMoneySpent(data.reduce((s: number, p: any) => s + (p.price || 0), 0));
       }
+      if (typeof coins === 'number') setPoints(coins);
       setStatsLoading(false);
     };
     load();
@@ -235,6 +239,11 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
           {memberSince && <p className="text-gray-400 text-xs mt-1">Member since {memberSince}</p>}
         </div>
       </div>
+
+      {/* Rank / tier */}
+      {!statsLoading && (
+        <RankSection moneySpent={moneySpent} points={points} bizCount={bizCount} />
+      )}
 
       {/* Impact stats */}
       {!statsLoading && (bizCount > 0 || moneySpent > 0) && (
