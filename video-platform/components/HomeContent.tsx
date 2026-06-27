@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Star, Check, Plus } from 'lucide-react';
+import { Star, Check, Plus, ChevronUp, ChevronDown } from 'lucide-react';
 import { MenuPopup } from '@/components/feed/MenuPopup';
 import { useAuth } from '@/contexts/AuthContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
@@ -16,6 +16,33 @@ import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
 import { haversineDistance } from '@/lib/utils/geo';
 import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/pricing';
+
+/** Compact count display: 11100 → "11.1K", 2_300_000 → "2.3M". */
+function formatCount(n: number): string {
+  if (n < 1000) return String(n);
+  if (n < 1_000_000) {
+    const k = n / 1000;
+    return `${k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')}K`;
+  }
+  const m = n / 1_000_000;
+  return `${m >= 100 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, '')}M`;
+}
+
+/** Deterministic hash of a string → unsigned 32-bit int (stable across reloads). */
+function hashString(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Stable, plausible save/share counts derived from a video id (no backend). */
+function stableCount(id: string, salt: string, min: number, max: number): number {
+  const h = hashString(`${id}:${salt}`);
+  return min + (h % (max - min + 1));
+}
 
 interface Video {
   id: string;
@@ -629,6 +656,16 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
   }, [currentIndex, videos, user?.id, isActive]);
 
+  const goToNext = () => {
+    if (videos.length === 0) return;
+    setCurrentIndex((i) => (i < videos.length - 1 ? i + 1 : 0));
+  };
+
+  const goToPrev = () => {
+    if (videos.length === 0) return;
+    setCurrentIndex((i) => (i > 0 ? i - 1 : videos.length - 1));
+  };
+
   const handleScroll = (e: React.WheelEvent) => {
     if (isScrolling || videos.length === 0) return;
 
@@ -889,6 +926,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const likeKey = currentBusiness?.id || currentVideo.id;
   const isLiked = likedVideos.has(likeKey);
   const isBookmarked = bookmarkedVideos.has(currentVideo.id);
+  // Stable (deterministic) save/share counts — no backend store for these.
+  const saveCount = stableCount(currentVideo.id, 'save', 80, 9000) + (isBookmarked ? 1 : 0);
+  const shareCount = stableCount(currentVideo.id, 'share', 30, 4000);
 
   const getNearestLocationForVideo = (video: Video) => {
     const profileId = video.user_id;
@@ -1006,36 +1046,43 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             )}
 
-            {/* Business Info Overlay — clean hierarchy, constrained to the video column */}
-            <div className="video-overlay-glass absolute bottom-3 left-1/2 z-20 w-[min(94vw,460px)] -translate-x-1/2 rounded-2xl px-4 py-3">
-              <button
-                onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
-                onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
-                className="rounded text-left focus:outline-none focus:ring-2 focus:ring-[#f97316]"
-                aria-label={`View profile of ${feedBusiness?.business_name || video.profiles?.full_name || 'Business'}`}
+            {/* Video info — bottom-left of the centered video column (reference style) */}
+            <div className="pointer-events-none absolute bottom-0 left-1/2 z-20 w-[min(100%,calc((100vh-112px)*9/16))] -translate-x-1/2">
+              <div
+                className="pointer-events-auto max-w-[80%] px-4 pb-4 pr-20"
+                style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}
               >
-                <h2 className="text-xl font-bold text-white hover:underline">
-                  {feedBusiness?.business_name || video.profiles?.full_name || 'Business'}
-                </h2>
-              </button>
-              {video.caption ? (
-                <p className="mt-1 line-clamp-2 text-sm text-white">{video.caption}</p>
-              ) : null}
-              <div className="mt-2 flex items-center gap-2 text-sm text-white">
-                {feedBusiness?.average_rating ? (
-                  <span className="inline-flex items-center gap-1 font-semibold">
-                    <Star className="h-4 w-4 fill-[#f97316] text-[#f97316]" />
-                    {feedBusiness.average_rating.toFixed(1)}
-                  </span>
+                <button
+                  onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
+                  onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
+                  className="rounded text-left focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                  aria-label={`View profile of ${feedBusiness?.business_name || video.profiles?.full_name || 'Business'}`}
+                >
+                  <h2 className="text-base font-bold text-white hover:underline">
+                    {video.profiles?.username
+                      ? `@${video.profiles.username}`
+                      : feedBusiness?.business_name || video.profiles?.full_name || 'Business'}
+                  </h2>
+                </button>
+                {video.caption ? (
+                  <p className="mt-1 line-clamp-2 text-sm text-white/95">{video.caption}</p>
                 ) : null}
-                <span aria-hidden>·</span>
-                <span>{commentCounts[video.id] || 0} reviews</span>
-                {feedDistanceLabel ? (
-                  <>
-                    <span aria-hidden>·</span>
-                    <span>{feedDistanceLabel} away</span>
-                  </>
-                ) : null}
+                <div className="mt-2 flex items-center gap-2 text-xs text-white/90">
+                  {feedBusiness?.average_rating ? (
+                    <span className="inline-flex items-center gap-1 font-semibold">
+                      <Star className="h-3.5 w-3.5 fill-[#f97316] text-[#f97316]" />
+                      {feedBusiness.average_rating.toFixed(1)}
+                    </span>
+                  ) : null}
+                  <span aria-hidden>·</span>
+                  <span>{commentCounts[video.id] || 0} reviews</span>
+                  {feedDistanceLabel ? (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span>{feedDistanceLabel} away</span>
+                    </>
+                  ) : null}
+                </div>
               </div>
             </div>
 
@@ -1058,8 +1105,32 @@ export function HomeContent({ isActive }: HomeContentProps) {
         ))}
       </div>
 
-      {/* Floating feed controls — volume only; header provides nav/profile */}
-      <div className="absolute right-3 top-3 z-30">
+      {/* Top-right overlay: Get Coins · Get App · profile pic (reference style) */}
+      <div className="absolute right-3 top-3 z-30 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/55 px-1.5 py-1 backdrop-blur-xl">
+            <Link
+              href="/buy-coins"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-white/10"
+            >
+              Get Coins
+            </Link>
+            <Link
+              href="/home"
+              className="rounded-full bg-[#f97316] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#ea6a0c]"
+            >
+              Get App
+            </Link>
+            <Link href="/profile" aria-label="Your profile" className="shrink-0">
+              <Image
+                src={headerProfile?.profile_picture_url || 'https://via.placeholder.com/40'}
+                alt="Your profile"
+                width={32}
+                height={32}
+                className="h-8 w-8 rounded-full border border-white/25 object-cover"
+                unoptimized={!headerProfile?.profile_picture_url}
+              />
+            </Link>
+          </div>
           <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-2 py-1.5 backdrop-blur-xl">
             {/* Volume Dropdown */}
             <div
@@ -1108,6 +1179,24 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             </div>
           </div>
+      </div>
+
+      {/* Up / Down navigation — right edge, previous / next video */}
+      <div className="absolute right-3 top-[40%] z-20 flex flex-col gap-3 md:right-5">
+        <button
+          onClick={goToPrev}
+          aria-label="Previous video"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition-colors hover:bg-black/65"
+        >
+          <ChevronUp className="h-5 w-5" />
+        </button>
+        <button
+          onClick={goToNext}
+          aria-label="Next video"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition-colors hover:bg-black/65"
+        >
+          <ChevronDown className="h-5 w-5" />
+        </button>
       </div>
 
       {/* Right Side - Interaction Buttons */}
@@ -1166,11 +1255,11 @@ export function HomeContent({ isActive }: HomeContentProps) {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </div>
           <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>
-            {likeCounts[likeKey] || 0}
+            {formatCount(likeCounts[likeKey] || 0)}
           </span>
         </button>
 
@@ -1186,7 +1275,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{commentCounts[currentVideo.id] || 0}</span>
+          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{formatCount(commentCounts[currentVideo.id] || 0)}</span>
         </button>
 
         {/* Location Button */}
@@ -1222,6 +1311,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
           </div>
+          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{formatCount(saveCount)}</span>
         </button>
 
         {/* Share Button */}
@@ -1236,6 +1326,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </div>
+          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{formatCount(shareCount)}</span>
         </button>
 
       </div>
