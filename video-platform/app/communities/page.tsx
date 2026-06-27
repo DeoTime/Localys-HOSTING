@@ -9,6 +9,8 @@ import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { CommunityAvatar } from '@/components/communities/CommunityAvatar';
 import { PostMedia } from '@/components/communities/PostMedia';
+import { FieldError } from '@/components/forms/FieldError';
+import { validateRequired, validateMaxLength, firstError } from '@/lib/utils/validation';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
   'richmondhill-eats': '/Communities/Richmond Hill.jpg',
@@ -43,6 +45,8 @@ function CommunitiesContent() {
   const [showCreateThread, setShowCreateThread] = useState(false);
   const [communityForm, setCommunityForm] = useState({ name: '', description: '' });
   const [threadForm, setThreadForm] = useState({ communityId: '', title: '', content: '' });
+  const [communityError, setCommunityError] = useState<string | null>(null);
+  const [threadError, setThreadError] = useState<string | null>(null);
   const [joinedCommunities, setJoinedCommunities] = useState<Set<string>>(new Set());
 
   const sortedThreads = [...threads].sort((a, b) => b.votes - a.votes);
@@ -67,7 +71,15 @@ function CommunitiesContent() {
   };
 
   const handleCreateCommunity = () => {
-    if (!communityForm.name.trim()) return;
+    // Syntactic + semantic: name required, 3–30 chars, reasonable description length.
+    const error = firstError(
+      validateRequired(communityForm.name, 'Community name'),
+      communityForm.name.trim().length < 3 ? 'Community name must be at least 3 characters.' : null,
+      validateMaxLength(communityForm.name.trim(), 30, 'Community name'),
+      validateMaxLength(communityForm.description, 200, 'Description'),
+    );
+    if (error) { setCommunityError(error); return; }
+    setCommunityError(null);
     const c = createCommunity(communityForm.name.trim(), communityForm.description.trim());
     setCommunityForm({ name: '', description: '' });
     setShowCreateCommunity(false);
@@ -75,7 +87,15 @@ function CommunitiesContent() {
   };
 
   const handleCreateThread = () => {
-    if (!threadForm.title.trim() || !threadForm.communityId) return;
+    // Syntactic + semantic: a community must be chosen and a non-empty title given.
+    const error = firstError(
+      !threadForm.communityId ? 'Please choose a community.' : null,
+      validateRequired(threadForm.title, 'Title'),
+      validateMaxLength(threadForm.title.trim(), 150, 'Title'),
+      validateMaxLength(threadForm.content, 2000, 'Body'),
+    );
+    if (error) { setThreadError(error); return; }
+    setThreadError(null);
     const t = createThread(
       threadForm.communityId,
       threadForm.title.trim(),
@@ -295,10 +315,12 @@ function CommunitiesContent() {
                 <input
                   type="text"
                   value={communityForm.name}
-                  onChange={(e) => setCommunityForm(f => ({ ...f, name: e.target.value }))}
+                  onChange={(e) => { setCommunityForm(f => ({ ...f, name: e.target.value })); if (communityError) setCommunityError(null); }}
                   placeholder="e.g. NorthYorkEats"
+                  aria-invalid={!!communityError}
                   className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20"
                 />
+                <FieldError message={communityError} />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Description</label>
@@ -341,7 +363,7 @@ function CommunitiesContent() {
                 <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Community</label>
                 <select
                   value={threadForm.communityId}
-                  onChange={(e) => setThreadForm(f => ({ ...f, communityId: e.target.value }))}
+                  onChange={(e) => { setThreadForm(f => ({ ...f, communityId: e.target.value })); if (threadError) setThreadError(null); }}
                   className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20"
                 >
                   <option value="">Select a community</option>
@@ -355,10 +377,12 @@ function CommunitiesContent() {
                 <input
                   type="text"
                   value={threadForm.title}
-                  onChange={(e) => setThreadForm(f => ({ ...f, title: e.target.value }))}
+                  onChange={(e) => { setThreadForm(f => ({ ...f, title: e.target.value })); if (threadError) setThreadError(null); }}
                   placeholder="Post title"
+                  aria-invalid={!!threadError}
                   className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20"
                 />
+                <FieldError message={threadError} />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Body (optional)</label>

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { signIn, resetPasswordForEmail, signInWithGoogle } from '@/lib/supabase/auth';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import AuthSplitLayout from '@/components/auth/AuthSplitLayout';
+import { FieldError } from '@/components/forms/FieldError';
+import { validateRequired, validateEmail, isValidEmail } from '@/lib/utils/validation';
 
 const ORANGE = '#f97316';
 const DEFAULT_LOCAL_TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
@@ -66,6 +68,7 @@ function LoginPageContent() {
   const siteKey = resolveTurnstileSiteKey();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ identifier?: string | null; password?: string | null }>({});
   const [error, setError] = useState(oauthError ? 'Google sign-in was cancelled or failed. Please try again.' : '');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -105,6 +108,15 @@ function LoginPageContent() {
     e.preventDefault();
     setError('');
 
+    // Validate inputs before attempting sign-in. The identifier may be an email
+    // or a username, so only enforce email format when it looks like an email.
+    const identifierError =
+      validateRequired(identifier, 'Email or username') ||
+      (identifier.includes('@') && !isValidEmail(identifier) ? 'Enter a valid email address.' : null);
+    const passwordError = validateRequired(password, 'Password');
+    setFieldErrors({ identifier: identifierError, password: passwordError });
+    if (identifierError || passwordError) return;
+
     if (turnstileEnabled && !turnstileToken) {
       setError('Please complete the security check.');
       return;
@@ -143,7 +155,8 @@ function LoginPageContent() {
     }
 
     const normalizedIdentifier = identifier.trim();
-    if (!normalizedIdentifier.includes('@')) {
+    const emailError = validateEmail(normalizedIdentifier);
+    if (emailError) {
       setError('Enter your account email to reset your password.');
       return;
     }
@@ -252,12 +265,14 @@ function LoginPageContent() {
 
           <div>
             <label htmlFor="email" className="sr-only">Email address</label>
-            <input id="email" type="email" value={identifier} onChange={(e) => setIdentifier(e.target.value)} required className={inputClass} placeholder="Email Address" />
+            <input id="email" type="email" value={identifier} onChange={(e) => { setIdentifier(e.target.value); setFieldErrors((p) => ({ ...p, identifier: null })); }} required className={inputClass} placeholder="Email Address" aria-invalid={!!fieldErrors.identifier} />
+            <FieldError message={fieldErrors.identifier} />
           </div>
 
           <div>
             <label htmlFor="password" className="sr-only">Password</label>
-            <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className={inputClass} placeholder="Password" />
+            <input id="password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: null })); }} required className={inputClass} placeholder="Password" aria-invalid={!!fieldErrors.password} />
+            <FieldError message={fieldErrors.password} />
           </div>
 
           <div className="text-center">

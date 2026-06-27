@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart, CartItem } from '@/contexts/CartContext';
 import { getShopCoupons, Coupon } from '@/lib/supabase/coupons';
+import { validateFutureDateTime } from '@/lib/utils/validation';
 import Link from 'next/link';
 import { ChevronLeft, CalendarClock, Tag, CheckCircle } from 'lucide-react';
 
@@ -78,6 +79,12 @@ function CheckoutContent() {
   const handleProceedToPayment = async () => {
     if (checkoutItems.length === 0) return;
     if (!session?.access_token) { setError('Your session has expired. Please sign in again.'); return; }
+    // Semantic guard: a scheduled order time (carried over from the cart) must
+    // still be in the future when payment starts.
+    if (scheduledAt) {
+      const scheduleErr = validateFutureDateTime(scheduledAt, { label: 'Scheduled time' });
+      if (scheduleErr) { setError(scheduleErr); return; }
+    }
     setProcessing(true);
     setError(null);
     try {

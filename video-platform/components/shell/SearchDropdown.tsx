@@ -78,7 +78,13 @@ export function SearchDropdown() {
         .in('type', types);
 
       if (q) {
-        dbQ = dbQ.or(`username.ilike.%${q}%,full_name.ilike.%${q}%`);
+        // Sanitize before interpolating into the PostgREST `.or()` filter: strip
+        // characters that are syntactically meaningful there (commas, parens, and
+        // the % wildcard) so odd input can't break the query or error out.
+        const safeQ = q.replace(/[%,()*\\]/g, ' ').trim();
+        if (safeQ) {
+          dbQ = dbQ.or(`username.ilike.%${safeQ}%,full_name.ilike.%${safeQ}%`);
+        }
       }
 
       const { data } = await dbQ.limit(30);

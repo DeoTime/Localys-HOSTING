@@ -21,6 +21,8 @@ import type { ItemPurchase } from '@/models/Order';
 import { getBusinessReviews, BusinessReview } from '@/lib/supabase/reviews';
 import { getSellerPromoCodes, createPromoCode, updatePromoCode, deletePromoCode, PromoCode } from '@/lib/supabase/promo-codes';
 import { getSellerGroupOrders, GroupOrder } from '@/lib/supabase/group-orders';
+import { FieldError } from '@/components/forms/FieldError';
+import { validatePhone, validateHoursRange } from '@/lib/utils/validation';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
@@ -822,11 +824,18 @@ function BusinessInfoEditor({ business, onSaved }: { business: Business; onSaved
   const [phone, setPhone] = useState(business.phone || '');
   const [address, setAddress] = useState(business.address || '');
   const [miscInfo, setMiscInfo] = useState(business.misc_info || '');
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSave = async () => {
+    // Semantic/syntactic check: phone is optional, but when present must be a
+    // valid 10-digit number. Block the save and show an inline message if not.
+    const phoneErr = validatePhone(phone);
+    setPhoneError(phoneErr);
+    if (phoneErr) return;
+
     setSaving(true); setError(null);
     try {
       const { error: err } = await updateBusinessInfo(business.id, { phone, address, misc_info: miscInfo } as BusinessUpdateData);
@@ -848,7 +857,10 @@ function BusinessInfoEditor({ business, onSaved }: { business: Business; onSaved
       </div>
       {error && <div className="mb-3 bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 text-sm">{error}</div>}
       <div className="space-y-3">
-        <LabeledInput icon={<Phone className="h-4 w-4 text-gray-500" />} type="tel" value={phone} onChange={setPhone} placeholder="Phone number" />
+        <div>
+          <LabeledInput icon={<Phone className="h-4 w-4 text-gray-500" />} type="tel" value={phone} onChange={(v) => { setPhone(v); if (phoneError) setPhoneError(null); }} placeholder="Phone number" />
+          <FieldError message={phoneError} className="ml-11" />
+        </div>
         <LabeledInput icon={<MapPin className="h-4 w-4 text-gray-500" />} type="text" value={address} onChange={setAddress} placeholder="Address" />
         <div className="flex items-start gap-3">
           <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 mt-0.5"><FileText className="h-4 w-4 text-gray-500" /></div>
@@ -885,6 +897,18 @@ function BusinessHoursEditor({ business, onSaved }: { business: Business; onSave
   const [error, setError] = useState<string | null>(null);
 
   const save = async () => {
+    // Semantic check: for every open day, the opening time must be before the
+    // closing time. Surface the first offending day and block the save.
+    for (const day of DAYS) {
+      const dayHours = hours[day];
+      if (dayHours?.closed) continue;
+      const rangeError = validateHoursRange(dayHours?.open, dayHours?.close);
+      if (rangeError) {
+        setError(`${day.charAt(0).toUpperCase() + day.slice(1)}: ${rangeError.charAt(0).toLowerCase() + rangeError.slice(1)}`);
+        return;
+      }
+    }
+
     setSaving(true); setError(null);
     try {
       const { error: err } = await updateBusinessInfo(business.id, { business_hours: hours } as BusinessUpdateData);

@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { signUp, signInWithGoogle } from '@/lib/supabase/auth';
 import TurnstileWidget from '@/components/TurnstileWidget';
 import AuthSplitLayout from '@/components/auth/AuthSplitLayout';
+import { FieldError } from '@/components/forms/FieldError';
+import { validateRequired, validateEmail, validatePassword, validateUsername } from '@/lib/utils/validation';
 
 const ORANGE = '#f97316';
 const DEFAULT_LOCAL_TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
@@ -32,7 +34,7 @@ function resolveTurnstileSiteKey(): string {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white placeholder-white/40 transition focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/15';
+  'w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10';
 
 function GoogleIcon() {
   return (
@@ -55,6 +57,13 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [accountType, setAccountType] = useState<'business' | 'user'>('user');
   const [businessType, setBusinessType] = useState<'food' | 'retail' | 'service' | ''>('');
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string | null;
+    username?: string | null;
+    email?: string | null;
+    password?: string | null;
+    businessType?: string | null;
+  }>({});
   const [error, setError] = useState('');
   const [verificationEmail, setVerificationEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,10 +90,16 @@ export default function SignUpPage() {
     e.preventDefault();
     setError('');
 
-    if (accountType === 'business' && !businessType) {
-      setError('Please select a business type');
-      return;
-    }
+    // Syntactic + semantic field checks. Submission is blocked until all pass.
+    const nextErrors = {
+      name: validateRequired(name, 'Full name'),
+      username: validateUsername(username),
+      email: validateEmail(email),
+      password: validatePassword(password, 6),
+      businessType: accountType === 'business' && !businessType ? 'Please select a business type.' : null,
+    };
+    setFieldErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
 
     if (turnstileEnabled && !turnstileToken) {
       setError('Please complete the security check.');
@@ -124,28 +139,28 @@ export default function SignUpPage() {
 
   return (
     <AuthSplitLayout>
-      <div className="space-y-6 text-white">
+      <div className="space-y-6 text-gray-900">
         {/* Top row */}
         <div className="flex items-center justify-end gap-3 text-sm">
-          <span className="text-white/70">Already have an account?</span>
-          <Link href="/login" className="rounded-md border border-white/20 px-4 py-1.5 font-medium text-white transition hover:bg-white/10">
+          <span className="text-gray-500">Already have an account?</span>
+          <Link href="/login" className="rounded-md border border-gray-300 px-4 py-1.5 font-medium text-gray-900 transition hover:bg-gray-50">
             Sign in
           </Link>
         </div>
 
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-2xl font-semibold sm:text-3xl">Join Localys</h1>
-          <p className="mt-2 text-sm text-white/70">Create your account to discover and support local.</p>
+          <h1 className="text-3xl font-bold sm:text-4xl">Join Localys</h1>
+          <p className="mt-2 text-sm text-gray-500">Create your account to discover and support local.</p>
         </div>
 
         {verificationEmail ? (
           <div className="space-y-4">
-            <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white/80">
-              Account created. Check <span className="font-semibold text-white">{verificationEmail}</span> to verify your account before signing in.
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700">
+              Account created. Check <span className="font-semibold">{verificationEmail}</span> to verify your account before signing in.
             </div>
-            <p className="text-sm text-white/60">If you don&apos;t see the email, check spam/junk and try again in a minute.</p>
-            <Link href="/login" className="inline-block text-sm text-white underline transition hover:opacity-80">
+            <p className="text-sm text-gray-500">If you don&apos;t see the email, check spam/junk and try again in a minute.</p>
+            <Link href="/login" className="inline-block text-sm font-medium text-gray-900 underline transition hover:opacity-80">
               Back to Sign in
             </Link>
           </div>
@@ -153,12 +168,12 @@ export default function SignUpPage() {
           <>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-white">{error}</div>
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
               )}
 
               {/* Account type */}
               <div>
-                <label className="mb-2 block text-sm text-white/80">Account type</label>
+                <label className="mb-2 block text-sm text-gray-600">Account type</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['user', 'business'] as const).map((type) => (
                     <button
@@ -168,11 +183,11 @@ export default function SignUpPage() {
                         setAccountType(type);
                         if (type === 'user') setBusinessType('');
                       }}
-                      className="rounded-lg px-3 py-2.5 text-sm font-medium transition-all"
+                      className="rounded-lg border px-3 py-2.5 text-sm font-medium transition-all"
                       style={
                         accountType === type
-                          ? { backgroundColor: ORANGE, color: '#ffffff' }
-                          : { backgroundColor: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.8)' }
+                          ? { backgroundColor: ORANGE, color: '#ffffff', borderColor: ORANGE }
+                          : { backgroundColor: '#ffffff', color: '#374151', borderColor: '#d1d5db' }
                       }
                     >
                       {type === 'user' ? 'Shopper' : 'Business'}
@@ -183,44 +198,50 @@ export default function SignUpPage() {
 
               {accountType === 'business' && (
                 <div>
-                  <label htmlFor="businessType" className="mb-2 block text-sm text-white/80">Business type</label>
+                  <label htmlFor="businessType" className="mb-2 block text-sm text-gray-600">Business type</label>
                   <select
                     id="businessType"
                     value={businessType}
-                    onChange={(e) => setBusinessType(e.target.value as 'food' | 'retail' | 'service' | '')}
+                    onChange={(e) => { setBusinessType(e.target.value as 'food' | 'retail' | 'service' | ''); setFieldErrors((p) => ({ ...p, businessType: null })); }}
                     required
                     className={inputClass}
+                    aria-invalid={!!fieldErrors.businessType}
                   >
                     <option value="">Select business type</option>
                     <option value="food">Food</option>
                     <option value="retail">Retail</option>
                     <option value="service">Service</option>
                   </select>
+                  <FieldError message={fieldErrors.businessType} />
                 </div>
               )}
 
               <div>
                 <label htmlFor="name" className="sr-only">Full name</label>
-                <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputClass} placeholder="Full Name" />
+                <input id="name" type="text" value={name} onChange={(e) => { setName(e.target.value); setFieldErrors((p) => ({ ...p, name: null })); }} required className={inputClass} placeholder="Full Name" aria-invalid={!!fieldErrors.name} />
+                <FieldError message={fieldErrors.name} />
               </div>
 
               <div>
                 <label htmlFor="username" className="sr-only">Username</label>
-                <input id="username" type="text" value={username} onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} required className={inputClass} placeholder="Username" />
+                <input id="username" type="text" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')); setFieldErrors((p) => ({ ...p, username: null })); }} required className={inputClass} placeholder="Username" aria-invalid={!!fieldErrors.username} />
+                <FieldError message={fieldErrors.username} />
               </div>
 
               <div>
                 <label htmlFor="email" className="sr-only">Email address</label>
-                <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} placeholder="Email Address" />
+                <input id="email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: null })); }} required className={inputClass} placeholder="Email Address" aria-invalid={!!fieldErrors.email} />
+                <FieldError message={fieldErrors.email} />
               </div>
 
               <div>
                 <label htmlFor="password" className="sr-only">Password</label>
-                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} className={inputClass} placeholder="Password (min 6 characters)" />
+                <input id="password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: null })); }} required minLength={6} className={inputClass} placeholder="Password (min 6 characters)" aria-invalid={!!fieldErrors.password} />
+                <FieldError message={fieldErrors.password} />
               </div>
 
               {turnstileEnabled && (
-                <TurnstileWidget siteKey={siteKey} onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} theme="dark" resetKey={turnstileResetKey} />
+                <TurnstileWidget siteKey={siteKey} onVerify={setTurnstileToken} onExpire={() => setTurnstileToken(null)} theme="light" resetKey={turnstileResetKey} />
               )}
 
               <button
@@ -235,9 +256,9 @@ export default function SignUpPage() {
 
             {/* OR divider */}
             <div className="flex items-center gap-4">
-              <div className="h-px flex-1 bg-white/15" />
-              <span className="text-xs font-medium text-white/50">OR</span>
-              <div className="h-px flex-1 bg-white/15" />
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs font-medium text-gray-400">OR</span>
+              <div className="h-px flex-1 bg-gray-200" />
             </div>
 
             {/* Google */}
@@ -245,7 +266,7 @@ export default function SignUpPage() {
               type="button"
               onClick={handleGoogle}
               disabled={googleLoading}
-              className="flex w-full items-center justify-center gap-3 rounded-lg bg-white py-3 font-semibold text-[#1A1A18] transition hover:bg-white/90 disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white py-3 font-semibold text-gray-900 transition hover:bg-gray-50 disabled:opacity-60"
             >
               <GoogleIcon />
               {googleLoading ? 'Opening Google…' : 'Sign up with Google'}

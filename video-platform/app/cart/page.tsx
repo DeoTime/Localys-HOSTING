@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getShopCoupons, Coupon } from '@/lib/supabase/coupons';
 import { validatePromoCode, calcPromoDiscount, PromoCode } from '@/lib/supabase/promo-codes';
 import { createGroupOrder, getGroupOrderByCode, addGroupOrderItem, GroupOrder } from '@/lib/supabase/group-orders';
+import { validateFutureDateTime } from '@/lib/utils/validation';
 import Link from 'next/link';
 import { ChevronLeft, Trash2, ShoppingCart, CalendarClock, Users, Tag, Check, X } from 'lucide-react';
 
@@ -27,6 +28,7 @@ export default function CartPage() {
   // Schedule state
   const [showSchedule, setShowSchedule] = useState(false);
   const [scheduledAt, setScheduledAt] = useState('');
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
 
   // Group order state
   const [showGroupOrder, setShowGroupOrder] = useState(false);
@@ -105,6 +107,15 @@ export default function CartPage() {
   const handleCheckout = () => {
     if (!user) { router.push('/login'); return; }
     if (items.length === 0) return;
+    // Semantic check: a scheduled order must be at least 30 minutes in the future.
+    if (scheduledAt) {
+      const scheduleErr = validateFutureDateTime(scheduledAt, { graceMinutes: 30, label: 'Scheduled time' });
+      if (scheduleErr) {
+        setScheduleError(scheduleErr);
+        setShowSchedule(true);
+        return;
+      }
+    }
     const params = new URLSearchParams({ source: 'cart' });
     if (scheduledAt) params.set('scheduledAt', scheduledAt);
     if (groupOrder?.id) params.set('groupOrderId', groupOrder.id);
@@ -258,14 +269,16 @@ export default function CartPage() {
                     <input
                       type="datetime-local"
                       value={scheduledAt}
-                      onChange={e => setScheduledAt(e.target.value)}
+                      onChange={e => { setScheduledAt(e.target.value); if (scheduleError) setScheduleError(null); }}
                       min={minScheduleDate}
+                      aria-invalid={!!scheduleError}
                       className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#f97316]"
                     />
                     {scheduledAt && (
-                      <button onClick={() => setScheduledAt('')} className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
+                      <button onClick={() => { setScheduledAt(''); setScheduleError(null); }} className="text-gray-400 hover:text-gray-600"><X className="h-4 w-4" /></button>
                     )}
                   </div>
+                  {scheduleError && <p role="alert" className="text-red-600 text-xs font-medium">{scheduleError}</p>}
                   {scheduledAt && (
                     <div className="bg-orange-50 border border-orange-200 rounded-xl px-3 py-2 flex items-center gap-2">
                       <CalendarClock className="h-3.5 w-3.5 text-[#f97316] shrink-0" />
