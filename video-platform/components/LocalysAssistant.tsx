@@ -166,8 +166,8 @@ export function LocalysAssistant() {
           <div className="flex shrink-0 items-center gap-3 bg-[#f97316] px-4 py-3">
             <MessageCircle className="h-5 w-5 shrink-0 text-white" />
             <div className="flex-1">
-              <p className="text-sm font-bold text-white">Localys Assistant</p>
-              <p className="text-[11px] text-white/80">Here to help</p>
+              <p className="text-sm font-bold leading-none text-white">Localys Assistant</p>
+              <p className="mt-0.5 text-[11px] leading-none text-white/80">Here to help</p>
             </div>
             <button
               type="button"

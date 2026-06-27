@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { haversineDistance } from '@/lib/utils/geo';
+import { useDeliveryLocation } from '@/contexts/DeliveryLocationContext';
 import { FilterPanel, DEFAULT_FILTERS, type Filters } from './FilterPanel';
 
 interface Suggestion {
@@ -11,15 +13,27 @@ interface Suggestion {
   username?: string | null;
   full_name?: string | null;
   type?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+const FOOD_CATS = new Set(['Restaurants', 'Bakery', 'Café', 'Grocery']);
+const SERVICE_CATS = new Set(['Services']);
+
+function mapCategory(cat: string): string {
+  if (FOOD_CATS.has(cat)) return 'food';
+  if (SERVICE_CATS.has(cat)) return 'service';
+  return 'retail';
 }
 
 /**
  * Header search: focusing the input drops a panel with live business/username
- * suggestions (substring match) + the reusable FilterPanel. Selecting a
- * suggestion opens that business profile. Replaces the deleted /search page.
+ * suggestions filtered by query + active filters. Selecting a suggestion opens
+ * that business profile. Filters: category, max distance, max price, deals only.
  */
 export function SearchDropdown() {
   const router = useRouter();
+  const { location } = useDeliveryLocation();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
@@ -35,32 +49,97 @@ export function SearchDropdown() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Live substring search on businesses (username + full_name), debounced.
+  // Live search + filter logic, debounced 300ms.
   useEffect(() => {
     const q = query.trim();
-    if (q.length === 0) {
+    const hasActiveFilters =
+      filters.category !== '' ||
+      filters.maxPrice < DEFAULT_FILTERS.maxPrice ||
+      filters.dealsOnly ||
+      filters.maxDistanceKm < DEFAULT_FILTERS.maxDistanceKm;
+
+    if (q.length === 0 && !hasActiveFilters) {
       setResults([]);
       setLoading(false);
       return;
     }
+
     setLoading(true);
     const t = setTimeout(async () => {
-      const { data } = await supabase
+      // Category → Supabase type
+      const types = filters.category
+        ? [mapCategory(filters.category)]
+        : ['food', 'retail', 'service'];
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let dbQ: any = supabase
         .from('profiles')
-        .select('id, username, full_name, type')
-        .in('type', ['food', 'retail', 'service'])
-        .or(`username.ilike.%${q}%,full_name.ilike.%${q}%`)
-        .limit(6);
-      setResults((data as Suggestion[]) ?? []);
+        .select('id, username, full_name, type, latitude, longitude')
+        .in('type', types);
+
+      if (q) {
+        dbQ = dbQ.or(`username.ilike.%${q}%,full_name.ilike.%${q}%`);
+      }
+
+      const { data } = await dbQ.limit(30);
+      let suggestions = (data as Suggestion[]) ?? [];
+
+      // Distance filter (client-side haversine — requires user location)
+      if (location && filters.maxDistanceKm < 50) {
+        suggestions = suggestions.filter((s) => {
+          if (s.latitude == null || s.longitude == null) return true;
+          return (
+            haversineDistance(location.lat, location.lng, s.latitude, s.longitude) <=
+            filters.maxDistanceKm
+          );
+        });
+      }
+
+      // Max price — keep businesses that have at least one item ≤ maxPrice
+      if (filters.maxPrice < DEFAULT_FILTERS.maxPrice && suggestions.length > 0) {
+        const ids = suggestions.map((s) => s.id);
+        const { data: items } = await supabase
+          .from('menu_items')
+          .select('user_id')
+          .in('user_id', ids)
+          .lte('price', filters.maxPrice)
+          .limit(500);
+        const bizWithItems = new Set(
+          (items ?? []).map((i: { user_id: string }) => i.user_id)
+        );
+        if (bizWithItems.size > 0) {
+          suggestions = suggestions.filter((s) => bizWithItems.has(s.id));
+        }
+      }
+
+      // Deals only — keep businesses with at least one active promo code
+      if (filters.dealsOnly && suggestions.length > 0) {
+        const ids = suggestions.map((s) => s.id);
+        const { data: promos } = await supabase
+          .from('promo_codes')
+          .select('seller_id')
+          .in('seller_id', ids)
+          .eq('is_active', true);
+        const withDeals = new Set(
+          (promos ?? []).map((p: { seller_id: string }) => p.seller_id)
+        );
+        if (withDeals.size > 0) {
+          suggestions = suggestions.filter((s) => withDeals.has(s.id));
+        }
+      }
+
+      setResults(suggestions);
       setLoading(false);
-    }, 250);
+    }, 300);
     return () => clearTimeout(t);
-  }, [query]);
+  }, [query, filters, location]);
 
   const go = (s: Suggestion) => {
     setOpen(false);
     router.push(`/profile/${s.username || s.id}`);
   };
+
+  const showResults = loading || results.length > 0 || query.trim().length > 0;
 
   return (
     <div ref={wrapRef} className="relative flex min-w-0 flex-1 items-center">
@@ -77,10 +156,12 @@ export function SearchDropdown() {
 
       {open && (
         <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-2xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900">
-          {/* Suggestions */}
-          {query.trim().length > 0 && (
+          {/* Business results */}
+          {showResults && (
             <div className="mb-4">
-              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black dark:text-white">Businesses</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black dark:text-white">
+                Businesses
+              </p>
               {loading ? (
                 <p className="px-1 py-2 text-sm text-black dark:text-white">Searching…</p>
               ) : results.length > 0 ? (
@@ -96,23 +177,37 @@ export function SearchDropdown() {
                           {(s.full_name || s.username || '?').charAt(0).toUpperCase()}
                         </span>
                         <span className="min-w-0">
-                          <span className="block truncate text-sm font-semibold text-black dark:text-white">{s.full_name || s.username}</span>
-                          {s.username && <span className="block truncate text-xs text-black dark:text-white">@{s.username}</span>}
+                          <span className="block truncate text-sm font-semibold text-black dark:text-white">
+                            {s.full_name || s.username}
+                          </span>
+                          {s.username && (
+                            <span className="block truncate text-xs text-black dark:text-white">
+                              @{s.username}
+                            </span>
+                          )}
                         </span>
                       </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="px-1 py-2 text-sm text-black dark:text-white">No businesses match “{query.trim()}”.</p>
+                <p className="px-1 py-2 text-sm text-black dark:text-white">
+                  No businesses match &quot;{query.trim()}&quot;.
+                </p>
               )}
             </div>
           )}
 
           {/* Filters */}
-          <div className="border-t border-gray-200 pt-4 dark:border-gray-700">
-            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-black dark:text-white">Filters</p>
-            <FilterPanel value={filters} onChange={setFilters} onReset={() => setFilters(DEFAULT_FILTERS)} />
+          <div className={`pt-4 ${showResults ? 'border-t border-gray-200 dark:border-gray-700' : ''}`}>
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-black dark:text-white">
+              Filters
+            </p>
+            <FilterPanel
+              value={filters}
+              onChange={setFilters}
+              onReset={() => setFilters(DEFAULT_FILTERS)}
+            />
           </div>
         </div>
       )}
