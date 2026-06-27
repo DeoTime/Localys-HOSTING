@@ -7,7 +7,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChats } from '@/hooks/useChats';
 import { ChatList } from '@/components/chats/ChatList';
-import { searchUsers, getOrCreateOneToOneChat, sendMessage } from '@/lib/supabase/messages';
+import { searchUsers, getOrCreateOneToOneChat } from '@/lib/supabase/messages';
 import dynamic from 'next/dynamic';
 const NewChatModal = dynamic(() => import('@/components/chats/NewChatModal').then((mod) => mod.NewChatModal), { ssr: false });
 
@@ -68,9 +68,6 @@ function ChatsContent() {
     setStarting(true);
     const { data } = await getOrCreateOneToOneChat(user.id, userId);
     if (data) {
-      if (!data.last_message) {
-        await sendMessage({ chat_id: data.id, sender_id: user.id, content: 'Hi! Is this available?' });
-      }
       router.push(`/chats/${data.id}`);
     }
     setStarting(false);

@@ -2,7 +2,7 @@
 
 import { Message } from '@/lib/supabase/messages';
 import Link from 'next/link';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { editMessage, deleteMessage } from '@/lib/supabase/messages';
 
 interface Sender {
@@ -42,41 +42,32 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
 
   const handleEditSave = async (messageId: string | undefined) => {
     if (!messageId || !editingContent.trim()) return;
-
     try {
       const { error: err } = await editMessage(messageId, editingContent.trim());
-      if (err) {
-        setError('Failed to edit message');
-        return;
-      }
+      if (err) { setError('Failed to edit message'); return; }
       handleEditCancel();
-    } catch (err: any) {
-      setError(err.message || 'Failed to edit message');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to edit message');
     }
   };
 
   const handleDelete = async (messageId: string | undefined) => {
     if (!messageId) return;
-
-    if (!confirm('Are you sure you want to delete this message?')) return;
-
+    if (!confirm('Delete this message?')) return;
     try {
       const { error: err } = await deleteMessage(messageId);
-      if (err) {
-        setError('Failed to delete message');
-        return;
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete message');
+      if (err) setError('Failed to delete message');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete message');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex flex-1 items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5A623] mx-auto mb-4"></div>
-          <p className="text-[#9E9A90]">Loading messages...</p>
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-[#f97316]" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">Loading messages...</p>
         </div>
       </div>
     );
@@ -84,22 +75,20 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center text-[#9E9A90]">
-          <p>No messages yet</p>
-          <p className="text-sm mt-2">Start the conversation!</p>
-        </div>
+      <div className="flex flex-1 items-center justify-center py-12">
+        <p className="text-sm text-gray-500 dark:text-gray-400">No messages yet. Say hello!</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+    <div className="flex-1 space-y-1 overflow-y-auto px-4 py-4">
       {error && (
-        <div className="bg-[#E05C3A]/10 text-[#E05C3A] px-4 py-2 text-sm rounded-xl border border-[#E05C3A]/30">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-600 dark:border-red-900 dark:bg-red-950/40 dark:text-red-400">
           {error}
         </div>
       )}
+
       {messages.map((message) => {
         const isOwn = message.sender_id === currentUserId;
         const sender = message.sender;
@@ -110,62 +99,56 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
         return (
           <div
             key={message.id}
-            className={`flex gap-3 py-1 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
+            className={`flex gap-2.5 py-0.5 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
             onMouseEnter={() => setHoveredMessageId(message.id || null)}
             onMouseLeave={() => setHoveredMessageId(null)}
           >
-            {/* Avatar */}
+            {/* Other user avatar */}
             {!isOwn && (
-              <Link
-                href={`/profile/${sender?.username || message.sender_id}`}
-                className="flex-shrink-0"
-              >
-                <div className="w-8 h-8 rounded-full bg-[#242420] overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+              <Link href={`/profile/${sender?.username || message.sender_id}`} className="shrink-0 self-end">
+                <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition-opacity">
                   {senderAvatar ? (
-                    <img
-                      src={senderAvatar}
-                      alt={senderName}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={senderAvatar} alt={senderName} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[#9E9A90] text-sm font-semibold">
+                    <span className="text-xs font-semibold text-gray-600 dark:text-gray-300">
                       {senderName[0]?.toUpperCase() || '?'}
-                    </div>
+                    </span>
                   )}
                 </div>
               </Link>
             )}
 
-            {/* Message Bubble with Menu */}
-            <div className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-start`}>
+            {/* Bubble + actions */}
+            <div className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
               <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'} max-w-xs lg:max-w-md`}>
                 {!isOwn && (
-                  <Link 
+                  <Link
                     href={`/profile/${sender?.username || message.sender_id}`}
-                    className="text-xs text-[#9E9A90] mb-1 px-2 hover:text-[#F5F0E8] transition-colors"
+                    className="mb-0.5 px-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                   >
                     {senderName}
                   </Link>
                 )}
+
                 {isEditing ? (
-                  <div className="w-full">
+                  <div className="w-full min-w-[200px]">
                     <textarea
                       value={editingContent}
                       onChange={(e) => setEditingContent(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-[#242420] border border-[#3A3A34] text-[#F5F0E8] placeholder-[#9E9A90]/50 focus:outline-none focus:border-[#F5A623] focus-visible:ring-2 focus-visible:ring-[#F5A623]"
                       rows={2}
                       aria-label="Edit message"
+                      className="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20"
                     />
-                    <div className="flex gap-2 mt-2">
+                    <div className="mt-1.5 flex gap-2">
                       <button
                         onClick={() => handleEditSave(message.id)}
-                        className="text-xs px-3 py-1.5 min-h-[44px] bg-[#6BAF7A] text-black rounded-lg hover:bg-[#6BAF7A]/90 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                        className="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-green-600 transition-colors"
                       >
                         Save
                       </button>
                       <button
                         onClick={handleEditCancel}
-                        className="text-xs px-3 py-1.5 min-h-[44px] bg-[#242420] border border-[#3A3A34] text-[#9E9A90] rounded-lg hover:bg-[#2E2E28] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                        className="rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Cancel
                       </button>
@@ -173,24 +156,21 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
                   </div>
                 ) : (
                   <div
-                    className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                    className={`rounded-2xl px-4 py-2.5 ${
                       isOwn
-                        ? 'bg-[#F5A623] text-black shadow-lg shadow-[#F5A623]/30'
-                        : 'bg-[#242420] border border-[#3A3A34] text-[#F5F0E8] hover:border-[#3A3A34]'
+                        ? 'rounded-br-sm bg-[#f97316] text-white shadow-sm'
+                        : 'rounded-bl-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-600'
                     }`}
                   >
-                    <p className={`text-sm whitespace-pre-wrap break-words ${message.deleted ? 'italic text-[#9E9A90]' : ''}`}>
+                    <p className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${message.deleted ? 'italic opacity-60' : ''}`}>
                       {message.content}
                     </p>
-                    <div className={`flex items-center gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
-                      <p className={`text-xs ${isOwn ? 'text-black/70' : 'text-[#9E9A90]'}`}>
-                        {new Date(message.created_at!).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
+                    <div className={`mt-0.5 flex items-center gap-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                      <span className={`text-[10px] ${isOwn ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
+                        {new Date(message.created_at!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                       {message.edited_at && (
-                        <span className={`text-xs ${isOwn ? 'text-black/70' : 'text-[#9E9A90]'}`}>
+                        <span className={`text-[10px] ${isOwn ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'}`}>
                           (edited)
                         </span>
                       )}
@@ -199,33 +179,27 @@ export function ChatWindow({ messages, currentUserId, loading, messagesEndRef }:
                 )}
               </div>
 
-              {/* 3-Dot Menu */}
+              {/* 3-dot menu — own messages only */}
               {isOwn && hoveredMessageId === message.id && !isEditing && !message.deleted && (
-                <div className="relative flex items-center">
+                <div className="relative mb-1 flex items-center">
                   <button
                     onClick={() => setMenuOpenId(menuOpenId === message.id ? null : message.id || null)}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center text-[#9E9A90] hover:text-[#F5F0E8] hover:bg-[#2E2E28] rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
                     aria-label="Message options"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-600 dark:hover:text-gray-200 transition-colors text-base leading-none"
                   >
-                    ⋯
+                    ···
                   </button>
                   {menuOpenId === message.id && (
-                    <div className="absolute top-full mt-1 right-0 bg-[#242420] backdrop-blur-sm border border-[#3A3A34] rounded-xl shadow-lg z-50 whitespace-nowrap overflow-hidden">
+                    <div className="absolute bottom-full mb-1 right-0 z-50 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg whitespace-nowrap">
                       <button
-                        onClick={() => {
-                          handleEditStart(message);
-                          setMenuOpenId(null);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-[#F5F0E8] hover:bg-[#2E2E28] flex items-center gap-2 hover:text-[#F5A623] transition-colors"
+                        onClick={() => { handleEditStart(message); setMenuOpenId(null); }}
+                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       >
                         Edit
                       </button>
                       <button
-                        onClick={() => {
-                          handleDelete(message.id);
-                          setMenuOpenId(null);
-                        }}
-                        className="w-full text-left px-4 py-2 text-sm text-[#F5F0E8] hover:bg-[#2E2E28] flex items-center gap-2 hover:text-[#E05C3A] transition-colors border-t border-[#3A3A34]"
+                        onClick={() => { handleDelete(message.id); setMenuOpenId(null); }}
+                        className="block w-full border-t border-gray-100 dark:border-gray-700 px-4 py-2 text-left text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                       >
                         Delete
                       </button>
