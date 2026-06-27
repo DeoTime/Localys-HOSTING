@@ -6,6 +6,7 @@ import { Challenges } from '@/components/home/Challenges';
 import { ProductsRow } from '@/components/home/ProductsRow';
 import { BusinessesRow } from '@/components/home/BusinessesRow';
 import { ExpressDelivery } from '@/components/home/ExpressDelivery';
+import { ShopByDepartment } from '@/components/home/ShopByDepartment';
 import { FeaturedVideos } from '@/components/home/FeaturedVideos';
 import { Feedback } from '@/components/home/Feedback';
 
@@ -33,11 +34,14 @@ function HomeBody() {
       <Challenges />
 
       {/* Food-forward, themed rows */}
-      <BusinessesRow title="Food deals near you" seeAllHref="/feed" list={feed.restaurants} />
-      <ProductsRow title="Trending in your area" seeAllHref="/feed" items={feed.trending} />
+      <BusinessesRow title="Top restaurants near you" seeAllHref="/feed" list={feed.topRestaurants} />
+      <ProductsRow title="Food deals near you" seeAllHref="/feed" items={feed.foodDeals} />
 
       <BusinessesRow title="Local businesses near you" seeAllHref="/feed" list={feed.localBusinesses} />
+      <ProductsRow title="Trending in your area" seeAllHref="/feed" items={feed.trending} />
+
       <ExpressDelivery />
+      <ShopByDepartment />
 
       <ProductsRow title="Fresh flowers & gifts" seeAllHref="/feed" items={feed.flowers} />
       <ProductsRow title="For your pets" seeAllHref="/feed" items={feed.pets} />

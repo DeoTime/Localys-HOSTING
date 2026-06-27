@@ -18,13 +18,15 @@ export interface HomeFeed {
   groceryConvenience: Product[];
   pharmacy: Product[];
   restaurants: LocalBusiness[];
+  topRestaurants: LocalBusiness[]; // 6+ entries (real + named variations)
   services: LocalBusiness[];
   localBusinesses: LocalBusiness[];
 }
 
 const EMPTY_FEED: HomeFeed = {
   heroBusinesses: [], trending: [], foodDeals: [], flowers: [], pets: [],
-  groceryConvenience: [], pharmacy: [], restaurants: [], services: [], localBusinesses: [],
+  groceryConvenience: [], pharmacy: [], restaurants: [], topRestaurants: [],
+  services: [], localBusinesses: [],
 };
 
 interface HomeDataValue {
@@ -151,10 +153,58 @@ function buildFeed(businesses: LocalBusiness[]): HomeFeed {
   const services = bizRow(byTheme('services'), 16);
   const localBusinesses = bizRow(businesses, 20);
 
+  // 5) Top-restaurants row: 6+ entries with named variations (own dedup set).
+  const topRestaurants = buildTopRestaurants(food);
+
   return {
     heroBusinesses, trending, foodDeals, flowers, pets,
-    groceryConvenience, pharmacy, restaurants, services, localBusinesses,
+    groceryConvenience, pharmacy, restaurants, topRestaurants, services, localBusinesses,
   };
+}
+
+/**
+ * Build a "Top restaurants near you" row with 6–8 entries. Uses its own image
+ * dedup set so it is never starved by other rows. Real restaurants first, then
+ * named variations that link to the same store but show a different menu photo.
+ */
+function buildTopRestaurants(food: LocalBusiness[]): LocalBusiness[] {
+  const localUsed = new Set<string>();
+  const out: LocalBusiness[] = [];
+
+  const nameVariations: Record<string, string[]> = {
+    "Amy's Fish & Chips": ['The Fish Shack', 'Lake & Vinegar'],
+    'Holy Smoke Barbecue': ["Smoky's BBQ", 'Southern Smoke Grill'],
+    'Pho Nga Son': ['Saigon Noodle Bar', 'Pho Ha Noi'],
+  };
+
+  // 1. Real restaurants (banner image preferred)
+  for (const b of food) {
+    const img =
+      typeof b.image === 'string' && !localUsed.has(b.image)
+        ? b.image
+        : b.products.find(
+            (p) => p.hq === true && typeof p.image === 'string' && !localUsed.has(p.image as string)
+          )?.image;
+    if (!img) continue;
+    localUsed.add(img);
+    out.push({ ...b, image: img });
+  }
+
+  // 2. Named variations — different menu photo, same store link
+  for (const b of food) {
+    if (out.length >= 8) break;
+    for (const varName of (nameVariations[b.name] ?? [])) {
+      if (out.length >= 8) break;
+      const img = b.products.find(
+        (p) => p.hq === true && typeof p.image === 'string' && !localUsed.has(p.image as string)
+      )?.image;
+      if (!img) continue;
+      localUsed.add(img);
+      out.push({ ...b, id: `${b.id}:${varName}`, name: varName, image: img });
+    }
+  }
+
+  return out;
 }
 
 /* ----------------------------- selectors ----------------------------- */

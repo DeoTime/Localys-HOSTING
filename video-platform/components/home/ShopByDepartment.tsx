@@ -1,83 +1,44 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { SectionHeader } from './SectionHeader';
-import { Thumb } from './Thumb';
-import { BusinessCard } from './BusinessCard';
-import { useHomeData } from './HomeData';
 
-/** Department label → circle icon (real /categories assets). */
-const DEPT_ICON: Record<string, string> = {
-  Restaurants: '/categories/restaurants.png',
-  'Fast Food': '/categories/Fast-food.png',
-  Bakery: '/categories/bakery.png',
-  Café: '/categories/cafe.png',
-  Grocery: '/categories/grocery.png',
-  Convenience: '/categories/grocery.png',
-  Flowers: '/categories/flower.png',
-  Pets: '/categories/pet.png',
-  Pharmacy: '/categories/service.png',
-  'Home Services': '/categories/service.png',
-  Clothing: '/categories/clothing.png',
-  Toys: '/categories/toys.png',
-};
+const DEPARTMENTS = [
+  { name: 'Beauty',        src: '/Shop%20by%20department/beauty.jpg',          href: '/feed?category=Beauty' },
+  { name: 'Flowers',       src: '/Shop%20by%20department/Flowers.jpg',         href: '/feed?category=Flowers' },
+  { name: 'Grocery',       src: '/Shop%20by%20department/Grocery.jpg',         href: '/feed?category=Grocery' },
+  { name: 'Health',        src: '/Shop%20by%20department/Health.jpg',          href: '/feed?category=Health' },
+  { name: 'Home Services', src: '/Shop%20by%20department/Home%20services.jpg', href: '/feed?category=Home+Services' },
+  { name: 'Personal Care', src: '/Shop%20by%20department/Personal%20care.jpg', href: '/feed?category=Personal+Care' },
+  { name: 'Pets',          src: '/Shop%20by%20department/Pets.png',            href: '/feed?category=Pets' },
+  { name: 'Restaurants',   src: '/Shop%20by%20department/Restaurants.webp',   href: '/feed?category=Restaurants' },
+];
 
-/**
- * (D) Shop by department — departments are derived from the REAL business
- * categories present. Selecting one filters the real businesses shown below.
- */
+/** Static circular department icons sourced from /public/Shop by department/. */
 export function ShopByDepartment() {
-  const { businesses, loading } = useHomeData();
-
-  const departments = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const b of businesses) counts.set(b.category, (counts.get(b.category) || 0) + 1);
-    return [...counts.entries()].sort((a, c) => c[1] - a[1]).map(([label]) => label);
-  }, [businesses]);
-
-  const [active, setActive] = useState<string | null>(null);
-  const selected = active ?? departments[0] ?? null;
-  const filtered = useMemo(
-    () => businesses.filter((b) => b.category === selected),
-    [businesses, selected]
-  );
-
-  if (loading || departments.length === 0) return null;
-
   return (
     <section>
-      <SectionHeader title="Shop by department" />
-
-      <div className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] sm:gap-6 [&::-webkit-scrollbar]:hidden">
-        {departments.map((label) => {
-          const isActive = label === selected;
-          return (
-            <button
-              key={label}
-              type="button"
-              onClick={() => setActive(label)}
-              className="group flex shrink-0 flex-col items-center gap-2"
-            >
-              <Thumb
-                src={DEPT_ICON[label]}
-                label={label}
-                alt={label}
-                className={`h-16 w-16 rounded-full shadow-sm transition group-hover:shadow-md sm:h-20 sm:w-20 ${
-                  isActive ? 'ring-2 ring-[#f97316]' : ''
-                }`}
-                imgClassName="h-full w-full object-contain p-3"
+      <SectionHeader title="Shop by department" seeAllHref="/feed" />
+      <div className="flex gap-5 overflow-x-auto pb-2 [scrollbar-width:none] sm:gap-8 [&::-webkit-scrollbar]:hidden">
+        {DEPARTMENTS.map((dept) => (
+          <Link
+            key={dept.name}
+            href={dept.href}
+            className="group flex shrink-0 flex-col items-center gap-2"
+          >
+            <div className="h-[72px] w-[72px] overflow-hidden rounded-full bg-gray-100 ring-2 ring-transparent transition-all duration-200 group-hover:ring-[#f97316] sm:h-[88px] sm:w-[88px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={dept.src}
+                alt={dept.name}
+                className="h-full w-full object-cover"
               />
-              <span className="text-center text-xs font-semibold text-black dark:text-white sm:text-sm">
-                {label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Real businesses in the selected department */}
-      <div className="mt-5 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {filtered.map((b) => <BusinessCard key={b.id} business={b} />)}
+            </div>
+            <span className="w-20 text-center text-[11px] font-semibold leading-tight text-black dark:text-white sm:w-24 sm:text-xs">
+              {dept.name}
+            </span>
+          </Link>
+        ))}
       </div>
     </section>
   );
