@@ -2,16 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Phone, MapPin, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase/client';
 import { getOrCreateOneToOneChat } from '@/lib/supabase/messaging';
-import { getUserBusiness, getBusinessLocations, Business, BusinessHours, BusinessLocation } from '@/lib/supabase/profiles';
+import { getUserBusiness, getBusinessLocations, getUserMenu, Business, BusinessHours, BusinessLocation } from '@/lib/supabase/profiles';
 import { MenuList } from '@/components/MenuList';
 import { PostedVideos } from '@/components/PostedVideos';
+import { StorePage, type StoreMenu, type StoreItem } from '@/components/store/StorePage';
+import storeMenus from '@/data/store-menus.json';
 
 const BusinessLocationMap = dynamic(
   () => import('@/components/BusinessLocationMap'),
@@ -40,6 +41,31 @@ export default function UserProfilePage() {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/** Build a StoreMenu from Supabase items for stores without a public/Menu folder. */
+function buildFallbackMenu(business: Business, items: any[]): StoreMenu {
+  const mapped: StoreItem[] = (items || []).map((it, i) => ({
+    id: it.id || `${business.owner_id}-${i}`,
+    name: it.item_name,
+    price: Number(it.price) || 0,
+    description: it.description || '',
+    image: it.image_url || undefined,
+    category: it.category || 'Menu',
+    likePct: 85 + (i % 14),
+    likeCount: 10 + (i % 40),
+  }));
+  const categories: string[] = [];
+  for (const it of mapped) if (!categories.includes(it.category)) categories.push(it.category);
+  return {
+    slug: '', banner: business.profile_picture_url || null,
+    rating: 4.7, ratingCount: '500+', address: 'Toronto, ON',
+    availability: 'Available today', hoursLabel: 'Mon–Sun 9:00 a.m. – 9:00 p.m.', deliveryTime: '20 min',
+    reviews: [], categories,
+    featuredIds: mapped.slice(0, 8).map((m) => m.id),
+    pickedIds: mapped.slice(8, 14).map((m) => m.id),
+    items: mapped,
+  };
+}
+
 const REPORT_REASONS = [
   { value: 'spam', label: 'Spam' },
   { value: 'harassment', label: 'Harassment or Bullying' },
@@ -60,7 +86,7 @@ function UserProfileContent() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [business, setBusiness] = useState<Business | null>(null);
   const [businessLocations, setBusinessLocations] = useState<BusinessLocation[]>([]);
-  const [showBusinessHours, setShowBusinessHours] = useState(false);
+  const [storeMenu, setStoreMenu] = useState<StoreMenu | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [messagingLoading, setMessagingLoading] = useState(false);
@@ -108,6 +134,20 @@ function UserProfileContent() {
       setBusinessLocations([]);
     }
   }, [profile?.type]);
+
+  // Resolve the Uber-Eats store menu: prefer the folder-driven manifest, else
+  // fall back to the store's Supabase items (neutral placeholder photos).
+  useEffect(() => {
+    if (!business || !profile) { setStoreMenu(null); return; }
+    const manifest = (storeMenus as Record<string, StoreMenu>)[business.business_name];
+    if (manifest) { setStoreMenu(manifest); return; }
+    let active = true;
+    (async () => {
+      const { data: menu } = await getUserMenu(profile.id);
+      if (active) setStoreMenu(buildFallbackMenu(business, (menu as any)?.menu_items || []));
+    })();
+    return () => { active = false; };
+  }, [business, profile]);
 
   // Load follow status + follower count when profile is loaded
   useEffect(() => {
@@ -407,10 +447,10 @@ function UserProfileContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1A1A18] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5F0E8] mx-auto mb-4"></div>
-          <p className="text-[#F5F0E8]">Loading profile...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#f97316] mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading…</p>
         </div>
       </div>
     );
@@ -418,19 +458,25 @@ function UserProfileContent() {
 
   if (error || !profile) {
     return (
-      <div className="min-h-screen bg-[#1A1A18] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-[#F5F0E8] mb-4">Profile Not Found</h2>
-          <p className="text-[#F5F0E8]/60 mb-6">{error || 'This profile does not exist.'}</p>
+          <h2 className="text-2xl font-bold text-black mb-4">Profile Not Found</h2>
+          <p className="text-gray-500 mb-6">{error || 'This profile does not exist.'}</p>
           <Link
             href="/feed"
-            className="bg-[#f97316] text-black font-semibold px-6 py-3 rounded-lg hover:bg-[#f97316]/90 transition-all duration-200"
+            className="bg-[#f97316] text-white font-semibold px-6 py-3 rounded-lg hover:opacity-90 transition-all duration-200"
           >
             Back to Home
           </Link>
         </div>
       </div>
     );
+  }
+
+  // Business profiles render the Uber-Eats-style store page (white, no follow).
+  if (business) {
+    if (!storeMenu) return <div className="min-h-screen bg-white" />;
+    return <StorePage storeName={business.business_name} sellerId={profile.id} menu={storeMenu} />;
   }
 
   return (
@@ -531,17 +577,6 @@ function UserProfileContent() {
 
       {/* Profile Content */}
       <div className="p-6 pb-32">
-        {/* Business banner (cropped from the store's online menu) */}
-        {business && profile.profile_picture_url && (
-          <div className="-mx-6 -mt-6 mb-6 overflow-hidden">
-            <img
-              src={profile.profile_picture_url}
-              alt={business.business_name || profile.full_name}
-              className="w-full h-40 sm:h-56 object-cover"
-            />
-          </div>
-        )}
-
         <div className="flex flex-col items-center mb-6">
           <img
             src={profile.profile_picture_url || 'https://via.placeholder.com/120'}
@@ -566,24 +601,6 @@ function UserProfileContent() {
             <p className="text-[#F5F0E8]/80 text-center max-w-md mb-2">{profile.bio}</p>
           )}
           
-          {/* Business Info */}
-          {business && (
-            <div className="flex items-center gap-2 flex-wrap justify-center mb-2">
-              <p className="text-[#f97316] text-sm">{business.business_name}</p>
-              {business.business_type && (
-                <span className="bg-[#f97316]/20 text-[#f97316] text-xs px-2 py-1 rounded-full capitalize">
-                  {business.business_type === 'hybrid' ? 'Pickup & Delivery' : `${business.business_type}`}
-                </span>
-              )}
-              <button
-                onClick={() => setShowBusinessHours(!showBusinessHours)}
-                className="bg-[#f97316]/20 text-[#f97316] text-xs px-2 py-1 rounded-full hover:bg-[#f97316]/30 transition-colors"
-              >
-                {showBusinessHours ? 'Hide Hours' : 'Show Hours'}
-              </button>
-            </div>
-          )}
-
           {/* Average Rating */}
           {avgRating !== null && (
             <p className="text-[#F5F0E8] text-sm mb-4">
@@ -654,55 +671,6 @@ function UserProfileContent() {
           </div>
         </div>
 
-        {/* Business Hours Section */}
-        {showBusinessHours && (
-          <div className="mt-8 mb-8">
-            <h3 className="text-xl font-semibold text-[#F5F0E8] mb-4">Business Hours</h3>
-            <div className="bg-[#242420] border border-[#3A3A34] rounded-lg p-6 space-y-2">
-              {business?.business_hours ? (
-                ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => (
-                  <div key={day} className="flex justify-between items-center text-sm">
-                    <span className="text-[#F5F0E8]/80 capitalize font-medium">{day}</span>
-                    <span className="text-[#F5F0E8]/60">
-                      {business.business_hours?.[day]?.closed ? (
-                        'Closed'
-                      ) : (
-                        `${business.business_hours?.[day]?.open || ''} - ${business.business_hours?.[day]?.close || ''}`
-                      )}
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-[#F5F0E8]/60 text-center py-4">Business hours not set</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Business Contact & Info */}
-        {business && (business.phone || business.address || business.misc_info) && (
-          <div className="mt-6 bg-[#242420] border border-[#3A3A34] rounded-lg p-5 space-y-3">
-            {business.phone && (
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-[#f97316] shrink-0" />
-                <a href={`tel:${business.phone}`} className="text-sm text-[#F5F0E8]/80 hover:text-[#f97316] transition-colors">{business.phone}</a>
-              </div>
-            )}
-            {business.address && (
-              <div className="flex items-start gap-3">
-                <MapPin className="h-4 w-4 text-[#f97316] shrink-0 mt-0.5" />
-                <p className="text-sm text-[#F5F0E8]/80">{business.address}</p>
-              </div>
-            )}
-            {business.misc_info && (
-              <div className="flex items-start gap-3">
-                <FileText className="h-4 w-4 text-[#f97316] shrink-0 mt-0.5" />
-                <p className="text-sm text-[#F5F0E8]/70 whitespace-pre-line">{business.misc_info}</p>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Business Location Map */}
         {businessLocations.length > 0 && (
           <div className="mt-8">
@@ -712,7 +680,7 @@ function UserProfileContent() {
             <div className="bg-[#242420] border border-[#3A3A34] rounded-lg overflow-hidden">
               <BusinessLocationMap
                 locations={businessLocations}
-                businessName={business?.business_name ?? ''}
+                businessName={profile.full_name}
               />
             </div>
           </div>
