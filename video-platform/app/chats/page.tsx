@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Search, Send } from 'lucide-react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +19,9 @@ const NewChatModal = dynamic(
 export default function ChatsPage() {
   return (
     <ProtectedRoute>
-      <ChatsLayout />
+      <Suspense fallback={<div style={{ height: 'calc(100dvh - 108px)' }} className="bg-white dark:bg-[#1A1A18]" />}>
+        <ChatsLayout />
+      </Suspense>
     </ProtectedRoute>
   );
 }
@@ -27,6 +29,7 @@ export default function ChatsPage() {
 function ChatsLayout() {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { chats, loading } = useChats(user?.id);
 
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -61,6 +64,16 @@ function ChatsLayout() {
 
   const isDesktop = () =>
     typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+
+  // Open a specific conversation passed via ?c=<chatId> (e.g. from a store's
+  // "Message" button) inside the full Messages UI. On a narrow screen, the
+  // conversation gets its own screen — same as tapping it in the list.
+  useEffect(() => {
+    const c = searchParams.get('c');
+    if (!c) return;
+    if (isDesktop()) setActiveChatId(c);
+    else router.replace(`/chats/${c}`);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelect = (chatId: string) => {
     if (isDesktop()) {

@@ -92,7 +92,11 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
         console.error('Could not start chat with business:', error);
         return;
       }
-      router.push(`/chats/${data.id}`);
+      // Open the FULL Messages UI (left conversation list intact) with this business
+      // thread selected. On desktop that's /chats?c=<id>; on mobile the conversation
+      // is its own screen (/chats/<id>), matching how the list opens a chat.
+      const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+      router.push(isDesktop ? `/chats?c=${data.id}` : `/chats/${data.id}`);
     } catch (err) {
       console.error('Unexpected error starting chat:', err);
     } finally {
