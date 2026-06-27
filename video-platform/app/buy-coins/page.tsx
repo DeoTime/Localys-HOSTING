@@ -89,6 +89,7 @@ export default function BuyCoinsPage() {
 
     try {
       // Validate coupon
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const couponCode = (coupon.coupon as any)?.code || '';
       const { data: validatedCoupon, error: validateError } = await validateCoupon(
         couponCode,
@@ -210,6 +211,7 @@ export default function BuyCoinsPage() {
             <h3 className="text-lg font-semibold mb-4">Available Coupons</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {availableCoupons.map((coupon) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const couponData = (coupon.coupon as any);
                 const isSelected = selectedCoupon?.id === coupon.id;
                 return (
@@ -242,7 +244,7 @@ export default function BuyCoinsPage() {
         {selectedCoupon && (
           <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-8">
             <p className="text-blue-400 text-sm">
-              Coupon applied! You'll save ${discountAmount} on your purchase.
+              Coupon applied! You&apos;ll save ${discountAmount} on your purchase.
             </p>
           </div>
         )}
@@ -336,7 +338,7 @@ export default function BuyCoinsPage() {
           <div className="space-y-6">
             <div>
               <h3 className="font-semibold mb-2">How do I use coins?</h3>
-              <p className="text-white/60">Use coins to promote your videos. Each coin spent increases your video's visibility in the feed.</p>
+              <p className="text-white/60">Use coins to promote your videos. Each coin spent increases your video&apos;s visibility in the feed.</p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Are payments secure?</h3>

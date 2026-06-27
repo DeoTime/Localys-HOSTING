@@ -44,6 +44,7 @@ export default function CartPage() {
   const primarySellerId = items[0]?.sellerId;
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (items.length === 0) { setCoupons([]); return; }
     const sellerIds = [...new Set(items.map(i => i.sellerId))];
     const fetchCoupons = async () => {

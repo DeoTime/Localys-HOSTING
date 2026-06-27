@@ -5,6 +5,7 @@ import { ActivityPanel } from "@/components/ActivityPanel";
 import { PersistentVideoFeed } from "@/components/PersistentVideoFeed";
 import { TopHeader } from "@/components/shell/TopHeader";
 import { SecondaryNav } from "@/components/shell/SecondaryNav";
+import { LocalysAssistant } from "@/components/LocalysAssistant";
 
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -33,6 +34,7 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
       <SecondaryNav />
       <main id="main-content">{children}</main>
       <ActivityPanel />
+      <LocalysAssistant />
     </div>
   );
 }

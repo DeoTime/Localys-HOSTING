@@ -303,14 +303,14 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </Link>
           <Link
-            href="/settings/payment"
+            href="/settings"
             className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <span className="text-sm text-gray-900">Payment Methods</span>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </Link>
           <Link
-            href="/settings/location"
+            href="/settings"
             className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <span className="text-sm text-gray-900">Location Settings</span>
