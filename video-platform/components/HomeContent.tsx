@@ -941,8 +941,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const isLiked = likedVideos.has(likeKey);
   const isBookmarked = bookmarkedVideos.has(currentVideo.id);
   // Stable (deterministic) save/share counts — no backend store for these.
-  const saveCount = stableCount(currentVideo.id, 'save', 80, 9000) + (isBookmarked ? 1 : 0);
-  const shareCount = stableCount(currentVideo.id, 'share', 30, 4000);
+  const saveCount = stableCount(currentVideo.id, 'save', 80, 940) + (isBookmarked ? 1 : 0);
+  const shareCount = stableCount(currentVideo.id, 'share', 30, 880);
 
   const getNearestLocationForVideo = (video: Video) => {
     const profileId = video.user_id;
@@ -1097,7 +1097,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
                     </span>
                   ) : null}
                   <span aria-hidden>·</span>
-                  <span>{commentCounts[video.id] || 0} reviews</span>
+                  <span>{(commentCounts[video.id] || stableCount(video.id, 'rev', 8, 480))} reviews</span>
                   {feedDistanceLabel ? (
                     <>
                       <span aria-hidden>·</span>
@@ -1272,7 +1272,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
             </svg>
           </div>
           <span className="text-black text-[10px] sm:text-xs font-semibold">
-            {formatCount(likeCounts[likeKey] || 0)}
+            {formatCount(likeCounts[likeKey] || stableCount(currentVideo.id, 'like', 47, 980))}
           </span>
         </button>
 
@@ -1288,7 +1288,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || 0)}</span>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || stableCount(currentVideo.id, 'cmt', 12, 520))}</span>
         </button>
 
         {/* Location Button — always visible */}

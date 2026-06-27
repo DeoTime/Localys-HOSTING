@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { PostMedia } from '@/components/communities/PostMedia';
 
 function timeAgo(iso: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -93,7 +94,7 @@ function ThreadContent() {
                 thread.userVote === 1
                   ? 'text-[#f97316]'
                   : thread.userVote === -1
-                  ? 'text-blue-500'
+                  ? 'text-gray-500'
                   : 'text-gray-700 dark:text-gray-300'
               }`}
             >
@@ -104,8 +105,8 @@ function ThreadContent() {
               aria-label="Downvote"
               className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 thread.userVote === -1
-                  ? 'text-blue-500'
-                  : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20'
+                  ? 'text-gray-700 dark:text-gray-300'
+                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
             >
               <ChevronDown className="h-5 w-5" />
@@ -134,6 +135,7 @@ function ThreadContent() {
                 {thread.content}
               </p>
             )}
+            <PostMedia media={thread.media} />
           </div>
         </div>
 
@@ -190,7 +192,7 @@ function ThreadContent() {
                   </button>
                   <span
                     className={`text-[11px] font-bold tabular-nums leading-none ${
-                      c.userVote === 1 ? 'text-[#f97316]' : c.userVote === -1 ? 'text-blue-500' : 'text-gray-500 dark:text-gray-400'
+                      c.userVote === 1 ? 'text-[#f97316]' : c.userVote === -1 ? 'text-gray-500' : 'text-gray-500 dark:text-gray-400'
                     }`}
                   >
                     {c.votes}
@@ -199,7 +201,7 @@ function ThreadContent() {
                     onClick={() => voteComment(c.id, -1)}
                     aria-label="Downvote comment"
                     className={`h-5 w-5 flex items-center justify-center rounded text-xs transition-colors ${
-                      c.userVote === -1 ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'
+                      c.userVote === -1 ? 'text-gray-700 dark:text-gray-300' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                   >
                     <ChevronDown className="h-4 w-4" />

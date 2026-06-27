@@ -8,6 +8,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { CommunityAvatar } from '@/components/communities/CommunityAvatar';
+import { PostMedia } from '@/components/communities/PostMedia';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
   'richmondhill-eats': '/Communities/Richmond Hill.jpg',
@@ -191,6 +192,7 @@ function CommunityContent() {
                       {t.content}
                     </p>
                   )}
+                  <PostMedia media={t.media} />
                 </div>
 
                 {/* Bottom action bar */}

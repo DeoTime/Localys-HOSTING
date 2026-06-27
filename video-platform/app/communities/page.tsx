@@ -8,6 +8,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { CommunityAvatar } from '@/components/communities/CommunityAvatar';
+import { PostMedia } from '@/components/communities/PostMedia';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
   'richmondhill-eats': '/Communities/Richmond Hill.jpg',
@@ -87,10 +88,36 @@ function CommunitiesContent() {
   };
 
   const suggestedCommunities = communities.filter(c => !joinedCommunities.has(c.id)).slice(0, 3);
+  // Demo "recently visited" — a handful of existing communities for the left rail.
+  const recentCommunities = communities.slice(0, 6);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-[#1A1A18] text-gray-900 dark:text-white">
-      <div className="mx-auto max-w-3xl px-3 py-4">
+      <div className="mx-auto max-w-6xl px-3 py-4 lg:flex lg:gap-6">
+        {/* Left rail: Recent Communities */}
+        <aside className="mb-4 lg:mb-0 lg:w-64 lg:shrink-0">
+          <div className="sticky top-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-gray-900 dark:text-white">Recent Communities</h2>
+            <div className="space-y-1">
+              {recentCommunities.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/communities/${c.id}`}
+                  className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <CommunityAvatar src={COMMUNITY_IMAGES[c.id]} name={c.name} className="h-8 w-8 shrink-0 text-xs" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">r/{c.name}</p>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400">{c.memberCount.toLocaleString()} members</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        {/* Main feed */}
+        <div className="min-w-0 flex-1 lg:max-w-3xl">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <div>
@@ -202,6 +229,7 @@ function CommunitiesContent() {
                     {t.content}
                   </p>
                 )}
+                <PostMedia media={t.media} />
               </div>
 
               {/* Bottom action bar — Reddit style */}
@@ -251,6 +279,7 @@ function CommunitiesContent() {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </div>
 
