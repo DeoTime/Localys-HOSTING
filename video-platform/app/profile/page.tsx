@@ -11,6 +11,7 @@ import { EditableProfilePicture } from '@/components/EditableProfilePicture';
 import { LanguageSettings } from '@/components/LanguageSettings';
 import { BookmarkedVideos } from '@/components/BookmarkedVideos';
 import { PostedVideos } from '@/components/PostedVideos';
+import { SideCards } from '@/components/SideCards';
 import {
   uploadProfilePicture,
   updateProfile,
@@ -20,7 +21,7 @@ import {
   BYTES_TO_MB,
 } from '@/lib/supabase/profiles';
 import { OrderHistory } from '@/components/OrderHistory';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Store, DollarSign } from 'lucide-react';
 
 export default function ProfilePage() {
   return (
@@ -90,13 +91,16 @@ function ProfileContent() {
           onCancel={() => setIsEditMode(false)}
         />
       ) : (
-        <ProfileView
-          profile={profile}
-          user={user}
-          onEditClick={() => setIsEditMode(true)}
-          onSignOut={handleSignOut}
-          onProfileUpdated={loadProfile}
-        />
+        <>
+          {user && <SideCards userId={user.id} />}
+          <ProfileView
+            profile={profile}
+            user={user}
+            onEditClick={() => setIsEditMode(true)}
+            onSignOut={handleSignOut}
+            onProfileUpdated={loadProfile}
+          />
+        </>
       )}
     </div>
   );
@@ -110,48 +114,28 @@ interface ProfileViewProps {
   onProfileUpdated: () => void;
 }
 
-interface FollowingUser {
-  id: string;
-  username: string;
-  full_name: string;
-  profile_picture_url?: string;
-  type?: string | null;
-}
-
 function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }: ProfileViewProps) {
   const { t } = useTranslation();
-  const router = useRouter();
-  const [following, setFollowing] = useState<FollowingUser[]>([]);
-  const [followingCount, setFollowingCount] = useState(0);
-  const [followingLoading, setFollowingLoading] = useState(true);
+  const [bizCount, setBizCount] = useState(0);
+  const [moneySpent, setMoneySpent] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.id) loadFollowing();
-  }, [user?.id]);
-
-  const loadFollowing = async () => {
-    try {
-      const { data: allFollows } = await supabase
-        .from('follows')
-        .select('following_id')
-        .eq('follower_id', user.id);
-      setFollowingCount(allFollows?.length ?? 0);
-
-      const recent = (allFollows ?? []).slice(0, 5);
-      if (recent.length > 0) {
-        const ids = recent.map((f: any) => f.following_id);
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, username, full_name, profile_picture_url, type')
-          .in('id', ids);
-        setFollowing(profiles ?? []);
+    if (!user?.id) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from('item_purchases')
+        .select('seller_id, price')
+        .eq('buyer_id', user.id);
+      if (data) {
+        const uniqueSellers = new Set(data.map((p: any) => p.seller_id));
+        setBizCount(uniqueSellers.size);
+        setMoneySpent(data.reduce((s: number, p: any) => s + (p.price || 0), 0));
       }
-    } catch {
-      // silently fail
-    } finally {
-      setFollowingLoading(false);
-    }
-  };
+      setStatsLoading(false);
+    };
+    load();
+  }, [user?.id]);
 
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -175,20 +159,44 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
             {profile?.full_name || 'User'}
           </h2>
           <p className="text-gray-500 text-sm mb-1">@{profile?.username || 'username'}</p>
-          {profile?.bio && <p className="text-gray-700 text-sm">{profile.bio}</p>}
+          {profile?.bio && <p className="text-gray-900 text-sm">{profile.bio}</p>}
+          {memberSince && <p className="text-gray-400 text-xs mt-1">Member since {memberSince}</p>}
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="flex items-center gap-6 mb-5 px-1">
-        <div className="text-center">
-          <p className="text-lg font-bold text-gray-900">{followingCount}</p>
-          <p className="text-xs text-gray-500">Following</p>
+      {/* Impact stats */}
+      {!statsLoading && (bizCount > 0 || moneySpent > 0) && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
+          <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">Your Local Impact</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
+                <Store className="h-4.5 w-4.5 text-[#f97316]" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 leading-none">{bizCount}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {bizCount === 1 ? 'business' : 'businesses'} supported
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-[#f97316]/10 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4.5 w-4.5 text-[#f97316]" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900 leading-none">${moneySpent.toFixed(0)}</p>
+                <p className="text-xs text-gray-500 mt-0.5">kept in your community</p>
+              </div>
+            </div>
+          </div>
+          {bizCount > 0 && (
+            <p className="text-xs text-gray-400 mt-4 leading-relaxed">
+              You've supported {bizCount} local {bizCount === 1 ? 'business' : 'businesses'} and kept ${moneySpent.toFixed(2)} in your community.
+            </p>
+          )}
         </div>
-        {memberSince && (
-          <p className="text-sm text-gray-500">Member since {memberSince}</p>
-        )}
-      </div>
+      )}
 
       {/* Edit Profile */}
       <button
@@ -220,56 +228,6 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
         <div className="bg-white border border-gray-200 rounded-2xl p-4">
           <OrderHistory userId={user.id} isBusiness={false} />
         </div>
-      </section>
-
-      {/* Following */}
-      <section className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-gray-900">Following</h3>
-          {followingCount > 0 && (
-            <Link href="/feed" className="text-[#f97316] text-sm hover:underline">
-              View All
-            </Link>
-          )}
-        </div>
-        {followingLoading ? (
-          <div className="flex gap-4">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse" />
-                <div className="w-10 h-2 bg-gray-200 rounded animate-pulse" />
-              </div>
-            ))}
-          </div>
-        ) : following.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {following.map((f) => (
-              <button
-                key={f.id}
-                onClick={() => router.push(`/profile/${f.username}`)}
-                className="flex flex-col items-center gap-1.5 min-w-[60px] hover:opacity-80 transition-opacity"
-              >
-                <div className={`w-12 h-12 rounded-full overflow-hidden ${f.type ? 'ring-2 ring-[#f97316]' : 'ring-1 ring-gray-200'}`}>
-                  {f.profile_picture_url ? (
-                    <img src={f.profile_picture_url} alt={f.full_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center text-sm text-gray-500">
-                      {f.full_name?.[0] || '?'}
-                    </div>
-                  )}
-                </div>
-                <span className="text-[10px] text-gray-500 truncate max-w-[60px]">{f.username}</span>
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 text-center">
-            <p className="text-gray-400 text-sm mb-2">Not following anyone yet</p>
-            <Link href="/feed" className="text-[#f97316] text-sm font-medium hover:underline">
-              Discover People
-            </Link>
-          </div>
-        )}
       </section>
 
       {/* Settings */}
@@ -336,9 +294,7 @@ function ProfileEditForm({ profile, user, onSave, onCancel }: ProfileEditFormPro
 
   useEffect(() => {
     return () => {
-      if (profilePicturePreview?.startsWith('blob:')) {
-        URL.revokeObjectURL(profilePicturePreview);
-      }
+      if (profilePicturePreview?.startsWith('blob:')) URL.revokeObjectURL(profilePicturePreview);
     };
   }, [profilePicturePreview]);
 
@@ -361,7 +317,6 @@ function ProfileEditForm({ profile, user, onSave, onCancel }: ProfileEditFormPro
     setLoading(true);
     setError(null);
     setSuccess(null);
-
     try {
       let profilePictureUrl = profile?.profile_picture_url;
       if (profilePicture) {
@@ -369,15 +324,10 @@ function ProfileEditForm({ profile, user, onSave, onCancel }: ProfileEditFormPro
         if (uploadError) throw new Error('Upload failed: ' + uploadError.message);
         if (data?.publicUrl) profilePictureUrl = data.publicUrl;
       }
-
       const updates: ProfileUpdateData = { full_name: fullName, username, bio };
-      if (profilePictureUrl !== profile?.profile_picture_url) {
-        updates.profile_picture_url = profilePictureUrl;
-      }
-
+      if (profilePictureUrl !== profile?.profile_picture_url) updates.profile_picture_url = profilePictureUrl;
       const { error: profileError } = await updateProfile(user.id, updates);
       if (profileError) throw new Error('Update failed: ' + profileError.message);
-
       setSuccess('Profile updated!');
       setTimeout(onSave, 800);
     } catch (err: any) {
@@ -402,11 +352,8 @@ function ProfileEditForm({ profile, user, onSave, onCancel }: ProfileEditFormPro
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute bottom-0 right-0 bg-[#f97316] hover:opacity-90 rounded-full p-2 transition-opacity"
-            >
+            <button type="button" onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 bg-[#f97316] hover:opacity-90 rounded-full p-2 transition-opacity">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -417,70 +364,39 @@ function ProfileEditForm({ profile, user, onSave, onCancel }: ProfileEditFormPro
           <p className="text-gray-500 text-sm">Tap the icon to change your photo</p>
         </div>
 
-        {/* Full Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
-          <input
-            type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+          <label className="block text-sm font-medium text-gray-900 mb-1.5">Full Name</label>
+          <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
             className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] transition-colors"
-            placeholder="Your full name"
-            required
-          />
+            placeholder="Your full name" required />
         </div>
 
-        {/* Username */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+          <label className="block text-sm font-medium text-gray-900 mb-1.5">Username</label>
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
             className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] transition-colors"
-            placeholder="username"
-            required
-          />
+            placeholder="username" required />
         </div>
 
-        {/* Bio */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Bio</label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
+          <label className="block text-sm font-medium text-gray-900 mb-1.5">Bio</label>
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)}
             className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 focus:border-[#f97316] resize-none transition-colors"
-            placeholder="Tell people a bit about yourself"
-            rows={3}
-          />
+            placeholder="Tell people a bit about yourself" rows={3} />
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 text-sm">{error}</div>
-        )}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 rounded-xl p-3 text-sm">{success}</div>
-        )}
+        {error && <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 text-sm">{error}</div>}
+        {success && <div className="bg-gray-50 border border-gray-200 text-gray-900 rounded-xl p-3 text-sm">{success}</div>}
 
         <div className="flex gap-3 pt-1">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={loading}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 rounded-xl py-3 font-medium transition-colors disabled:opacity-50"
-          >
+          <button type="button" onClick={onCancel} disabled={loading}
+            className="flex-1 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 rounded-xl py-3 font-medium transition-colors disabled:opacity-50">
             Cancel
           </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex-1 bg-[#f97316] hover:opacity-90 text-white rounded-xl py-3 font-medium transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-          >
+          <button type="submit" disabled={loading}
+            className="flex-1 bg-[#f97316] hover:opacity-90 text-white rounded-xl py-3 font-medium transition-opacity disabled:opacity-50 flex items-center justify-center gap-2">
             {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                Saving...
-              </>
+              <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />Saving...</>
             ) : 'Save Changes'}
           </button>
         </div>

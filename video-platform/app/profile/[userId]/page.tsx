@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react'; // useRef kept for 3-dot menu
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useParams, usePathname, useRouter } from 'next/navigation';
@@ -91,11 +91,6 @@ function UserProfileContent() {
   const [error, setError] = useState<string | null>(null);
   const [messagingLoading, setMessagingLoading] = useState(false);
 
-  // Follow state
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followerCount, setFollowerCount] = useState(0);
-  const [followLoading, setFollowLoading] = useState(false);
-
   // 3-dot menu state
   const [showMenu, setShowMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -110,14 +105,6 @@ function UserProfileContent() {
   // Average rating state
   const [avgRating, setAvgRating] = useState<number | null>(null);
   const [totalReviews, setTotalReviews] = useState(0);
-
-  // Admin mode state (Ctrl+Shift+D) — persisted in localStorage
-  const [adminMode, setAdminMode] = useState(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem('adminMode') === 'true';
-    return false;
-  });
-  const [adminFollowerBoost, setAdminFollowerBoost] = useState(0);
-  const realFollowerCountRef = useRef(0);
 
   useEffect(() => {
     if (identifier) {
@@ -149,11 +136,8 @@ function UserProfileContent() {
     return () => { active = false; };
   }, [business, profile]);
 
-  // Load follow status + follower count when profile is loaded
   useEffect(() => {
     if (profile && user) {
-      checkFollowStatus();
-      loadFollowerCount();
       loadAverageRating();
     }
   }, [profile, user]);
@@ -176,57 +160,6 @@ function UserProfileContent() {
     return () => clearTimeout(timer);
   }, [toastMessage]);
 
-  // Admin Mode keyboard shortcut (Ctrl+Shift+D)
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-        e.preventDefault();
-        setAdminMode(prev => {
-          if (prev) {
-            // Turning OFF — revert to real count
-            localStorage.removeItem('adminMode');
-            setAdminFollowerBoost(0);
-            setFollowerCount(realFollowerCountRef.current);
-          } else {
-            // Turning ON — snapshot real count
-            localStorage.setItem('adminMode', 'true');
-            realFollowerCountRef.current = followerCount;
-          }
-          return !prev;
-        });
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [followerCount]);
-
-  // On mount, if admin mode was persisted, snapshot current follower count
-  useEffect(() => {
-    if (adminMode && followerCount > 0) {
-      realFollowerCountRef.current = followerCount;
-    }
-  }, [adminMode, followerCount]);
-
-  const checkFollowStatus = async () => {
-    if (!user || !profile) return;
-    const { data } = await supabase
-      .from('follows')
-      .select('id')
-      .eq('follower_id', user.id)
-      .eq('following_id', profile.id)
-      .maybeSingle();
-    setIsFollowing(!!data);
-  };
-
-  const loadFollowerCount = async () => {
-    if (!profile) return;
-    const { count } = await supabase
-      .from('follows')
-      .select('*', { count: 'exact', head: true })
-      .eq('following_id', profile.id);
-    setFollowerCount(count ?? 0);
-  };
-
   const loadAverageRating = async () => {
     if (!profile) return;
     // Get all videos by this user, then compute avg rating from comments with ratings
@@ -247,39 +180,6 @@ function UserProfileContent() {
       const sum = ratings.reduce((acc, r) => acc + (r.rating || 0), 0);
       setAvgRating(Math.round((sum / ratings.length) * 10) / 10);
       setTotalReviews(ratings.length);
-    }
-  };
-
-  const toggleFollow = async () => {
-    if (!user || !profile || followLoading) return;
-    setFollowLoading(true);
-    try {
-      if (isFollowing) {
-        await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', profile.id);
-        setIsFollowing(false);
-        setFollowerCount(c => Math.max(0, c - 1));
-        if (adminMode) {
-          realFollowerCountRef.current = Math.max(0, realFollowerCountRef.current - 1);
-        }
-      } else {
-        await supabase
-          .from('follows')
-          .insert({ follower_id: user.id, following_id: profile.id });
-        setIsFollowing(true);
-        setFollowerCount(c => c + 1 + (adminMode ? 1 : 0));
-        if (adminMode) {
-          realFollowerCountRef.current = realFollowerCountRef.current + 1;
-          setAdminFollowerBoost(b => b + 1);
-        }
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setFollowLoading(false);
     }
   };
 
@@ -329,14 +229,6 @@ function UserProfileContent() {
       await supabase
         .from('blocks')
         .insert({ blocker_id: user.id, blocked_id: profile.id });
-      // Also unfollow if following
-      if (isFollowing) {
-        await supabase
-          .from('follows')
-          .delete()
-          .eq('follower_id', user.id)
-          .eq('following_id', profile.id);
-      }
       setToastColor('amber');
       setToastMessage(`@${profile.username} has been blocked`);
       setTimeout(() => router.push('/feed'), 1200);
@@ -586,17 +478,6 @@ function UserProfileContent() {
           <h2 className="text-2xl font-bold mb-1">{profile.full_name}</h2>
           <p className="text-[#F5F0E8]/60 mb-1">@{profile.username}</p>
 
-          {/* Follower count */}
-          <p
-            className={`text-[#9E9A90] text-sm mb-4 ${adminMode ? 'cursor-pointer hover:text-[#f97316] transition-colors select-none' : ''}`}
-            onClick={adminMode ? () => {
-              setAdminFollowerBoost(b => b + 1);
-              setFollowerCount(c => c + 1);
-            } : undefined}
-          >
-            {followerCount} {followerCount === 1 ? 'follower' : 'followers'}
-          </p>
-
           {profile.bio && (
             <p className="text-[#F5F0E8]/80 text-center max-w-md mb-2">{profile.bio}</p>
           )}
@@ -610,33 +491,6 @@ function UserProfileContent() {
 
           {/* Action Buttons Row */}
           <div className="flex items-center gap-3 mt-2">
-            {/* Follow Button */}
-            <button
-              onClick={toggleFollow}
-              disabled={followLoading}
-              className={`font-semibold px-5 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 flex items-center gap-2 text-sm ${
-                isFollowing
-                  ? 'bg-[#f97316] text-black hover:bg-[#f97316]/90'
-                  : 'border-2 border-[#f97316] text-[#f97316] hover:bg-[#f97316]/10'
-              }`}
-            >
-              {isFollowing ? (
-                <>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
-                  </svg>
-                  Following
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Follow
-                </>
-              )}
-            </button>
-            
             {/* Message Button */}
             <button
               onClick={handleMessageClick}
@@ -744,12 +598,6 @@ function UserProfileContent() {
         </div>
       </div>
 
-      {/* Admin Mode Badge */}
-      {adminMode && (
-        <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#f97316]/90 px-2.5 py-1 text-[11px] font-semibold text-[#1A1A18] backdrop-blur-sm">
-          Admin
-        </div>
-      )}
     </div>
   );
 }
