@@ -4,6 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronUp, ChevronDown, MessageSquare, Plus } from 'lucide-react';
+
+const COMMUNITY_IMAGES: Record<string, string> = {
+  'richmondhill-eats': '/communities/Richmond Hill.jpg',
+  'local-services': '/communities/Local services.jpg',
+  'support-local': '/communities/SupportLocal.png',
+  'markham': '/communities/Markham.png',
+  'vaughan': '/communities/Vaughan.jpg',
+};
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -85,13 +93,13 @@ function CommunitiesContent() {
                         <ChevronUp className="h-3.5 w-3.5" />
                       </button>
                       <span className={`text-[10px] font-bold tabular-nums leading-none ${
-                        c.userVote === 1 ? 'text-[#f97316]' : c.userVote === -1 ? 'text-blue-500' : 'text-gray-400'
+                        c.userVote === 1 ? 'text-[#f97316]' : c.userVote === -1 ? 'text-gray-500' : 'text-gray-400'
                       }`}>{c.votes}</span>
                       <button
                         onClick={() => voteCommunity(c.id, -1)}
                         aria-label={`Downvote ${c.name}`}
                         className={`flex h-5 w-5 items-center justify-center rounded transition-colors ${
-                          c.userVote === -1 ? 'text-blue-500' : 'text-gray-300 hover:text-blue-500'
+                          c.userVote === -1 ? 'text-gray-500' : 'text-gray-300 hover:text-gray-500'
                         }`}
                       >
                         <ChevronDown className="h-3.5 w-3.5" />
@@ -101,7 +109,7 @@ function CommunitiesContent() {
                       href={`/communities/${c.id}`}
                       className="flex min-w-0 flex-1 items-center gap-2"
                     >
-                      <span className="h-4 w-4 shrink-0 rounded-full" style={{ background: c.color }} />
+                      <img src={COMMUNITY_IMAGES[c.id] || ''} alt={c.name} className="h-5 w-5 shrink-0 rounded-full object-cover" />
                       <span className="truncate text-sm text-gray-800 dark:text-gray-200">{c.name}</span>
                     </Link>
                   </div>
@@ -120,7 +128,7 @@ function CommunitiesContent() {
                     className="block py-2.5 first:pt-0 last:pb-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 -mx-1 px-1 rounded transition-colors"
                   >
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: communities.find(c => c.id === t.communityId)?.color || '#f97316' }} />
+                      <img src={COMMUNITY_IMAGES[t.communityId] || ''} alt={t.communityName} className="h-2.5 w-2.5 rounded-full object-cover shrink-0" />
                       <span className="text-[10px] font-semibold text-[#f97316] uppercase tracking-wide">{t.communityName}</span>
                       <span className="ml-auto text-[10px] text-gray-400">{timeAgo(t.createdAt)}</span>
                     </div>
@@ -200,7 +208,7 @@ function CommunitiesContent() {
                         t.userVote === 1
                           ? 'text-[#f97316]'
                           : t.userVote === -1
-                          ? 'text-blue-500'
+                          ? 'text-gray-500'
                           : 'text-gray-600 dark:text-gray-400'
                       }`}
                     >
@@ -211,8 +219,8 @@ function CommunitiesContent() {
                       aria-label="Downvote"
                       className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
                         t.userVote === -1
-                          ? 'text-blue-500'
-                          : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20'
+                          ? 'text-gray-500'
+                          : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
                       }`}
                     >
                       <ChevronDown className="h-5 w-5" />

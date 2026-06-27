@@ -4,6 +4,14 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft, ChevronUp, ChevronDown, MessageSquare, Plus, Users } from 'lucide-react';
+
+const COMMUNITY_IMAGES: Record<string, string> = {
+  'richmondhill-eats': '/communities/Richmond Hill.jpg',
+  'local-services': '/communities/Local services.jpg',
+  'support-local': '/communities/SupportLocal.png',
+  'markham': '/communities/Markham.png',
+  'vaughan': '/communities/Vaughan.jpg',
+};
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -78,12 +86,11 @@ function CommunityContent() {
             All Communities
           </Link>
           <div className="flex items-center gap-3">
-            <div
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white text-lg font-bold"
-              style={{ background: community.color }}
-            >
-              {community.name[0]}
-            </div>
+            <img
+              src={COMMUNITY_IMAGES[community.id] || ''}
+              alt={community.name}
+              className="h-12 w-12 shrink-0 rounded-full object-cover border border-gray-200"
+            />
             <div>
               <h1 className="text-xl font-bold text-gray-900 dark:text-white">{community.name}</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">{community.description}</p>
@@ -147,7 +154,7 @@ function CommunityContent() {
                       t.userVote === 1
                         ? 'text-[#f97316]'
                         : t.userVote === -1
-                        ? 'text-blue-500'
+                        ? 'text-gray-500'
                         : 'text-gray-600 dark:text-gray-400'
                     }`}
                   >
@@ -158,8 +165,8 @@ function CommunityContent() {
                     aria-label="Downvote"
                     className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
                       t.userVote === -1
-                        ? 'text-blue-500'
-                        : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/20'
+                        ? 'text-gray-500'
+                        : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <ChevronDown className="h-5 w-5" />

@@ -42,7 +42,7 @@ export function FilterPanel({
       {/* Distance slider */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="f-distance" className="text-sm font-semibold">Max distance</label>
+          <label htmlFor="f-distance" className="text-sm font-semibold text-gray-900 dark:text-white">Max distance</label>
           <span className="text-sm font-bold text-[#f97316]">{value.maxDistanceKm} km</span>
         </div>
         <input
@@ -58,7 +58,7 @@ export function FilterPanel({
 
       {/* Category chips */}
       <div>
-        <p className="mb-1.5 text-sm font-semibold">Category</p>
+        <p className="mb-1.5 text-sm font-semibold text-gray-900 dark:text-white">Category</p>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => {
             const active = value.category === c;
@@ -82,7 +82,7 @@ export function FilterPanel({
 
       {/* Min rating */}
       <div>
-        <p className="mb-1.5 text-sm font-semibold">Minimum rating</p>
+        <p className="mb-1.5 text-sm font-semibold text-gray-900 dark:text-white">Minimum rating</p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -106,7 +106,7 @@ export function FilterPanel({
       {/* Max price */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="f-price" className="text-sm font-semibold">Max price</label>
+          <label htmlFor="f-price" className="text-sm font-semibold text-gray-900 dark:text-white">Max price</label>
           <span className="text-sm font-bold text-[#f97316]">${value.maxPrice}</span>
         </div>
         <input
@@ -123,11 +123,11 @@ export function FilterPanel({
 
       {/* Toggles */}
       <div className="flex flex-col gap-2">
-        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold">
+        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
           Open now
           <input type="checkbox" checked={value.openNow} onChange={(e) => set('openNow', e.target.checked)} className="h-4 w-4 accent-[#f97316]" />
         </label>
-        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold">
+        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-gray-900 dark:text-white">
           Deals only
           <input type="checkbox" checked={value.dealsOnly} onChange={(e) => set('dealsOnly', e.target.checked)} className="h-4 w-4 accent-[#f97316]" />
         </label>

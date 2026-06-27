@@ -21,7 +21,79 @@ import {
   BYTES_TO_MB,
 } from '@/lib/supabase/profiles';
 import { OrderHistory } from '@/components/OrderHistory';
-import { ChevronRight, Store, DollarSign } from 'lucide-react';
+import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award } from 'lucide-react';
+
+// ── Badge system ──────────────────────────────────────────────────────────────
+interface BadgeStats {
+  purchases: number;
+  bizCount: number;
+  moneySpent: number;
+  reviews: number;
+}
+
+const BADGE_DEFS = [
+  { id: 'explorer',      Icon: MapPin,        name: 'Local Explorer',    desc: 'Joined Localys',                 check: (_: BadgeStats) => true },
+  { id: 'first-order',   Icon: ShoppingBag,   name: 'First Order',       desc: 'Placed your first order',        check: (s: BadgeStats) => s.purchases >= 1 },
+  { id: 'regular',       Icon: Store,         name: 'Regular',           desc: 'Supported 3+ businesses',        check: (s: BadgeStats) => s.bizCount >= 3 },
+  { id: 'hero',          Icon: Heart,         name: 'Community Hero',    desc: 'Supported 5+ businesses',        check: (s: BadgeStats) => s.bizCount >= 5 },
+  { id: 'legend',        Icon: Trophy,        name: 'Local Legend',      desc: 'Supported 10+ businesses',       check: (s: BadgeStats) => s.bizCount >= 10 },
+  { id: '100club',       Icon: DollarSign,    name: '$100 Club',         desc: 'Spent $100+ in your community',  check: (s: BadgeStats) => s.moneySpent >= 100 },
+  { id: '500club',       Icon: Star,          name: '$500 Club',         desc: 'Spent $500+ in your community',  check: (s: BadgeStats) => s.moneySpent >= 500 },
+  { id: 'reviewer',      Icon: MessageCircle, name: 'Reviewer',          desc: 'Left your first review',         check: (s: BadgeStats) => s.reviews >= 1 },
+  { id: 'top-reviewer',  Icon: Award,         name: 'Top Reviewer',      desc: 'Left 10+ reviews',               check: (s: BadgeStats) => s.reviews >= 10 },
+] as const;
+
+function BadgesSection({ userId }: { userId: string }) {
+  const [stats, setStats] = useState<BadgeStats>({ purchases: 0, bizCount: 0, moneySpent: 0, reviews: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      const [{ data: purchases }, { count: reviewCount }] = await Promise.all([
+        supabase.from('item_purchases').select('seller_id, price').eq('buyer_id', userId),
+        supabase.from('comments').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      ]);
+      if (purchases) {
+        const uniqueSellers = new Set(purchases.map((p: any) => p.seller_id));
+        setStats({
+          purchases: purchases.length,
+          bizCount: uniqueSellers.size,
+          moneySpent: purchases.reduce((s: number, p: any) => s + (p.price || 0), 0),
+          reviews: reviewCount ?? 0,
+        });
+      }
+      setLoading(false);
+    };
+    load();
+  }, [userId]);
+
+  if (loading) return null;
+
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
+      <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-4">Achievements</h3>
+      <div className="grid grid-cols-3 gap-2.5">
+        {BADGE_DEFS.map(({ id, Icon, name, desc, check }) => {
+          const earned = check(stats);
+          return (
+            <div
+              key={id}
+              className={`flex flex-col items-center text-center gap-1.5 p-2.5 rounded-xl border transition-colors ${
+                earned ? 'border-[#f97316]/20 bg-[#f97316]/5' : 'border-gray-100 bg-gray-50 opacity-50'
+              }`}
+            >
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
+                <Icon className={`h-5 w-5 ${earned ? 'text-white' : 'text-gray-400'}`} />
+              </div>
+              <p className={`text-[11px] font-bold leading-tight ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
+              <p className={`text-[10px] leading-tight ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
   return (
@@ -198,6 +270,9 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
         </div>
       )}
 
+      {/* Badges */}
+      <BadgesSection userId={user.id} />
+
       {/* Edit Profile */}
       <button
         onClick={onEditClick}
@@ -234,6 +309,13 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
       <section className="mb-6">
         <h3 className="text-base font-semibold text-gray-900 mb-3">{t('common.settings')}</h3>
         <div className="space-y-2">
+          <Link
+            href="/settings"
+            className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-sm text-gray-900">Display &amp; Theme</span>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </Link>
           <Link
             href="/settings/payment"
             className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"

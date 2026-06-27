@@ -214,7 +214,7 @@ function OrderItem({ order, onReorder }: { order: CoinPurchase | ItemPurchase; o
       <div className="flex justify-between items-start gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 truncate">{item.item_name}</p>
-          <p className="text-gray-400 text-xs mt-0.5">#{item.id.substring(0, 8)}</p>
+          <p className="text-gray-700 text-xs font-semibold mt-0.5">Order #{item.id.substring(0, 8).toUpperCase()}</p>
         </div>
         <div className="text-right shrink-0">
           <p className="font-semibold text-gray-900">
@@ -263,7 +263,7 @@ function SaleItem({ sale }: { sale: ItemPurchase }) {
       <div className="flex justify-between items-start gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 truncate">{sale.item_name}</p>
-          <p className="text-gray-400 text-xs mt-0.5">#{sale.id.substring(0, 8)}</p>
+          <p className="text-gray-700 text-xs font-semibold mt-0.5">Order #{sale.id.substring(0, 8).toUpperCase()}</p>
         </div>
         <div className="text-right shrink-0">
           <p className="font-semibold text-[#f97316]">${sale.price.toFixed(2)}</p>
