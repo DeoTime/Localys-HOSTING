@@ -9,6 +9,7 @@ interface NewChatModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUserId: string;
+  onChatCreated?: (chatId: string) => void;
 }
 
 interface UserSearchResult {
@@ -18,7 +19,7 @@ interface UserSearchResult {
   profile_picture_url?: string;
 }
 
-export function NewChatModal({ isOpen, onClose, currentUserId }: NewChatModalProps) {
+export function NewChatModal({ isOpen, onClose, currentUserId, onChatCreated }: NewChatModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -68,8 +69,12 @@ export function NewChatModal({ isOpen, onClose, currentUserId }: NewChatModalPro
       const { data, error: chatError } = await getOrCreateOneToOneChat(currentUserId, userId);
       if (chatError) throw chatError;
       if (data) {
-        onClose();
-        router.push(`/chats/${data.id}`);
+        if (onChatCreated) {
+          onChatCreated(data.id);
+        } else {
+          onClose();
+          router.push(`/chats/${data.id}`);
+        }
       } else {
         setError('Failed to create chat');
       }

@@ -1,157 +1,233 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, MessageCircle } from 'lucide-react';
+import { Edit2, Search, Send } from 'lucide-react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChats } from '@/hooks/useChats';
+import { useMessages } from '@/hooks/useMessages';
 import { ChatList } from '@/components/chats/ChatList';
-import { searchUsers, getOrCreateOneToOneChat } from '@/lib/supabase/messages';
+import { ChatWindow } from '@/components/chats/ChatWindow';
 import dynamic from 'next/dynamic';
-const NewChatModal = dynamic(() => import('@/components/chats/NewChatModal').then((mod) => mod.NewChatModal), { ssr: false });
 
-interface PersonResult {
-  id: string;
-  username?: string;
-  full_name?: string;
-  profile_picture_url?: string;
-}
+const NewChatModal = dynamic(
+  () => import('@/components/chats/NewChatModal').then((m) => m.NewChatModal),
+  { ssr: false }
+);
 
 export default function ChatsPage() {
   return (
     <ProtectedRoute>
-      <ChatsContent />
+      <ChatsLayout />
     </ProtectedRoute>
   );
 }
 
-function ChatsContent() {
+function ChatsLayout() {
   const { user } = useAuth();
   const router = useRouter();
-  const { chats, loading, error } = useChats(user?.id);
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
-  const [query, setQuery] = useState('');
-  const [people, setPeople] = useState<PersonResult[]>([]);
-  const [starting, setStarting] = useState(false);
+  const { chats, loading } = useChats(user?.id);
 
-  // Live substring filter of existing conversations by username / full name.
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [showNewChat, setShowNewChat] = useState(false);
+  const [query, setQuery] = useState('');
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const { messages, loading: msgLoading, sending, send } = useMessages(
+    activeChatId ?? undefined,
+    user?.id
+  );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   const filteredChats = useMemo(() => {
     const s = query.trim().toLowerCase();
     if (!s) return chats;
     return chats.filter((c) => {
       const u = c.other_user;
       return (
-        (u?.username?.toLowerCase().includes(s) ?? false) ||
-        (u?.full_name?.toLowerCase().includes(s) ?? false)
+        u?.username?.toLowerCase().includes(s) ||
+        u?.full_name?.toLowerCase().includes(s)
       );
     });
   }, [query, chats]);
 
-  // Surface non-contact businesses/users (substring username search) while typing.
-  useEffect(() => {
-    const s = query.trim();
-    if (!s || !user?.id) {
-      setPeople([]);
-      return;
-    }
-    const t = setTimeout(async () => {
-      const { data } = await searchUsers(s, user.id);
-      const existingIds = new Set(chats.map((c) => c.other_user?.id).filter(Boolean));
-      setPeople((data ?? []).filter((p: PersonResult) => !existingIds.has(p.id)).slice(0, 6));
-    }, 250);
-    return () => clearTimeout(t);
-  }, [query, user?.id, chats]);
+  const activeChat = chats.find((c) => c.id === activeChatId);
+  const activeUser = activeChat?.other_user;
 
-  const startChat = async (userId: string) => {
-    if (!user?.id) return;
-    setStarting(true);
-    const { data } = await getOrCreateOneToOneChat(user.id, userId);
-    if (data) {
-      router.push(`/chats/${data.id}`);
+  const isDesktop = () =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
+
+  const handleSelect = (chatId: string) => {
+    if (isDesktop()) {
+      setActiveChatId(chatId);
+    } else {
+      router.push(`/chats/${chatId}`);
     }
-    setStarting(false);
+  };
+
+  const handleChatCreated = (chatId: string) => {
+    setShowNewChat(false);
+    if (isDesktop()) {
+      setActiveChatId(chatId);
+    } else {
+      router.push(`/chats/${chatId}`);
+    }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || sending) return;
+    const result = await send(newMessage);
+    if (result.success) setNewMessage('');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 text-black dark:bg-[#1A1A18] dark:text-white">
-      <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
-        {/* Header + search */}
-        <div className="mb-5 flex items-center gap-3">
-          <h1 className="text-2xl font-bold sm:text-3xl">Messages</h1>
-          <div className="relative ml-auto w-full max-w-xs">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black dark:text-white" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by username…"
-              aria-label="Search messages by username"
-              className="w-full rounded-full border border-gray-300 bg-white py-2 pl-9 pr-3 text-sm text-black placeholder-gray-500 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-            />
-          </div>
+    <div
+      className="flex bg-white text-gray-900 dark:bg-[#1A1A18] dark:text-white"
+      style={{ height: 'calc(100dvh - 108px)' }}
+    >
+      {/* ── LEFT COLUMN: conversation list ── */}
+      <div className="flex w-full shrink-0 flex-col border-r border-gray-200 dark:border-gray-800 lg:w-[320px]">
+
+        {/* Header */}
+        <div className="flex shrink-0 items-center justify-between px-5 py-4">
+          <span className="text-[15px] font-semibold text-gray-900 dark:text-white">Messages</span>
           <button
             type="button"
-            onClick={() => setShowNewChatModal(true)}
-            aria-label="New chat"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
+            onClick={() => setShowNewChat(true)}
+            aria-label="New message"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
           >
-            <Plus className="h-5 w-5" />
+            <Edit2 className="h-4 w-4" />
           </button>
         </div>
 
-        {error && (
-          <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40">
-            Could not load chats: {error.message}
+        {/* Search */}
+        <div className="shrink-0 px-4 pb-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search"
+              aria-label="Search conversations"
+              className="w-full rounded-xl border-0 bg-gray-100 py-2 pl-9 pr-3 text-[13px] text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#f97316]/30 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+            />
           </div>
-        )}
+        </div>
 
-        {/* Non-contact people matching the search */}
-        {query.trim() && people.length > 0 && (
-          <div className="mb-4">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black dark:text-white">Start new chat</p>
-            <div className="space-y-2">
-              {people.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  disabled={starting}
-                  onClick={() => startChat(p.id)}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 text-left transition hover:border-[#f97316] disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900"
-                >
-                  <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-gray-100 text-sm font-bold text-black dark:bg-gray-800 dark:text-white">
-                    {p.profile_picture_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.profile_picture_url} alt={p.full_name || p.username || ''} className="h-full w-full object-cover" />
-                    ) : (
-                      (p.full_name || p.username || '?').charAt(0).toUpperCase()
-                    )}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate font-semibold text-black dark:text-white">{p.full_name || p.username}</span>
-                    {p.username && <span className="block truncate text-sm text-black dark:text-white">@{p.username}</span>}
-                  </span>
-                </button>
-              ))}
+        {/* Scrollable list */}
+        <div className="flex-1 overflow-y-auto border-t border-gray-100 dark:border-gray-800">
+          <ChatList
+            chats={filteredChats}
+            currentUserId={user?.id || ''}
+            loading={loading}
+            activeChatId={activeChatId}
+            onSelect={handleSelect}
+          />
+        </div>
+      </div>
+
+      {/* ── RIGHT PANEL: open chat or empty state (desktop only) ── */}
+      <div className="hidden flex-1 flex-col lg:flex">
+        {activeChatId && activeChat ? (
+          <>
+            {/* Chat header */}
+            <div className="flex shrink-0 items-center gap-3 border-b border-gray-200 px-5 py-3 dark:border-gray-800">
+              <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                {activeUser?.profile_picture_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={activeUser.profile_picture_url}
+                    alt={activeUser.full_name || activeUser.username || ''}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-[13px] font-medium text-gray-500">
+                    {(activeUser?.full_name || activeUser?.username || '?')[0]?.toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-[14px] font-semibold text-gray-900 dark:text-white">
+                  {activeUser?.full_name || activeUser?.username || 'Chat'}
+                </p>
+                {activeUser?.username && activeUser.full_name && (
+                  <p className="text-[12px] text-gray-400 dark:text-gray-500">
+                    @{activeUser.username}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Conversations */}
-        {query.trim() && (
-          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-black dark:text-white">Your chats</p>
-        )}
-        {!loading && filteredChats.length === 0 && query.trim() ? (
-          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center dark:border-gray-700 dark:bg-gray-900">
-            <MessageCircle className="mx-auto mb-2 h-8 w-8 text-black dark:text-white" />
-            <p className="font-semibold">No conversations match “{query.trim()}”.</p>
-          </div>
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto">
+              <ChatWindow
+                messages={messages}
+                currentUserId={user?.id || ''}
+                loading={msgLoading}
+                messagesEndRef={messagesEndRef}
+              />
+            </div>
+
+            {/* Input bar */}
+            <form
+              onSubmit={handleSend}
+              className="flex shrink-0 items-center gap-3 border-t border-gray-200 px-5 py-3 dark:border-gray-800"
+            >
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Message..."
+                disabled={sending}
+                className="flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 text-[13px] text-gray-900 placeholder-gray-400 focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              />
+              <button
+                type="submit"
+                disabled={!newMessage.trim() || sending}
+                aria-label="Send"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90 disabled:opacity-40"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
+          </>
         ) : (
-          <ChatList chats={filteredChats} currentUserId={user?.id || ''} loading={loading} />
+          /* Empty state */
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 px-8">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-gray-900 dark:border-gray-200">
+              <Send className="h-9 w-9 -rotate-12 text-gray-900 dark:text-gray-200" />
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">Your messages</p>
+              <p className="mt-2 max-w-xs text-sm font-normal text-gray-500 dark:text-gray-400">
+                Send private photos and messages to a friend or group
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowNewChat(true)}
+              className="rounded-xl bg-[#f97316] px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+            >
+              Send message
+            </button>
+          </div>
         )}
       </div>
 
       {user && (
-        <NewChatModal isOpen={showNewChatModal} onClose={() => setShowNewChatModal(false)} currentUserId={user.id} />
+        <NewChatModal
+          isOpen={showNewChat}
+          onClose={() => setShowNewChat(false)}
+          currentUserId={user.id}
+          onChatCreated={handleChatCreated}
+        />
       )}
     </div>
   );
