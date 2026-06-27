@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getMessages, sendMessage, subscribeToMessages, markMessagesAsRead, Message } from '@/lib/supabase/messaging';
 import { supabase } from '@/lib/supabase/client';
+import { isDemoChatId, getDemoMessages, addDemoMessage } from '@/lib/demoChat';
 
 export function useMessages(chatId: string | undefined, userId: string | undefined) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -13,6 +14,14 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
 
   const loadMessages = useCallback(async () => {
     if (!chatId) {
+      setLoading(false);
+      return;
+    }
+
+    // Demo conversations live in localStorage — no Supabase fetch.
+    if (isDemoChatId(chatId)) {
+      setMessages(getDemoMessages(chatId));
+      setError(null);
       setLoading(false);
       return;
     }
@@ -48,6 +57,13 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
       return { success: false, error: new Error('Missing required fields') };
     }
 
+    // Demo conversations: append locally, no Supabase insert.
+    if (isDemoChatId(chatId)) {
+      const msg = addDemoMessage(chatId, userId, content.trim());
+      setMessages((prev) => [...prev, msg]);
+      return { success: true, data: msg };
+    }
+
     try {
       setSending(true);
       const { data, error: sendError } = await sendMessage({
@@ -74,7 +90,7 @@ export function useMessages(chatId: string | undefined, userId: string | undefin
   useEffect(() => {
     loadMessages();
 
-    if (chatId && userId) {
+    if (chatId && userId && !isDemoChatId(chatId)) {
       subscriptionRef.current = subscribeToMessages(chatId, (newMessage) => {
         setMessages(prev => {
           if (prev.find(m => m.id === newMessage.id)) {

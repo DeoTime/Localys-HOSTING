@@ -89,7 +89,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
 /** Cards for the "Featured in Videos" section — every linked video gets a card. */
 export const FEATURED_VIDEOS: DemoVideo[] = DEMO_VIDEOS;
 
-interface ManifestStore { rating?: number }
+interface ManifestStore { rating?: number; banner?: string | null }
 const MENUS = storeMenus as Record<string, ManifestStore>;
 
 /** Discover-feed shape: matches the `Video` interface used in components/HomeContent. */
@@ -105,6 +105,7 @@ export interface FeedVideo {
     business_name: string;
     category: string;
     average_rating?: number;
+    profile_picture_url?: string;
     latitude?: number;
     longitude?: number;
   };
@@ -124,9 +125,18 @@ const DEMO_COORDS: Record<string, { latitude: number; longitude: number }> = {
   'pho-nga-son':           { latitude: 45.4225, longitude: -75.6940 },
 };
 
-/** Synthetic Discover-feed entries for every local video (prepended to the feed). */
+/**
+ * Synthetic Discover-feed entries for every local video (prepended to the feed).
+ * Holy Smoke Barbecue is ordered first so it appears near the top of Discover. The
+ * avatar uses the store's manifest banner so it always loads (no broken/blank pic).
+ */
 export function buildFeedVideos(): FeedVideo[] {
-  return DEMO_VIDEOS.map((v) => ({
+  const ordered = [...DEMO_VIDEOS].sort(
+    (a, b) =>
+      (a.businessSlug === 'holy-smoke-barbecue' ? 0 : 1) -
+      (b.businessSlug === 'holy-smoke-barbecue' ? 0 : 1),
+  );
+  return ordered.map((v) => ({
     id: v.id,
     user_id: v.businessSlug,
     business_id: v.businessSlug,
@@ -138,6 +148,7 @@ export function buildFeedVideos(): FeedVideo[] {
       business_name: v.businessName,
       category: v.category,
       average_rating: MENUS[v.manifestKey]?.rating ?? 4.8,
+      profile_picture_url: MENUS[v.manifestKey]?.banner ?? undefined,
       ...DEMO_COORDS[v.businessSlug],
     },
     like_count: 0,

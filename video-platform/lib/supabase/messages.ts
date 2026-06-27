@@ -1,5 +1,6 @@
 import { supabase } from './client';
 import type { Message, Chat, ChatMember, ChatWithDetails, Conversation } from '../../models/Message';
+import { isUuid } from '../utils/uuid';
 
 export type { Message, Chat, ChatMember, ChatWithDetails, Conversation };
 
@@ -280,6 +281,13 @@ export async function findOneToOneChat(userId1: string, userId2: string) {
  */
 export async function getOrCreateOneToOneChat(userId1: string, userId2: string) {
   try {
+    // Demo stores use slug ids (not UUIDs). Never send a slug to Supabase — the
+    // caller (e.g. StorePage) handles demo stores client-side. This guard prevents
+    // the "invalid input syntax for type uuid" crash if ever called with a slug.
+    if (!isUuid(userId2)) {
+      return { data: null, error: new Error('This is a demo store — chat is handled locally.') };
+    }
+
     const { data: authData, error: authError } = await supabase.auth.getUser();
     if (authError || !authData?.user?.id) {
       throw new Error('You must be signed in to start a chat.');

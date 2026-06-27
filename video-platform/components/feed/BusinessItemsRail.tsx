@@ -57,7 +57,7 @@ export function BusinessItemsRail({
   if (shown.length === 0) return null;
 
   return (
-    <div className="pointer-events-auto hidden w-[clamp(240px,22vw,420px)] flex-col gap-3 sm:flex lg:gap-4">
+    <div className="pointer-events-auto hidden w-[clamp(240px,22vw,420px)] flex-col gap-3 pb-4 sm:flex lg:gap-4">
       <p
         className="px-1 text-sm font-bold text-white lg:text-base"
         style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}

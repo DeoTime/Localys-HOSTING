@@ -1161,7 +1161,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
             {/* Left-side item cards — deals/items tied to the business in this video */}
             {(feedBusiness || feedItems) && (
-              <div className="absolute left-3 top-1/2 z-20 max-h-[80%] -translate-y-1/2 overflow-y-auto">
+              <div className="absolute left-3 top-16 bottom-28 z-20 overflow-y-auto overscroll-contain pr-1">
                 <BusinessItemsRail
                   userId={video.user_id || ''}
                   businessId={feedBusiness?.id || ''}

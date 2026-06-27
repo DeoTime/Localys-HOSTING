@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getOrCreateOneToOneChat } from '@/lib/supabase/messaging';
+import { isUuid } from '@/lib/utils/uuid';
+import { openDemoChat } from '@/lib/demoChat';
 import { useStoreDistance } from '@/lib/utils/useStoreDistance';
 import { ItemImage, Stars } from './StorePrimitives';
 import { useAddToCart, FeaturedItemCard, MenuItemRow } from './StoreItemCards';
@@ -87,16 +89,25 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
     if (!sellerId || sellerId === user.id) return;
     setMessagingLoading(true);
     try {
-      const { data, error } = await getOrCreateOneToOneChat(user.id, sellerId);
-      if (error || !data?.id) {
-        console.error('Could not start chat with business:', error);
-        return;
-      }
       // Open the FULL Messages UI (left conversation list intact) with this business
       // thread selected. On desktop that's /chats?c=<id>; on mobile the conversation
       // is its own screen (/chats/<id>), matching how the list opens a chat.
       const isDesktop = typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
-      router.push(isDesktop ? `/chats?c=${data.id}` : `/chats/${data.id}`);
+
+      let chatId: string;
+      if (isUuid(sellerId)) {
+        // Real store with a Supabase profile — normal persisted chat.
+        const { data, error } = await getOrCreateOneToOneChat(user.id, sellerId);
+        if (error || !data?.id) {
+          console.error('Could not start chat with business:', error instanceof Error ? error.message : error);
+          return;
+        }
+        chatId = data.id;
+      } else {
+        // Demo store (slug id, no Supabase row) — open a local conversation, no DB call.
+        chatId = openDemoChat(sellerId, storeName, menu.banner || undefined).id!;
+      }
+      router.push(isDesktop ? `/chats?c=${chatId}` : `/chats/${chatId}`);
     } catch (err) {
       console.error('Unexpected error starting chat:', err);
     } finally {
