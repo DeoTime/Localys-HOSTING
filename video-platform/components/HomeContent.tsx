@@ -112,9 +112,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [isPlaying, setIsPlaying] = useState(true);
 
   const [headerProfile, setHeaderProfile] = useState<HeaderProfile | null>(null);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const prevVolumeRef = useRef(0.5);
-  const volumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -627,15 +625,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
   };
 
-  const handleVolumeEnter = useCallback(() => {
-    if (volumeTimeoutRef.current) clearTimeout(volumeTimeoutRef.current);
-    setShowVolumeSlider(true);
-  }, []);
-
-  const handleVolumeLeave = useCallback(() => {
-    volumeTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 300);
-  }, []);
-
   const toggleMute = useCallback(() => {
     if (volume > 0) {
       prevVolumeRef.current = volume;
@@ -1104,6 +1093,34 @@ export function HomeContent({ isActive }: HomeContentProps) {
                 />
               </div>
             )}
+
+            {/* Volume icon — top-right corner of the video, white speaker */}
+            {index === currentIndex && (
+              <div className="pointer-events-none absolute top-0 left-1/2 z-20 w-[min(100%,calc((100vh-112px)*9/16))] -translate-x-1/2">
+                <div className="flex justify-end p-3 pointer-events-auto">
+                  <button
+                    onClick={toggleMute}
+                    aria-label={volume === 0 ? 'Unmute' : 'Mute'}
+                    className="rounded-full p-1"
+                  >
+                    <svg
+                      className="w-6 h-6 text-white"
+                      style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      {volume === 0 ? (
+                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                      ) : volume < 0.5 ? (
+                        <path d="M7 9v6h4l5 5V4l-5 5H7z" />
+                      ) : (
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
                 </>
               );
             })()}
@@ -1136,54 +1153,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
                 unoptimized={!headerProfile?.profile_picture_url}
               />
             </Link>
-          </div>
-          <div className="flex items-center gap-2 rounded-full border border-white/15 bg-black/55 px-2 py-1.5 backdrop-blur-xl">
-            {/* Volume Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={handleVolumeEnter}
-              onMouseLeave={handleVolumeLeave}
-            >
-              <button
-                onClick={toggleMute}
-                onTouchStart={handleVolumeEnter}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3A3A34] bg-[#242420] transition-colors hover:bg-[#2E2E28]"
-                aria-label={volume === 0 ? 'Unmute' : 'Mute'}
-              >
-                <svg className="w-4 h-4 text-[#F5F0E8]" fill="currentColor" viewBox="0 0 24 24">
-                  {volume === 0 ? (
-                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-                  ) : volume < 0.5 ? (
-                    <path d="M7 9v6h4l5 5V4l-5 5H7z" />
-                  ) : (
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                  )}
-                </svg>
-              </button>
-              {/* Dropdown slider */}
-              <div
-                className={`absolute top-full right-0 mt-2 transition-all duration-200 ${showVolumeSlider ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
-              >
-                <div className="rounded-xl border border-[#3A3A34] bg-[#1A1A18]/95 backdrop-blur-xl px-3 py-3 flex items-center gap-2 shadow-lg">
-                  <svg className="w-3.5 h-3.5 text-[#9E9A90] shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7 9v6h4l5 5V4l-5 5H7z" />
-                  </svg>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={Math.round(volume * 100)}
-                    onChange={(e) => setVolume(parseInt(e.target.value, 10) / 100)}
-                    className="h-1.5 w-24 cursor-pointer rounded-full bg-[#3A3A34] accent-[#f97316] outline-none"
-                    aria-label="Volume slider"
-                    onMouseEnter={handleVolumeEnter}
-                  />
-                  <svg className="w-3.5 h-3.5 text-[#9E9A90] shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
           </div>
       </div>
 
@@ -1247,12 +1216,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
           aria-label={isLiked ? 'Unlike video' : 'Like video'}
         >
           <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isLiked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'bg-white shadow-lg hover:shadow-[#f97316]/30'
+            isLiked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'bg-black shadow-lg hover:shadow-[#f97316]/30'
           } ${likeAnimating === currentVideo.id ? 'like-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${
-                isLiked ? 'text-white' : 'text-black'
-              } ${likeAnimating === currentVideo.id ? 'scale-150' : ''}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 text-white ${likeAnimating === currentVideo.id ? 'scale-150' : ''}`}
               fill={isLiked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1260,7 +1227,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">
             {formatCount(likeCounts[likeKey] || 0)}
           </span>
         </button>
@@ -1272,24 +1239,24 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Add a review or comment"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-black shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{formatCount(commentCounts[currentVideo.id] || 0)}</span>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || 0)}</span>
         </button>
 
         {/* Location Button */}
         {distance && (
           <button className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95" aria-label={`Distance: ${distance}`}>
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-black shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </div>
-            <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{distance}</span>
+            <span className="text-black text-[10px] sm:text-xs font-semibold">{distance}</span>
           </button>
         )}
 
@@ -1300,12 +1267,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
           aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark video'}
         >
           <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isBookmarked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'bg-white shadow-lg hover:shadow-[#f97316]/30'
+            isBookmarked ? 'bg-[#f97316] shadow-lg shadow-[#f97316]/40' : 'bg-black shadow-lg hover:shadow-[#f97316]/30'
           } ${bookmarkAnimating === currentVideo.id ? 'bookmark-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${
-                isBookmarked ? 'text-white' : 'text-black'
-              } ${bookmarkAnimating === currentVideo.id ? 'scale-150' : ''}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 text-white ${bookmarkAnimating === currentVideo.id ? 'scale-150' : ''}`}
               fill={isBookmarked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1313,7 +1278,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{formatCount(saveCount)}</span>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(saveCount)}</span>
         </button>
 
         {/* Share Button */}
@@ -1323,12 +1288,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Share this video"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-black shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.9)' }}>{formatCount(shareCount)}</span>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(shareCount)}</span>
         </button>
 
       </div>

@@ -7,7 +7,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import type { AliasItem } from '@/lib/businessAliases';
 
-const MAX_CARDS = 4;
+const MAX_CARDS = 3;
 
 /**
  * Left-side item cards for the Discover feed: shows a few of the business's items
@@ -61,9 +61,9 @@ export function BusinessItemsRail({
   if (shown.length === 0) return null;
 
   return (
-    <div className="pointer-events-auto hidden w-[170px] flex-col gap-2 sm:flex">
+    <div className="pointer-events-auto hidden w-[210px] flex-col gap-3 sm:flex">
       <p
-        className="px-1 text-xs font-bold text-white"
+        className="px-1 text-sm font-bold text-white"
         style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}
       >
         {businessName}
@@ -71,42 +71,44 @@ export function BusinessItemsRail({
       {shown.map((item) => (
         <div
           key={item.id}
-          className="flex items-center gap-2 rounded-xl bg-white/95 p-2 shadow-lg backdrop-blur"
+          className="overflow-hidden rounded-2xl bg-white shadow-2xl"
         >
           {item.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.image}
               alt={item.name}
-              className="h-10 w-10 shrink-0 rounded-lg object-cover"
+              className="h-28 w-full object-cover"
             />
           ) : (
-            <div className="h-10 w-10 shrink-0 rounded-lg bg-black/10" />
+            <div className="h-28 w-full bg-gray-100" />
           )}
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-xs font-semibold text-black">{item.name}</span>
-            <span className="text-xs font-bold text-[#f97316]">${item.price.toFixed(2)}</span>
-          </span>
-          <button
-            type="button"
-            aria-label={`Add ${item.name} to cart`}
-            onClick={() => {
-              addToCart({
-                itemId: item.id,
-                itemName: item.name,
-                itemPrice: item.price,
-                itemImage: item.image,
-                sellerId: businessId || userId,
-                buyerId: user?.id ?? 'guest',
-                quantity: 1,
-              });
-              setAddedId(item.id);
-              window.setTimeout(() => setAddedId((p) => (p === item.id ? null : p)), 1200);
-            }}
-            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
-          >
-            {addedId === item.id ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          </button>
+          <div className="p-3">
+            <p className="truncate text-sm font-bold leading-tight text-black">{item.name}</p>
+            <div className="mt-2 flex items-center justify-between">
+              <span className="text-base font-bold text-[#f97316]">${item.price.toFixed(2)}</span>
+              <button
+                type="button"
+                aria-label={`Add ${item.name} to cart`}
+                onClick={() => {
+                  addToCart({
+                    itemId: item.id,
+                    itemName: item.name,
+                    itemPrice: item.price,
+                    itemImage: item.image,
+                    sellerId: businessId || userId,
+                    buyerId: user?.id ?? 'guest',
+                    quantity: 1,
+                  });
+                  setAddedId(item.id);
+                  window.setTimeout(() => setAddedId((p) => (p === item.id ? null : p)), 1200);
+                }}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
+              >
+                {addedId === item.id ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
         </div>
       ))}
     </div>

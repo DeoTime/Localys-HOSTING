@@ -69,6 +69,8 @@ export default function CategoryPage() {
   const [businesses, setBusinesses] = useState<LocalBusiness[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, []);
+
   useEffect(() => {
     let active = true;
     getLocalBusinesses().then((b) => {
