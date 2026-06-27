@@ -21,14 +21,13 @@ export interface DemoVideo {
   /** Department label for the feed overlay. */
   category: string;
   caption: string;
-  /** Injected into Discover but NOT given its own Featured card (avoids duplicate businesses). */
-  feedOnly?: boolean;
 }
 
 /**
- * One entry per file in public/Videos. Holy Smoke has two clips → the second is
- * feed-only so the section shows one card per business. Pho Xe Lua's card uses the
- * local Pho Ngan clip (same restaurant; its real clip lives in Supabase).
+ * One entry per file in public/Videos. Holy Smoke Barbecue has TWO distinct clips
+ * (Holy Smoke.mp4 + Hoy Smoke.mp4) — both are kept as separate videos, both tied to
+ * the Holy Smoke store, and both appear as their own card + feed entry. Pho Xe Lua's
+ * card uses the local Pho Ngan clip (same restaurant; its real clip lives in Supabase).
  */
 export const DEMO_VIDEOS: DemoVideo[] = [
   {
@@ -68,6 +67,15 @@ export const DEMO_VIDEOS: DemoVideo[] = [
     caption: 'Low and slow, smoked over hardwood.',
   },
   {
+    id: 'local:holy-smoke-barbecue-2',
+    src: '/Videos/Hoy%20Smoke.mp4',
+    businessName: 'Holy Smoke Barbecue',
+    businessSlug: 'holy-smoke-barbecue',
+    manifestKey: 'Holy Smoke Barbecue',
+    category: 'Restaurants',
+    caption: 'More from the pit — fresh off the smoker.',
+  },
+  {
     id: 'local:pho-xe-lua',
     src: '/Videos/Pho%20Ngan.mp4',
     businessName: 'Pho Xe Lua Vietnamese Cuisine',
@@ -76,20 +84,10 @@ export const DEMO_VIDEOS: DemoVideo[] = [
     category: 'Restaurants',
     caption: 'A big thank you from Andy!',
   },
-  {
-    id: 'local:holy-smoke-2',
-    src: '/Videos/Hoy%20Smoke.mp4',
-    businessName: 'Holy Smoke Barbecue',
-    businessSlug: 'holy-smoke-barbecue',
-    manifestKey: 'Holy Smoke Barbecue',
-    category: 'Restaurants',
-    caption: 'More from the pit.',
-    feedOnly: true,
-  },
 ];
 
-/** Cards for the "Featured in Videos" section (one per business). */
-export const FEATURED_VIDEOS: DemoVideo[] = DEMO_VIDEOS.filter((v) => !v.feedOnly);
+/** Cards for the "Featured in Videos" section — every linked video gets a card. */
+export const FEATURED_VIDEOS: DemoVideo[] = DEMO_VIDEOS;
 
 interface ManifestStore { rating?: number }
 const MENUS = storeMenus as Record<string, ManifestStore>;

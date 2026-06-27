@@ -41,13 +41,13 @@ export function FeaturedInVideos() {
           onMouseLeave={() => stop(v.id)}
           onFocus={() => play(v.id)}
           onBlur={() => stop(v.id)}
-          className="group/vid relative block w-[180px] shrink-0 overflow-hidden rounded-2xl bg-black text-left focus:outline-none focus:ring-2 focus:ring-[#f97316] sm:w-[200px]"
+          className="group/vid relative block aspect-[9/14] w-[180px] shrink-0 overflow-hidden rounded-2xl bg-black text-left focus:outline-none focus:ring-2 focus:ring-[#f97316] sm:w-[200px]"
           aria-label={`Watch ${v.businessName} video`}
         >
           <video
             ref={(el) => { refs.current[v.id] = el; }}
             src={v.src}
-            className="aspect-[9/14] h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover object-center"
             muted
             loop
             playsInline

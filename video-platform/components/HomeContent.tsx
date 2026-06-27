@@ -231,7 +231,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
     const idx = videos.findIndex(v => v.id === targetVideoId);
     if (idx >= 0) {
+      // Jump to the exact clicked video and start it playing (the [currentIndex,
+      // isActive] effect below plays it; setIsPlaying keeps state in sync).
       setCurrentIndex(idx);
+      setIsPlaying(true);
       // Clean up the URL param
       router.replace('/feed', { scroll: false });
     } else if (targetVideoId.startsWith('local:')) {
@@ -320,15 +323,16 @@ export function HomeContent({ isActive }: HomeContentProps) {
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadVideos = async () => {
+    // Built-in local videos (public/Videos linked to businesses) shown first, ALWAYS
+    // present so every "Featured in Videos" card is watchable in Discover — even if the
+    // Supabase feed is empty or errors. Local ids are `local:`-prefixed and excluded
+    // from all Supabase id-based lookups below.
+    const localVideos = buildFeedVideos() as unknown as Video[];
     try {
       const { data, error } = await getWeightedVideoFeed(20, 0);
       if (error) throw error;
-      if (data) {
-        // Built-in local videos (public/Videos linked to businesses) shown first,
-        // followed by the real Supabase feed. Local ids are `local:`-prefixed and
-        // excluded from all Supabase id-based lookups below.
-        const localVideos = buildFeedVideos() as unknown as Video[];
-        const realData = data as Video[];
+      {
+        const realData = (Array.isArray(data) ? data : []) as Video[];
         const videosData = [...localVideos, ...realData];
         setVideos(videosData);
 
@@ -502,6 +506,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
       }
     } catch (error) {
       console.error(`Error loading videos: ${error instanceof Error ? error.message : String(error)}`);
+      // Supabase failed — still show the built-in local videos so Discover isn't empty.
+      setVideos((prev) => (prev.length === 0 ? localVideos : prev));
     } finally {
       setLoading(false);
     }
