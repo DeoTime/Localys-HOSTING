@@ -10,7 +10,7 @@ import Link from 'next/link';
 function CheckoutContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { items: cartItems, clearCart } = useCart();
 
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
@@ -86,21 +86,29 @@ function CheckoutContent() {
   const handleProceedToPayment = async () => {
     if (checkoutItems.length === 0) return;
 
+    if (!session?.access_token) {
+      setError('Your session has expired. Please sign in again.');
+      return;
+    }
+
     setProcessing(true);
     setError(null);
 
     try {
       const response = await fetch('/api/checkout-item', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({
           items: checkoutItems.map((item) => ({
             itemId: item.itemId,
             itemName: item.itemName,
-            itemPrice: item.itemPrice,
+            // itemPrice intentionally omitted — server looks up authoritative price from DB
             itemImage: item.itemImage,
             sellerId: item.sellerId,
-            buyerId: item.buyerId,
+            // buyerId intentionally omitted — server reads it from the auth token
             quantity: item.quantity,
             specialRequests: item.specialRequests,
           })),

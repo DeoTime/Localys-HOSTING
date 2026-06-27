@@ -18,17 +18,23 @@ export default function CheckoutSuccessPage() {
 }
 
 function CheckoutSuccessContent() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [confirmationNumber, setConfirmationNumber] = useState('');
 
   useEffect(() => {
-    if (!sessionId || !user) return;
+    if (!sessionId || !user || !session?.access_token) return;
 
     const getConfirmation = async () => {
       try {
-        const response = await fetch(`/api/verify-purchase?session_id=${sessionId}`);
+        const response = await fetch(`/api/verify-purchase?session_id=${sessionId}`, {
+          headers: { 'Authorization': `Bearer ${session.access_token}` },
+        });
+        if (!response.ok) {
+          console.error('Verify purchase failed:', response.status);
+          return;
+        }
         const data = await response.json();
         
         if (data.confirmationNumber) {

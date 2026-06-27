@@ -33,7 +33,7 @@ const COIN_PACKAGES = [
 ];
 
 export default function BuyCoinsPage() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [coinBalance, setCoinBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
@@ -124,17 +124,21 @@ export default function BuyCoinsPage() {
     setSelectedPackage(packageId);
     setError(null);
 
+    if (!session?.access_token) {
+      setError('Your session has expired. Please sign in again.');
+      setProcessing(false);
+      setSelectedPackage(null);
+      return;
+    }
+
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({
-          packageId,
-          userId: user.id,
-          couponCode: selectedCoupon ? (selectedCoupon.coupon as any)?.code : null,
-        }),
+        body: JSON.stringify({ packageId }),
       });
 
       const contentType = response.headers.get('content-type');
