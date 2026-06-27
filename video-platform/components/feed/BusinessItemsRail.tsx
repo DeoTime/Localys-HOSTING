@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Check } from 'lucide-react';
+import { Plus, Check, ShoppingCart } from 'lucide-react';
 import { getUserMenu } from '@/lib/supabase/profiles';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,13 +9,6 @@ import type { AliasItem } from '@/lib/businessAliases';
 
 const MAX_CARDS = 3;
 
-/**
- * Left-side item cards for the Discover feed: shows a few of the business's items
- * (image, name, price, add-to-cart) tied to the video being watched. When `items`
- * is supplied (aliased businesses, e.g. Pho Xe Lua) those are shown directly;
- * otherwise the business's Supabase menu is loaded via getUserMenu(userId).
- * Palette only: white cards, black text, orange price/accent.
- */
 export function BusinessItemsRail({
   userId,
   businessId,
@@ -34,7 +27,6 @@ export function BusinessItemsRail({
   const [addedId, setAddedId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Pre-supplied items (aliased businesses) need no fetch.
     if (hasProvidedItems || !userId) return;
     let cancelled = false;
     (async () => {
@@ -51,9 +43,7 @@ export function BusinessItemsRail({
         );
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [hasProvidedItems, userId]);
 
   const items = hasProvidedItems ? itemsProp! : loadedItems;
@@ -61,32 +51,42 @@ export function BusinessItemsRail({
   if (shown.length === 0) return null;
 
   return (
-    <div className="pointer-events-auto hidden w-[210px] flex-col gap-3 sm:flex">
+    <div className="pointer-events-auto hidden w-[280px] flex-col gap-3 sm:flex">
       <p
         className="px-1 text-sm font-bold text-white"
         style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}
       >
         {businessName}
       </p>
-      {shown.map((item) => (
+      {shown.map((item, i) => (
         <div
           key={item.id}
           className="overflow-hidden rounded-2xl bg-white shadow-2xl"
+          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.35)' }}
         >
           {item.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.image}
               alt={item.name}
-              className="h-28 w-full object-cover"
+              className="h-40 w-full object-cover"
             />
           ) : (
-            <div className="h-28 w-full bg-gray-100" />
+            <div className="h-40 w-full bg-gray-100 flex items-center justify-center">
+              <ShoppingCart className="h-8 w-8 text-gray-300" />
+            </div>
           )}
-          <div className="p-3">
-            <p className="truncate text-sm font-bold leading-tight text-black">{item.name}</p>
-            <div className="mt-2 flex items-center justify-between">
-              <span className="text-base font-bold text-[#f97316]">${item.price.toFixed(2)}</span>
+          {/* Deal badge on first item */}
+          {i === 0 && (
+            <div className="mx-3 mt-2 inline-block rounded-full bg-[#f97316] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+              Featured
+            </div>
+          )}
+          <div className="px-3 pb-3 pt-1.5">
+            <p className="text-sm font-bold leading-tight text-black">{item.name}</p>
+            <p className="mt-0.5 text-[11px] text-gray-500">Tap to add to cart</p>
+            <div className="mt-2.5 flex items-center justify-between">
+              <span className="text-lg font-bold text-[#f97316]">${item.price.toFixed(2)}</span>
               <button
                 type="button"
                 aria-label={`Add ${item.name} to cart`}
@@ -103,7 +103,7 @@ export function BusinessItemsRail({
                   setAddedId(item.id);
                   window.setTimeout(() => setAddedId((p) => (p === item.id ? null : p)), 1200);
                 }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] text-white shadow-md transition hover:opacity-90 active:scale-95"
               >
                 {addedId === item.id ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               </button>

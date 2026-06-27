@@ -111,6 +111,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [volume, setVolume] = useState(0.5); // Default 50% volume
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   const [headerProfile, setHeaderProfile] = useState<HeaderProfile | null>(null);
   const prevVolumeRef = useRef(0.5);
@@ -1111,30 +1112,48 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             )}
 
-            {/* Volume icon — top-right corner of the video, white speaker */}
+            {/* Volume control — top-right corner of the video */}
             {index === currentIndex && (
               <div className="pointer-events-none absolute top-0 left-1/2 z-20 w-[min(100%,calc((100vh-112px)*9/16))] -translate-x-1/2">
                 <div className="flex justify-end p-3 pointer-events-auto">
-                  <button
-                    onClick={toggleMute}
-                    aria-label={volume === 0 ? 'Unmute' : 'Mute'}
-                    className="rounded-full p-1"
-                  >
-                    <svg
-                      className="w-6 h-6 text-white"
-                      style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
+                  <div className="relative flex items-center gap-2">
+                    {/* Volume slider — opens to the left of the icon */}
+                    {showVolumeSlider && (
+                      <div className="flex items-center gap-2 rounded-2xl bg-black/80 px-3 py-2 backdrop-blur-md shadow-xl">
+                        <span className="text-[10px] font-bold text-white/50 w-5 text-right">0</span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={Math.round(volume * 100)}
+                          onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                          className="w-24 cursor-pointer"
+                          style={{ accentColor: '#f97316' }}
+                        />
+                        <span className="text-[10px] font-bold text-white w-8">{Math.round(volume * 100)}%</span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setShowVolumeSlider(s => !s)}
+                      aria-label="Adjust volume"
+                      className="rounded-full p-1"
                     >
-                      {volume === 0 ? (
-                        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-                      ) : volume < 0.5 ? (
-                        <path d="M7 9v6h4l5 5V4l-5 5H7z" />
-                      ) : (
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                      )}
-                    </svg>
-                  </button>
+                      <svg
+                        className="w-6 h-6 text-white"
+                        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        {volume === 0 ? (
+                          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                        ) : volume < 0.5 ? (
+                          <path d="M7 9v6h4l5 5V4l-5 5H7z" />
+                        ) : (
+                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                        )}
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1173,8 +1192,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </div>
       </div>
 
-      {/* Up / Down navigation — right edge, previous / next video */}
-      <div className="absolute right-3 top-[40%] z-20 flex flex-col gap-3 md:right-5">
+      {/* Up / Down navigation — right edge, above the interaction rail */}
+      <div className="absolute right-3 top-[13%] z-20 flex flex-col gap-3 md:right-5">
         <button
           onClick={goToPrev}
           aria-label="Previous video"
@@ -1264,18 +1283,19 @@ export function HomeContent({ isActive }: HomeContentProps) {
           <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || 0)}</span>
         </button>
 
-        {/* Location Button */}
-        {distance && (
-          <button className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95" aria-label={`Distance: ${distance}`}>
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-black shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <span className="text-black text-[10px] sm:text-xs font-semibold">{distance}</span>
-          </button>
-        )}
+        {/* Location Button — always visible */}
+        <button
+          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          aria-label={distance ? `Distance: ${distance}` : 'Location'}
+        >
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-black shadow-lg transition-all duration-300 hover:shadow-[#f97316]/30 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{distance || 'Near'}</span>
+        </button>
 
         {/* Bookmark Button */}
         <button

@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ChevronUp, ChevronDown, MessageSquare, Plus, Users } from 'lucide-react';
+import { ChevronLeft, ChevronUp, ChevronDown, MessageSquare, Plus, Users, Share2 } from 'lucide-react';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useCommunities } from '@/contexts/CommunitiesContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 const COMMUNITY_IMAGES: Record<string, string> = {
   'richmondhill-eats': '/Communities/Richmond Hill.jpg',
@@ -12,9 +15,6 @@ const COMMUNITY_IMAGES: Record<string, string> = {
   'markham': '/Communities/Markham.png',
   'vaughan': '/Communities/Vaughan.jpg',
 };
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { useCommunities } from '@/contexts/CommunitiesContext';
-import { useAuth } from '@/contexts/AuthContext';
 
 function timeAgo(iso: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -41,6 +41,7 @@ function CommunityContent() {
 
   const [showCreateThread, setShowCreateThread] = useState(false);
   const [threadForm, setThreadForm] = useState({ title: '', content: '' });
+  const [joined, setJoined] = useState(false);
 
   const community = communities.find((c) => c.id === communityId);
   const communityThreads = threads
@@ -60,6 +61,15 @@ function CommunityContent() {
     router.push(`/communities/${communityId}/${t.id}`);
   };
 
+  const handleSharePost = async (e: React.MouseEvent, threadId: string, title: string) => {
+    e.stopPropagation();
+    const url = `${window.location.origin}/communities/${communityId}/${threadId}`;
+    try {
+      if (navigator.share) await navigator.share({ title, url });
+      else await navigator.clipboard.writeText(url);
+    } catch {}
+  };
+
   if (!community) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-[#1A1A18]">
@@ -77,7 +87,7 @@ function CommunityContent() {
     <div className="min-h-screen bg-gray-100 dark:bg-[#1A1A18] text-gray-900 dark:text-white">
       {/* Community header */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <div className="mx-auto max-w-4xl px-4 py-4">
+        <div className="mx-auto max-w-3xl px-4 py-4">
           <Link
             href="/communities"
             className="mb-3 inline-flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
@@ -91,19 +101,31 @@ function CommunityContent() {
               alt={community.name}
               className="h-12 w-12 shrink-0 rounded-full object-cover border border-gray-200"
             />
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">{community.name}</h1>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">r/{community.name}</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">{community.description}</p>
             </div>
-            <div className="ml-auto flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-              <Users className="h-4 w-4" />
-              <span>{community.memberCount.toLocaleString()} members</span>
+            <div className="flex items-center gap-3 ml-auto">
+              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                <Users className="h-4 w-4" />
+                <span>{community.memberCount.toLocaleString()} members</span>
+              </div>
+              <button
+                onClick={() => setJoined(j => !j)}
+                className={`rounded-full px-5 py-2 text-sm font-bold transition ${
+                  joined
+                    ? 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    : 'bg-[#f97316] text-white hover:opacity-90'
+                }`}
+              >
+                {joined ? 'Joined' : 'Join'}
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="mx-auto max-w-3xl px-3 py-4">
         {/* Actions */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -118,7 +140,7 @@ function CommunityContent() {
           </button>
         </div>
 
-        {/* Thread list */}
+        {/* Thread list — Reddit card style */}
         {communityThreads.length === 0 ? (
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-12 text-center">
             <p className="text-gray-500 dark:text-gray-400 mb-3">No posts yet in this community.</p>
@@ -134,65 +156,94 @@ function CommunityContent() {
             {communityThreads.map((t) => (
               <div
                 key={t.id}
-                className="flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+                className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600 transition-colors overflow-hidden"
               >
-                {/* Vote column */}
-                <div className="flex w-10 shrink-0 flex-col items-center gap-0.5 bg-gray-50 dark:bg-gray-800 py-3 border-r border-gray-200 dark:border-gray-700">
+                {/* Post header */}
+                <div className="flex items-center gap-2 px-3 pt-3 pb-1.5">
+                  <img
+                    src={COMMUNITY_IMAGES[community.id] || ''}
+                    alt={community.name}
+                    className="h-6 w-6 rounded-full object-cover border border-gray-200 dark:border-gray-700 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-x-1 gap-y-0">
+                      <span className="text-[12px] font-bold text-gray-900 dark:text-white">r/{community.name}</span>
+                      <span className="text-[11px] text-gray-400">•</span>
+                      <span className="text-[11px] text-gray-400">{timeAgo(t.createdAt)}</span>
+                    </div>
+                    <p className="text-[11px] text-gray-400 dark:text-gray-500">Posted by {t.author}</p>
+                  </div>
                   <button
-                    onClick={() => vote(t.id, 1)}
-                    aria-label="Upvote"
-                    className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
-                      t.userVote === 1
-                        ? 'text-[#f97316]'
-                        : 'text-gray-400 hover:text-[#f97316] hover:bg-orange-50 dark:hover:bg-orange-950/20'
+                    onClick={() => setJoined(j => !j)}
+                    className={`shrink-0 rounded-full px-3.5 py-1 text-xs font-bold transition ${
+                      joined
+                        ? 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300'
+                        : 'bg-[#f97316] text-white hover:opacity-90'
                     }`}
                   >
-                    <ChevronUp className="h-5 w-5" />
-                  </button>
-                  <span
-                    className={`text-xs font-bold tabular-nums ${
-                      t.userVote === 1
-                        ? 'text-[#f97316]'
-                        : t.userVote === -1
-                        ? 'text-gray-500'
-                        : 'text-gray-600 dark:text-gray-400'
-                    }`}
-                  >
-                    {t.votes}
-                  </span>
-                  <button
-                    onClick={() => vote(t.id, -1)}
-                    aria-label="Downvote"
-                    className={`flex h-7 w-7 items-center justify-center rounded transition-colors ${
-                      t.userVote === -1
-                        ? 'text-gray-500'
-                        : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                  >
-                    <ChevronDown className="h-5 w-5" />
+                    {joined ? 'Joined' : 'Join'}
                   </button>
                 </div>
 
-                {/* Thread content */}
+                {/* Thread body */}
                 <div
-                  className="flex-1 cursor-pointer p-3"
+                  className="cursor-pointer px-3 pb-2"
                   onClick={() => router.push(`/communities/${t.communityId}/${t.id}`)}
                 >
-                  <div className="mb-1 text-xs text-gray-400 dark:text-gray-500">
-                    Posted by {t.author} &middot; {timeAgo(t.createdAt)}
-                  </div>
-                  <h3 className="font-semibold text-sm text-gray-900 dark:text-white leading-snug mb-2">
+                  <h3 className="font-semibold text-[15px] text-gray-900 dark:text-white leading-snug mb-1">
                     {t.title}
                   </h3>
                   {t.content && (
-                    <p className="mb-2 text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed">
                       {t.content}
                     </p>
                   )}
-                  <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500">
-                    <MessageSquare className="h-3.5 w-3.5" />
-                    <span>{t.commentCount} {t.commentCount === 1 ? 'comment' : 'comments'}</span>
+                </div>
+
+                {/* Bottom action bar */}
+                <div className="flex items-center gap-1 px-2 pb-2 pt-1.5 border-t border-gray-100 dark:border-gray-800">
+                  {/* Vote pill */}
+                  <div className="flex items-center rounded-full bg-gray-100 dark:bg-gray-800">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); vote(t.id, 1); }}
+                      aria-label="Upvote"
+                      className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                        t.userVote === 1 ? 'text-[#f97316]' : 'text-gray-500 dark:text-gray-400 hover:text-[#f97316]'
+                      }`}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <span className={`min-w-[20px] text-center text-xs font-bold tabular-nums ${
+                      t.userVote === 1 ? 'text-[#f97316]' : t.userVote === -1 ? 'text-gray-500' : 'text-gray-700 dark:text-gray-300'
+                    }`}>{t.votes}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); vote(t.id, -1); }}
+                      aria-label="Downvote"
+                      className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                        t.userVote === -1 ? 'text-gray-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                      }`}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
                   </div>
+
+                  {/* Comments */}
+                  <button
+                    onClick={() => router.push(`/communities/${t.communityId}/${t.id}`)}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span>{t.commentCount}</span>
+                  </button>
+
+                  {/* Share */}
+                  <button
+                    onClick={(e) => handleSharePost(e, t.id, t.title)}
+                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <Share2 className="h-4 w-4" />
+                    <span>Share</span>
+                  </button>
                 </div>
               </div>
             ))}
@@ -206,7 +257,7 @@ function CommunityContent() {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCreateThread(false)} />
           <div className="relative w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-6 shadow-2xl">
             <h2 className="mb-1 text-lg font-semibold text-gray-900 dark:text-white">New Post</h2>
-            <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">Posting to {community.name}</p>
+            <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">Posting to r/{community.name}</p>
             <div className="space-y-3">
               <div>
                 <label className="mb-1 block text-xs font-medium text-gray-700 dark:text-gray-300">Title</label>
