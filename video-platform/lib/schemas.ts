@@ -24,7 +24,10 @@ export const ItemCheckoutSchema = z.object({
     )
     .min(1, 'At least one item is required')
     .max(50, 'Too many items'),
-  couponCode: z.string().max(50).optional().nullable(),
+  couponCode:    z.string().max(50).optional().nullable(),
+  promoCode:     z.string().max(50).optional().nullable(),
+  scheduledAt:   z.string().datetime().optional().nullable(),
+  groupOrderId:  z.string().uuid().optional().nullable(),
 });
 
 export const VerifyItemPurchaseSchema = z.object({

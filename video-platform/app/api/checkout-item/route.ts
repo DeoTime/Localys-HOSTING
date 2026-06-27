@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
   const parsed = parseBody(ItemCheckoutSchema, body);
   if (!parsed.success) return parsed.response;
-  const { items, couponCode } = parsed.data;
+  const { items, couponCode, promoCode, scheduledAt, groupOrderId } = parsed.data;
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Validate and apply coupon if provided
+  // Validate global coupon if provided
   let appliedCouponCode: string | null = null;
   let discountPercentage = 0;
 
@@ -91,24 +91,74 @@ export async function POST(request: NextRequest) {
 
     discountPercentage = coupon.discount_percentage;
     appliedCouponCode = couponCode.toUpperCase();
-    // Note: used_count is incremented in the Stripe webhook after confirmed payment,
-    // not here, to avoid counting sessions that are never completed.
+  }
+
+  // Validate seller promo code if provided
+  let appliedPromoCode: string | null = null;
+  let promoDiscountPercent = 0;
+  let promoDiscountFixed = 0;
+  let promoCodeId: string | null = null;
+  let promoUsedCount = 0;
+
+  if (promoCode) {
+    const firstSellerId = items[0].sellerId;
+    const { data: promo, error: promoError } = await supabase
+      .from('promo_codes')
+      .select('*')
+      .eq('code', promoCode.toUpperCase().trim())
+      .eq('seller_id', firstSellerId)
+      .eq('is_active', true)
+      .single();
+
+    if (promoError || !promo) {
+      return NextResponse.json({ error: 'Promo code not valid for this store' }, { status: 400 });
+    }
+
+    if (promo.expiry_date && new Date(promo.expiry_date) < new Date()) {
+      return NextResponse.json({ error: 'Promo code has expired' }, { status: 400 });
+    }
+
+    if (promo.max_uses != null && promo.used_count >= promo.max_uses) {
+      return NextResponse.json({ error: 'Promo code has reached maximum uses' }, { status: 400 });
+    }
+
+    appliedPromoCode = promoCode.toUpperCase().trim();
+    promoCodeId = promo.id;
+    promoUsedCount = promo.used_count;
+
+    if (promo.discount_type === 'percent') {
+      promoDiscountPercent = promo.discount_value;
+    } else {
+      promoDiscountFixed = promo.discount_value;
+    }
   }
 
   // Build Stripe line items using DB prices
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map((item) => {
     const mi = menuMap.get(item.itemId)!;
     let unitPrice = mi.price;
+
+    // Apply global coupon (percentage)
     if (discountPercentage > 0) {
       unitPrice = Math.max(0, unitPrice - unitPrice * (discountPercentage / 100));
     }
-    const productName = appliedCouponCode
-      ? `${item.itemName} (${discountPercentage}% off with ${appliedCouponCode})`
-      : item.itemName;
+    // Apply promo code
+    if (promoDiscountPercent > 0) {
+      unitPrice = Math.max(0, unitPrice - unitPrice * (promoDiscountPercent / 100));
+    } else if (promoDiscountFixed > 0 && items.length === 1) {
+      unitPrice = Math.max(0, unitPrice - promoDiscountFixed);
+    }
+
+    const discLabel = appliedCouponCode
+      ? ` (${discountPercentage}% off)`
+      : appliedPromoCode
+      ? promoDiscountPercent > 0 ? ` (${promoDiscountPercent}% off)` : ` (-$${promoDiscountFixed.toFixed(2)})`
+      : '';
+
     return {
       price_data: {
         currency: 'usd',
-        product_data: { name: productName, description: 'Purchase from local business' },
+        product_data: { name: `${item.itemName}${discLabel}`, description: 'Purchase from local business' },
         unit_amount: Math.round(unitPrice * 100),
       },
       quantity: item.quantity,
@@ -135,6 +185,13 @@ export async function POST(request: NextRequest) {
           couponCode: appliedCouponCode,
           discountPercentage: discountPercentage.toString(),
         }),
+        ...(appliedPromoCode && {
+          promoCode: appliedPromoCode,
+          promoCodeId: promoCodeId ?? '',
+          promoUsedCount: promoUsedCount.toString(),
+        }),
+        ...(scheduledAt && { scheduledAt }),
+        ...(groupOrderId && { groupOrderId }),
       },
     });
 

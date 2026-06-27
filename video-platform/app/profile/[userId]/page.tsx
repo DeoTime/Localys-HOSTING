@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Phone, MapPin, FileText } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -423,7 +424,7 @@ function UserProfileContent() {
           <p className="text-[#F5F0E8]/60 mb-6">{error || 'This profile does not exist.'}</p>
           <Link
             href="/feed"
-            className="bg-[#F5A623] text-black font-semibold px-6 py-3 rounded-lg hover:bg-[#F5A623]/90 transition-all duration-200"
+            className="bg-[#f97316] text-black font-semibold px-6 py-3 rounded-lg hover:bg-[#f97316]/90 transition-all duration-200"
           >
             Back to Home
           </Link>
@@ -439,7 +440,7 @@ function UserProfileContent() {
         <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg text-sm font-medium shadow-lg transition-all duration-300 ${
           toastColor === 'sage' ? 'bg-[#6BAF7A] text-white' :
           toastColor === 'red' ? 'bg-[#E05C3A] text-white' :
-          'bg-[#F5A623] text-black'
+          'bg-[#f97316] text-black'
         }`}>
           {toastMessage}
         </div>
@@ -452,8 +453,8 @@ function UserProfileContent() {
             <h3 className="text-lg font-semibold text-[#F5F0E8] mb-4">Report @{profile.username}</h3>
             <div className="space-y-3">
               {REPORT_REASONS.map(r => (
-                <label key={r.value} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${reportReason === r.value ? 'bg-[#F5A623]/20 border border-[#F5A623]/40' : 'bg-[#1A1A18] border border-[#3A3A34] hover:border-[#F5A623]/30'}`}>
-                  <input type="radio" name="reason" value={r.value} checked={reportReason === r.value} onChange={() => setReportReason(r.value)} className="accent-[#F5A623]" />
+                <label key={r.value} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${reportReason === r.value ? 'bg-[#f97316]/20 border border-[#f97316]/40' : 'bg-[#1A1A18] border border-[#3A3A34] hover:border-[#f97316]/30'}`}>
+                  <input type="radio" name="reason" value={r.value} checked={reportReason === r.value} onChange={() => setReportReason(r.value)} className="accent-[#f97316]" />
                   <span className="text-sm text-[#F5F0E8]">{r.label}</span>
                 </label>
               ))}
@@ -463,7 +464,7 @@ function UserProfileContent() {
                 placeholder="Additional details (optional)"
                 rows={3}
                 maxLength={500}
-                className="w-full bg-[#1A1A18] border border-[#3A3A34] rounded-lg px-4 py-3 text-sm text-[#F5F0E8] placeholder-[#9E9A90] focus:outline-none focus:border-[#F5A623]/50 resize-none"
+                className="w-full bg-[#1A1A18] border border-[#3A3A34] rounded-lg px-4 py-3 text-sm text-[#F5F0E8] placeholder-[#9E9A90] focus:outline-none focus:border-[#f97316]/50 resize-none"
               />
             </div>
             <div className="flex gap-3 mt-5">
@@ -506,7 +507,7 @@ function UserProfileContent() {
               <div className="absolute right-0 top-full mt-1 bg-[#242420] border border-[#3A3A34] rounded-lg shadow-xl overflow-hidden min-w-[180px] z-20">
                 <button
                   onClick={() => { setShowMenu(false); setShowReportModal(true); }}
-                  className="w-full text-left px-4 py-3 text-sm text-[#F5F0E8] hover:bg-[#F5A623]/10 transition-colors flex items-center gap-3"
+                  className="w-full text-left px-4 py-3 text-sm text-[#F5F0E8] hover:bg-[#f97316]/10 transition-colors flex items-center gap-3"
                 >
                   <svg className="w-4 h-4 text-[#E05C3A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
@@ -545,14 +546,14 @@ function UserProfileContent() {
           <img
             src={profile.profile_picture_url || 'https://via.placeholder.com/120'}
             alt={profile.full_name}
-            className="w-32 h-32 rounded-full ring-2 ring-[#F5A623]/40 object-cover mb-4"
+            className="w-32 h-32 rounded-full ring-2 ring-[#f97316]/40 object-cover mb-4"
           />
           <h2 className="text-2xl font-bold mb-1">{profile.full_name}</h2>
           <p className="text-[#F5F0E8]/60 mb-1">@{profile.username}</p>
 
           {/* Follower count */}
           <p
-            className={`text-[#9E9A90] text-sm mb-4 ${adminMode ? 'cursor-pointer hover:text-[#F5A623] transition-colors select-none' : ''}`}
+            className={`text-[#9E9A90] text-sm mb-4 ${adminMode ? 'cursor-pointer hover:text-[#f97316] transition-colors select-none' : ''}`}
             onClick={adminMode ? () => {
               setAdminFollowerBoost(b => b + 1);
               setFollowerCount(c => c + 1);
@@ -568,15 +569,15 @@ function UserProfileContent() {
           {/* Business Info */}
           {business && (
             <div className="flex items-center gap-2 flex-wrap justify-center mb-2">
-              <p className="text-[#F5A623] text-sm">{business.business_name}</p>
+              <p className="text-[#f97316] text-sm">{business.business_name}</p>
               {business.business_type && (
-                <span className="bg-[#F5A623]/20 text-[#F5A623] text-xs px-2 py-1 rounded-full capitalize">
+                <span className="bg-[#f97316]/20 text-[#f97316] text-xs px-2 py-1 rounded-full capitalize">
                   {business.business_type === 'hybrid' ? 'Pickup & Delivery' : `${business.business_type}`}
                 </span>
               )}
               <button
                 onClick={() => setShowBusinessHours(!showBusinessHours)}
-                className="bg-[#F5A623]/20 text-[#F5A623] text-xs px-2 py-1 rounded-full hover:bg-[#F5A623]/30 transition-colors"
+                className="bg-[#f97316]/20 text-[#f97316] text-xs px-2 py-1 rounded-full hover:bg-[#f97316]/30 transition-colors"
               >
                 {showBusinessHours ? 'Hide Hours' : 'Show Hours'}
               </button>
@@ -598,8 +599,8 @@ function UserProfileContent() {
               disabled={followLoading}
               className={`font-semibold px-5 py-2 rounded-lg transition-all duration-200 disabled:opacity-50 flex items-center gap-2 text-sm ${
                 isFollowing
-                  ? 'bg-[#F5A623] text-black hover:bg-[#F5A623]/90'
-                  : 'border-2 border-[#F5A623] text-[#F5A623] hover:bg-[#F5A623]/10'
+                  ? 'bg-[#f97316] text-black hover:bg-[#f97316]/90'
+                  : 'border-2 border-[#f97316] text-[#f97316] hover:bg-[#f97316]/10'
               }`}
             >
               {isFollowing ? (
@@ -623,7 +624,7 @@ function UserProfileContent() {
             <button
               onClick={handleMessageClick}
               disabled={messagingLoading}
-              className="bg-[#F5A623] text-black font-semibold px-5 py-2 rounded-lg hover:bg-[#F5A623]/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+              className="bg-[#f97316] text-black font-semibold px-5 py-2 rounded-lg hover:bg-[#f97316]/90 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
             >
               {messagingLoading ? (
                 <>
@@ -675,6 +676,30 @@ function UserProfileContent() {
                 <p className="text-[#F5F0E8]/60 text-center py-4">Business hours not set</p>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Business Contact & Info */}
+        {business && (business.phone || business.address || business.misc_info) && (
+          <div className="mt-6 bg-[#242420] border border-[#3A3A34] rounded-lg p-5 space-y-3">
+            {business.phone && (
+              <div className="flex items-center gap-3">
+                <Phone className="h-4 w-4 text-[#f97316] shrink-0" />
+                <a href={`tel:${business.phone}`} className="text-sm text-[#F5F0E8]/80 hover:text-[#f97316] transition-colors">{business.phone}</a>
+              </div>
+            )}
+            {business.address && (
+              <div className="flex items-start gap-3">
+                <MapPin className="h-4 w-4 text-[#f97316] shrink-0 mt-0.5" />
+                <p className="text-sm text-[#F5F0E8]/80">{business.address}</p>
+              </div>
+            )}
+            {business.misc_info && (
+              <div className="flex items-start gap-3">
+                <FileText className="h-4 w-4 text-[#f97316] shrink-0 mt-0.5" />
+                <p className="text-sm text-[#F5F0E8]/70 whitespace-pre-line">{business.misc_info}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -730,7 +755,7 @@ function UserProfileContent() {
             <span className={`text-xs ${pathname === '/feed' ? 'text-[#F5F0E8]' : 'text-[#F5F0E8]/60'}`}>Discover</span>
           </Link>
           <Link href="/upload" className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${pathname === '/upload' ? 'bg-[#F5A623]' : 'bg-[#F5A623]/20'}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${pathname === '/upload' ? 'bg-[#f97316]' : 'bg-[#f97316]/20'}`}>
               <svg className={`w-6 h-6 ${pathname === '/upload' ? 'text-black' : 'text-[#F5F0E8]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
@@ -753,7 +778,7 @@ function UserProfileContent() {
 
       {/* Admin Mode Badge */}
       {adminMode && (
-        <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#F5A623]/90 px-2.5 py-1 text-[11px] font-semibold text-[#1A1A18] backdrop-blur-sm">
+        <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#f97316]/90 px-2.5 py-1 text-[11px] font-semibold text-[#1A1A18] backdrop-blur-sm">
           Admin
         </div>
       )}
