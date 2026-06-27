@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { MapPin, ChevronDown, RotateCcw, User, ShoppingCart, Settings, LogOut, Check } from 'lucide-react';
+import { MapPin, ChevronDown, RotateCcw, User, ShoppingCart, Settings, LogOut, Check, Building2 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import { SearchDropdown } from './SearchDropdown';
 import { useCart } from '@/contexts/CartContext';
@@ -138,6 +138,9 @@ export function TopHeader() {
             <div className="absolute right-0 top-full mt-2 w-48 rounded-2xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-900">
               <Link href="/profile" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800">
                 <User className="h-4 w-4" /> Profile
+              </Link>
+              <Link href="/dashboard" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800">
+                <Building2 className="h-4 w-4" /> Business Manager
               </Link>
               <Link href="/profile?tab=settings" onClick={() => setOpenMenu(null)} className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-black transition hover:bg-gray-50 dark:text-white dark:hover:bg-gray-800">
                 <Settings className="h-4 w-4" /> Settings

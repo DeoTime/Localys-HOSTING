@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { getShopCoupons, Coupon } from '@/lib/supabase/coupons';
 import Link from 'next/link';
+import { ChevronLeft, Trash2, ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, updateSpecialRequests, clearCart } = useCart();
@@ -15,63 +16,60 @@ export default function CartPage() {
   const [loadingCoupons, setLoadingCoupons] = useState(false);
 
   const total = items.reduce((sum, item) => sum + item.itemPrice * item.quantity, 0);
+  const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
-  // Fetch coupons from the sellers of items in the cart
   useEffect(() => {
-    if (items.length === 0) {
-      setCoupons([]);
-      return;
-    }
-
+    if (items.length === 0) { setCoupons([]); return; }
     const sellerIds = [...new Set(items.map(i => i.sellerId))];
-
     const fetchCoupons = async () => {
       setLoadingCoupons(true);
       const allCoupons: Coupon[] = [];
       for (const sellerId of sellerIds) {
         const { data } = await getShopCoupons(sellerId);
-        if (data) {
-          allCoupons.push(...data);
-        }
+        if (data) allCoupons.push(...data);
       }
       setCoupons(allCoupons);
       setLoadingCoupons(false);
     };
-
     fetchCoupons();
   }, [items]);
 
   const handleCheckout = () => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
+    if (!user) { router.push('/login'); return; }
     if (items.length === 0) return;
     router.push('/checkout?source=cart');
   };
 
   return (
-    <div className="min-h-screen bg-[#1A1A18] text-[#F5F0E8] pb-24">
-      <div className="w-full px-4 lg:px-12 py-4">
+    <div className="min-h-screen bg-white text-gray-900 pb-24">
+      <div className="w-full max-w-2xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/feed" className="text-[#9E9A90] hover:text-[#F5F0E8] mb-4 inline-flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623] rounded-lg">
-            ← Back
+          <Link
+            href="/feed"
+            className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-900 transition-colors text-sm mb-4"
+          >
+            <ChevronLeft className="w-4 h-4" /> Back
           </Link>
-          <h1 className="text-2xl font-bold text-[#F5F0E8]">Shopping Cart</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Shopping Cart</h1>
           {items.length > 0 && (
-            <p className="text-[#9E9A90] text-sm mt-1">{items.reduce((s, i) => s + i.quantity, 0)} item{items.reduce((s, i) => s + i.quantity, 0) !== 1 ? 's' : ''}</p>
+            <p className="text-gray-500 text-sm mt-0.5">
+              {itemCount} item{itemCount !== 1 ? 's' : ''}
+            </p>
           )}
         </div>
 
         {items.length === 0 ? (
-          <div className="text-center py-16">
-            <svg className="w-16 h-16 text-[#6BAF7A]/40 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
-            </svg>
-            <p className="text-[#9E9A90] mb-2 text-lg font-semibold">Your cart is empty</p>
-            <p className="text-[#9E9A90]/70 text-sm mb-6">Browse local businesses and add items</p>
-            <Link href="/feed" className="inline-block bg-[#F5A623] hover:bg-[#F5A623]/90 text-black font-semibold rounded-xl px-6 py-3 transition-colors active:scale-95">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <ShoppingCart className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-lg font-semibold text-gray-900 mb-1">Your cart is empty</p>
+            <p className="text-gray-500 text-sm mb-6">Browse local businesses and add items</p>
+            <Link
+              href="/feed"
+              className="inline-block bg-[#f97316] hover:opacity-90 text-white font-semibold rounded-xl px-6 py-3 transition-opacity active:scale-95"
+            >
               Browse Services
             </Link>
           </div>
@@ -82,56 +80,56 @@ export default function CartPage() {
               {items.map((item) => (
                 <div
                   key={item.itemId}
-                  className="list-item-stagger bg-[#242420] border border-[#3A3A34] rounded-2xl p-4 hover:border-[#F5A623]/30 transition-all duration-200"
+                  className="bg-white border border-gray-200 rounded-2xl p-4 hover:border-gray-300 transition-colors"
                 >
                   <div className="flex gap-3">
                     {item.itemImage && (
                       <img
                         src={item.itemImage}
                         alt={item.itemName}
-                        className="w-16 h-16 rounded-xl object-cover border border-[#3A3A34] flex-shrink-0"
+                        className="w-16 h-16 rounded-xl object-cover border border-gray-100 flex-shrink-0"
                       />
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-[#F5F0E8] font-semibold truncate">{item.itemName}</h3>
-                      <p className="text-[#F5A623] font-bold">${(item.itemPrice * item.quantity).toFixed(2)}</p>
+                      <h3 className="text-gray-900 font-semibold truncate">{item.itemName}</h3>
+                      <p className="text-[#f97316] font-bold">
+                        ${(item.itemPrice * item.quantity).toFixed(2)}
+                      </p>
                     </div>
                     <button
                       onClick={() => removeFromCart(item.itemId)}
-                      className="text-[#E05C3A] hover:text-[#E05C3A]/80 p-2 self-start rounded-lg hover:bg-[#E05C3A]/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                      className="text-gray-400 hover:text-red-500 p-2 self-start rounded-lg hover:bg-red-50 transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center"
                       aria-label="Remove item"
                     >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* Quantity controls */}
                   <div className="flex items-center gap-3 mt-3">
-                    <span className="text-[#9E9A90] text-sm">Qty:</span>
-                    <div className="flex items-center gap-0 bg-[#1A1A18] border border-[#3A3A34] rounded-xl overflow-hidden">
+                    <span className="text-gray-500 text-sm">Qty:</span>
+                    <div className="flex items-center bg-gray-100 rounded-xl overflow-hidden">
                       <button
                         onClick={() => updateQuantity(item.itemId, item.quantity - 1)}
                         disabled={item.quantity <= 1}
-                        className="px-3 py-1.5 text-[#F5F0E8] hover:bg-[#2E2E28] disabled:text-[#9E9A90]/40 disabled:hover:bg-transparent transition-colors min-w-[44px] min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                        className="px-3 py-1.5 text-gray-900 hover:bg-gray-200 disabled:text-gray-300 disabled:hover:bg-transparent transition-colors min-w-[40px] min-h-[40px]"
                         aria-label="Decrease quantity"
                       >
                         &minus;
                       </button>
-                      <span className="px-3 py-1.5 text-[#F5F0E8] font-medium min-w-[2rem] text-center border-x border-[#3A3A34]">
+                      <span className="px-3 py-1.5 text-gray-900 font-medium min-w-[2rem] text-center border-x border-gray-200">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.itemId, item.quantity + 1)}
-                        className="px-3 py-1.5 text-[#F5F0E8] hover:bg-[#2E2E28] transition-colors min-w-[44px] min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                        className="px-3 py-1.5 text-gray-900 hover:bg-gray-200 transition-colors min-w-[40px] min-h-[40px]"
                         aria-label="Increase quantity"
                       >
                         +
                       </button>
                     </div>
                     {item.quantity > 1 && (
-                      <span className="text-[#9E9A90] text-xs">${item.itemPrice.toFixed(2)} each</span>
+                      <span className="text-gray-400 text-xs">${item.itemPrice.toFixed(2)} each</span>
                     )}
                   </div>
 
@@ -142,7 +140,7 @@ export default function CartPage() {
                       placeholder="Special requests (e.g. no onions, extra sauce...)"
                       value={item.specialRequests || ''}
                       onChange={(e) => updateSpecialRequests(item.itemId, e.target.value)}
-                      className="w-full bg-[#1A1A18] border border-[#3A3A34] rounded-xl px-3 py-2 text-sm text-[#F5F0E8] placeholder-[#9E9A90]/50 focus:outline-none focus:border-[#F5A623] focus:ring-1 focus:ring-[#F5A623]/30 transition-colors"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 transition-colors"
                       aria-label="Special requests"
                     />
                   </div>
@@ -152,20 +150,20 @@ export default function CartPage() {
 
             {/* Available Coupons */}
             {!loadingCoupons && coupons.length > 0 && (
-              <div className="bg-[#6BAF7A]/10 border border-[#6BAF7A]/30 rounded-2xl p-4 mb-6">
-                <h2 className="text-lg font-semibold mb-3 text-[#F5F0E8]">Available Coupons</h2>
-                <p className="text-[#9E9A90] text-xs mb-3">Coupons can be applied at checkout</p>
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-6">
+                <h2 className="text-base font-semibold mb-1 text-gray-900">Available Coupons</h2>
+                <p className="text-gray-500 text-xs mb-3">Apply at checkout</p>
                 <div className="space-y-2">
                   {coupons.map((coupon) => (
                     <div
                       key={coupon.id}
-                      className="flex items-center justify-between p-3 rounded-xl border border-[#6BAF7A]/30 bg-[#6BAF7A]/5"
+                      className="flex items-center justify-between p-3 rounded-xl border border-green-200 bg-white"
                     >
                       <div>
-                        <p className="font-semibold text-[#6BAF7A]">{coupon.code}</p>
-                        <p className="text-[#9E9A90] text-sm">{coupon.discount_percentage}% off</p>
+                        <p className="font-semibold text-green-700">{coupon.code}</p>
+                        <p className="text-gray-500 text-sm">{coupon.discount_percentage}% off</p>
                       </div>
-                      <span className="text-[#6BAF7A]/60 text-xs border border-[#6BAF7A]/30 px-2 py-1 rounded-lg">
+                      <span className="text-green-600 text-xs border border-green-200 px-2 py-1 rounded-lg">
                         Apply at checkout
                       </span>
                     </div>
@@ -174,16 +172,16 @@ export default function CartPage() {
               </div>
             )}
             {loadingCoupons && (
-              <div className="bg-[#242420] border border-[#3A3A34] rounded-2xl p-4 mb-6 text-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#F5A623] mx-auto"></div>
+              <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-6 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#f97316]" />
               </div>
             )}
 
-            {/* Summary */}
-            <div className="bg-[#242420] border border-[#3A3A34] rounded-2xl p-4 mb-4">
+            {/* Order summary */}
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-4">
               <div className="flex justify-between items-center">
-                <span className="text-[#9E9A90]">Total</span>
-                <span className="text-xl font-bold text-[#F5A623]">${total.toFixed(2)}</span>
+                <span className="text-gray-600 font-medium">Subtotal</span>
+                <span className="text-xl font-bold text-gray-900">${total.toFixed(2)}</span>
               </div>
             </div>
 
@@ -191,13 +189,13 @@ export default function CartPage() {
             <div className="space-y-3">
               <button
                 onClick={handleCheckout}
-                className="w-full bg-[#F5A623] hover:bg-[#F5A623]/90 text-black font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] shadow-lg shadow-[#F5A623]/20 min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623] focus-visible:ring-offset-2 focus-visible:ring-offset-[#1A1A18]"
+                className="w-full bg-[#f97316] hover:opacity-90 text-white font-semibold py-3.5 rounded-xl transition-opacity active:scale-[0.98] shadow-sm min-h-[48px]"
               >
                 Proceed to Checkout
               </button>
               <button
                 onClick={clearCart}
-                className="w-full bg-[#242420] hover:bg-[#2E2E28] text-[#9E9A90] hover:text-[#F5F0E8] font-semibold py-3 rounded-xl transition-all duration-200 border border-[#3A3A34] min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                className="w-full bg-white hover:bg-gray-50 text-gray-600 hover:text-gray-900 font-medium py-3 rounded-xl transition-colors border border-gray-200 min-h-[44px]"
               >
                 Clear Cart
               </button>
