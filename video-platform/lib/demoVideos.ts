@@ -89,7 +89,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
 /** Cards for the "Featured in Videos" section — every linked video gets a card. */
 export const FEATURED_VIDEOS: DemoVideo[] = DEMO_VIDEOS;
 
-interface ManifestStore { rating?: number; banner?: string | null }
+interface ManifestStore { rating?: number; banner?: string | null; reviewCount?: number }
 const MENUS = storeMenus as Record<string, ManifestStore>;
 
 /** Discover-feed shape: matches the `Video` interface used in components/HomeContent. */
@@ -105,6 +105,7 @@ export interface FeedVideo {
     business_name: string;
     category: string;
     average_rating?: number;
+    total_reviews?: number;
     profile_picture_url?: string;
     latitude?: number;
     longitude?: number;
@@ -148,6 +149,7 @@ export function buildFeedVideos(): FeedVideo[] {
       business_name: v.businessName,
       category: v.category,
       average_rating: MENUS[v.manifestKey]?.rating ?? 4.8,
+      total_reviews: MENUS[v.manifestKey]?.reviewCount ?? undefined,
       profile_picture_url: MENUS[v.manifestKey]?.banner ?? undefined,
       ...DEMO_COORDS[v.businessSlug],
     },

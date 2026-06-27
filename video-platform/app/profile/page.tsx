@@ -24,8 +24,15 @@ import { getUserCoins } from '@/lib/supabase/profiles';
 import { getUserBookmarkedVideos } from '@/lib/supabase/videos';
 import { getSavedItems, getLikedItemIds, subscribeEngagement, type SavedItem } from '@/lib/clientEngagement';
 import { isDemoId } from '@/lib/utils/ids';
-import { DEMO_VIDEOS } from '@/lib/demoVideos';
-import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award } from 'lucide-react';
+import { DEMO_VIDEOS, buildFeedVideos } from '@/lib/demoVideos';
+import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award, Play } from 'lucide-react';
+
+// Demo feed (videos for slug/local content) keyed for quick enrichment of the
+// profile Saved/Liked cards — same source the Home "Featured in Videos" cards use.
+const DEMO_FEED = buildFeedVideos();
+const DEMO_FEED_BY_ID = new Map(DEMO_FEED.map((f) => [f.id, f]));
+const DEMO_FEED_BY_SLUG = new Map<string, (typeof DEMO_FEED)[number]>();
+DEMO_FEED.forEach((f) => { if (!DEMO_FEED_BY_SLUG.has(f.business_id)) DEMO_FEED_BY_SLUG.set(f.business_id, f); });
 
 // ── Badge system ──────────────────────────────────────────────────────────────
 interface BadgeStats {
@@ -111,40 +118,143 @@ export default function ProfilePage() {
 
 // ── Saved / Liked section with toggle ─────────────────────────────────────────
 
-interface LikedBusiness {
+/** Unified card shape: a video cover frame + business info, like Home featured cards. */
+interface MediaCardData {
   id: string;
-  name: string;
-  image?: string;
+  videoUrl?: string;   // cover frame source (real video_url or local demo mp4)
+  image?: string;      // banner/logo fallback
+  title: string;       // business name
+  subtitle?: string;   // caption / category
+  rating?: number;
+  reviews?: number;
+}
+
+interface LikedBusiness extends MediaCardData {
   slug: string;
 }
 
 type BookmarkedVideo = {
   id: string;
+  video_url?: string | null;
   caption?: string | null;
-  businesses?: { business_name?: string | null; profile_picture_url?: string | null } | null;
+  businesses?: {
+    business_name?: string | null;
+    profile_picture_url?: string | null;
+    average_rating?: number | null;
+    total_reviews?: number | null;
+  } | null;
 };
+
+/** Card matching the Home "Featured in Videos" look: cover frame, name, caption, rating. */
+function MediaCard({
+  data, ctaLabel, onClick,
+}: { data: MediaCardData; ctaLabel: string; onClick: () => void }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [coverFailed, setCoverFailed] = useState(false);
+  const showVideo = !!data.videoUrl && !coverFailed;
+
+  const play = () => { const el = videoRef.current; if (el) { el.currentTime = 0; void el.play().catch(() => {}); } };
+  const stop = () => { const el = videoRef.current; if (el) { el.pause(); el.currentTime = 0; } };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={showVideo ? play : undefined}
+      onMouseLeave={showVideo ? stop : undefined}
+      onFocus={showVideo ? play : undefined}
+      onBlur={showVideo ? stop : undefined}
+      className="group relative block aspect-[3/4] overflow-hidden rounded-xl border border-gray-200 bg-black text-left transition-transform active:scale-95 hover:border-[#f97316]/40 focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+      aria-label={`${ctaLabel}: ${data.title}`}
+    >
+      {/* Banner/logo as the base layer (also the fallback if no/failed video cover) */}
+      {data.image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={data.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <span className="absolute inset-0 grid place-items-center bg-gray-900">
+          <Heart className="h-6 w-6 text-[#f97316]" />
+        </span>
+      )}
+      {/* Video cover frame on top (first frame via preload=metadata); hides on error */}
+      {showVideo && (
+        <video
+          ref={videoRef}
+          src={data.videoUrl}
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={() => setCoverFailed(true)}
+        />
+      )}
+      <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+      <span className="pointer-events-none absolute left-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-[#f97316] text-white shadow">
+        <Play className="h-3.5 w-3.5 fill-current" />
+      </span>
+      <span className="pointer-events-none absolute bottom-0 left-0 right-0 p-2 text-white">
+        <span className="block truncate text-xs font-semibold">{data.title}</span>
+        {data.subtitle ? <span className="block truncate text-[10px] text-white/85">{data.subtitle}</span> : null}
+        {(data.rating != null || data.reviews != null) && (
+          <span className="mt-0.5 flex items-center gap-1 text-[10px] text-white/90">
+            {data.rating != null && (
+              <>
+                <Star className="h-3 w-3 fill-[#f97316] text-[#f97316]" />
+                {data.rating.toFixed(1)}
+              </>
+            )}
+            {data.reviews != null && <span>· {data.reviews} reviews</span>}
+          </span>
+        )}
+        <span className="mt-0.5 block text-[10px] font-medium text-[#f97316]">{ctaLabel}</span>
+      </span>
+    </button>
+  );
+}
 
 function SavedLikedSection({ userId }: { userId: string }) {
   const router = useRouter();
   const [tab, setTab] = useState<'saved' | 'liked'>('saved');
 
   // — Saved tab state —
-  const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
+  const [savedItems, setSavedItems] = useState<MediaCardData[]>([]);
   const [savedLoading, setSavedLoading] = useState(true);
 
   // — Liked tab state —
   const [likedBiz, setLikedBiz] = useState<LikedBusiness[]>([]);
   const [likedLoading, setLikedLoading] = useState(true);
 
-  const buildSavedList = (realVideos: BookmarkedVideo[]): SavedItem[] => {
-    const real: SavedItem[] = realVideos.map((v) => ({
+  // Map a saved/bookmarked entry to a full media card (cover + caption + rating).
+  const buildSavedList = (realVideos: BookmarkedVideo[]): MediaCardData[] => {
+    const real: MediaCardData[] = realVideos.map((v) => ({
       id: v.id,
-      type: 'video',
-      name: v.businesses?.business_name || v.caption || 'Saved video',
+      videoUrl: v.video_url || undefined,
       image: v.businesses?.profile_picture_url || undefined,
+      title: v.businesses?.business_name || v.caption || 'Saved video',
+      subtitle: v.caption || undefined,
+      rating: v.businesses?.average_rating ?? undefined,
+      reviews: v.businesses?.total_reviews ?? undefined,
     }));
     const seen = new Set(real.map((r) => r.id));
-    const demo = getSavedItems().filter((d) => !seen.has(d.id));
+    const demo: MediaCardData[] = getSavedItems()
+      .filter((d) => !seen.has(d.id))
+      .map((d) => {
+        const feed = DEMO_FEED_BY_ID.get(d.id); // local/demo video → reuse feed data
+        if (feed) {
+          return {
+            id: d.id,
+            videoUrl: feed.video_url,
+            image: feed.businesses.profile_picture_url,
+            title: feed.businesses.business_name,
+            subtitle: feed.caption,
+            rating: feed.businesses.average_rating,
+            reviews: feed.businesses.total_reviews,
+          };
+        }
+        // Non-video saved item (e.g. a business) — show what we have, never blank.
+        return { id: d.id, image: d.image, title: d.name };
+      });
     return [...real, ...demo];
   };
 
@@ -202,14 +312,17 @@ function SavedLikedSection({ userId }: { userId: string }) {
         (bizRows || []).forEach((b: any) => {
           results.push({
             id: b.id,
-            name: b.business_name || 'Business',
+            title: b.business_name || 'Business',
             image: b.profile_picture_url || undefined,
+            rating: b.average_rating ?? undefined,
+            reviews: b.total_reviews ?? undefined,
             slug: profileMap[b.owner_id] || b.id,
           });
         });
       }
 
-      // Demo liked businesses from localStorage
+      // Demo liked businesses from localStorage — enrich with that store's video
+      // cover + rating from the same demo feed the Home featured cards use.
       const demoLikedIds = getLikedItemIds().filter((id) => isDemoId(id));
       const demoBizSlugs = new Set(DEMO_VIDEOS.map((v) => v.businessSlug));
       const seenSlugs = new Set<string>();
@@ -218,10 +331,15 @@ function SavedLikedSection({ userId }: { userId: string }) {
         seenSlugs.add(id);
         const dv = DEMO_VIDEOS.find((v) => v.businessSlug === id);
         if (dv) {
+          const feed = DEMO_FEED_BY_SLUG.get(dv.businessSlug);
           results.push({
             id,
-            name: dv.businessName,
-            image: undefined,
+            title: dv.businessName,
+            videoUrl: feed?.video_url,
+            image: feed?.businesses.profile_picture_url,
+            subtitle: feed?.caption,
+            rating: feed?.businesses.average_rating,
+            reviews: feed?.businesses.total_reviews,
             slug: dv.businessSlug,
           });
         }
@@ -272,25 +390,12 @@ function SavedLikedSection({ userId }: { userId: string }) {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {savedItems.map((item) => (
-                <button
+                <MediaCard
                   key={item.id}
-                  type="button"
+                  data={item}
+                  ctaLabel="Watch video"
                   onClick={() => router.push(`/feed?videoId=${encodeURIComponent(item.id)}`)}
-                  className="rounded-xl border border-gray-200 overflow-hidden bg-white text-left transition-transform active:scale-95 hover:border-[#f97316]/40"
-                >
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {item.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Heart className="h-6 w-6 text-[#f97316]" />
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
-                    <p className="text-[10px] text-[#f97316] font-medium">Watch video</p>
-                  </div>
-                </button>
+                />
               ))}
             </div>
           )
@@ -302,25 +407,12 @@ function SavedLikedSection({ userId }: { userId: string }) {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {likedBiz.map((biz) => (
-                <button
+                <MediaCard
                   key={biz.id}
-                  type="button"
+                  data={biz}
+                  ctaLabel="View store"
                   onClick={() => router.push(`/profile/${biz.slug}`)}
-                  className="rounded-xl border border-gray-200 overflow-hidden bg-white text-left transition-transform active:scale-95 hover:border-[#f97316]/40"
-                >
-                  <div className="aspect-square bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {biz.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={biz.image} alt={biz.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <Store className="h-6 w-6 text-[#f97316]" />
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <p className="text-xs font-semibold text-gray-900 truncate">{biz.name}</p>
-                    <p className="text-[10px] text-[#f97316] font-medium">View store</p>
-                  </div>
-                </button>
+                />
               ))}
             </div>
           )
