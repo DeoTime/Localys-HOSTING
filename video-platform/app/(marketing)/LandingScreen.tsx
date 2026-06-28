@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Twitter, Youtube, Facebook, Instagram, ChevronDown, Globe } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
+import { Footer } from "@/components/layout/Footer";
 import { Logo } from "@/components/Logo";
 
 const slides = [
@@ -331,47 +332,7 @@ export default function LandingScreen() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="mt-24 border-t border-border">
-        <div className="mx-auto max-w-6xl px-6 py-12">
-          <div className="flex flex-col gap-10 md:flex-row md:justify-between">
-            <div className="max-w-xs">
-              <Logo href="/" className="text-foreground" iconClassName="h-6 w-6" textClassName="text-xl" />
-              <p className="mt-3 text-sm text-muted-foreground">Discover and support the small local businesses around you.</p>
-              <button className="mt-5 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition hover:text-foreground">
-                <Globe className="h-4 w-4" aria-hidden /> Canada | English
-              </button>
-            </div>
-            <div className="grid grid-cols-2 gap-10">
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">Explore</h3>
-                <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-                  <li><Link href="/about" className="transition hover:text-foreground">About</Link></li>
-                  <li><Link href="/onboarding" className="transition hover:text-foreground">For Businesses</Link></li>
-                  <li><Link href="/contact" className="transition hover:text-foreground">Contact</Link></li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">Legal</h3>
-                <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-                  <li><Link href="/terms" className="transition hover:text-foreground">Terms of Service</Link></li>
-                  <li><Link href="/privacy" className="transition hover:text-foreground">Privacy Policy</Link></li>
-                  <li><Link href="/sitemap" className="transition hover:text-foreground">Sitemap</Link></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-border pt-8 sm:flex-row">
-            <p className="text-xs text-muted-foreground">{new Date().getFullYear()} Localy. All rights reserved.</p>
-            <div className="flex gap-6 text-muted-foreground">
-              <a href="#" aria-label="Twitter" className="transition hover:text-foreground"><Twitter size={18} /></a>
-              <a href="#" aria-label="YouTube" className="transition hover:text-foreground"><Youtube size={18} /></a>
-              <a href="#" aria-label="Facebook" className="transition hover:text-foreground"><Facebook size={18} /></a>
-              <a href="#" aria-label="Instagram" className="transition hover:text-foreground"><Instagram size={18} /></a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <Footer className="mt-24" />
     </div>
   );
 }
