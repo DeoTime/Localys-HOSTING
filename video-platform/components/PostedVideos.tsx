@@ -3,17 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import dynamic from 'next/dynamic';
-const PromotionModal = dynamic(() => import('@/components/PromotionModal').then(mod => mod.PromotionModal), { ssr: false });
-import { getUserCoins } from '@/lib/supabase/profiles';
 
 interface PostedVideo {
   id: string;
   video_url: string;
   caption?: string;
   created_at: string;
-  boost_value?: number;
-  coins_spent_on_promotion?: number;
   likes: number;
   comments: number;
   views: number;
@@ -29,14 +24,9 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
   const [videos, setVideos] = useState<PostedVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingVideoId, setDeletingVideoId] = useState<string | null>(null);
-  const [promotingVideoId, setPromotingVideoId] = useState<string | null>(null);
-  const [userCoins, setUserCoins] = useState(0);
 
   useEffect(() => {
     loadPostedVideos();
-    if (isOwnProfile) {
-      getUserCoins(userId).then(({ data }) => setUserCoins(data ?? 0));
-    }
   }, [userId, isOwnProfile]);
 
   const loadPostedVideos = async () => {
@@ -44,7 +34,7 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
       setLoading(true);
       const { data: userVideos, error: videosError } = await supabase
         .from('videos')
-        .select('id, video_url, caption, created_at, boost_value, coins_spent_on_promotion, view_count')
+        .select('id, video_url, caption, created_at, view_count')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -81,7 +71,10 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
       });
 
       setVideos(userVideos.map((video: any) => ({
-        ...video,
+        id: video.id,
+        video_url: video.video_url,
+        caption: video.caption,
+        created_at: video.created_at,
         likes: likesMap[video.id] || 0,
         comments: commentsMap[video.id] || 0,
         views: video.view_count || 0,
@@ -120,13 +113,31 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
   if (videos.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-400">No videos posted yet</p>
+        <p className="text-gray-400 mb-4">No videos posted yet</p>
+        {isOwnProfile && (
+          <button
+            onClick={() => router.push('/upload')}
+            className="bg-[#f97316] hover:opacity-90 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-opacity"
+          >
+            + Post your first video
+          </button>
+        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      {isOwnProfile && (
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={() => router.push('/upload')}
+            className="bg-[#f97316] hover:opacity-90 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-opacity"
+          >
+            + Post a Video
+          </button>
+        </div>
+      )}
       {videos.map((video) => (
         <div
           key={video.id}
@@ -155,24 +166,11 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
                 <span>{video.likes} likes</span>
                 <span>{video.comments} comments</span>
               </div>
-
-              {/* Boosted state: borderless black label */}
-              {video.boost_value && video.boost_value > 1 && (
-                <p className="mt-1.5 text-xs font-semibold text-gray-900 dark:text-white">
-                  Boosted {video.boost_value.toFixed(1)}x
-                </p>
-              )}
             </div>
 
             {/* Action buttons */}
             {isOwnProfile && (
               <div className="flex flex-col justify-center gap-2 ml-1 shrink-0">
-                <button
-                  onClick={() => setPromotingVideoId(video.id)}
-                  className="bg-[#f97316] hover:opacity-90 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-opacity"
-                >
-                  Boost
-                </button>
                 <button
                   onClick={() => deleteVideo(video.id)}
                   disabled={deletingVideoId === video.id}
@@ -186,24 +184,6 @@ export function PostedVideos({ userId, isOwnProfile = true }: PostedVideosProps)
         </div>
       ))}
 
-      {isOwnProfile && (
-        <PromotionModal
-          isOpen={promotingVideoId !== null}
-          onClose={() => setPromotingVideoId(null)}
-          videoId={promotingVideoId || ''}
-          userCoins={userCoins}
-          onSuccess={(newBoost, coinsSpent, remainingCoins) => {
-            setUserCoins(remainingCoins);
-            setVideos(prev =>
-              prev.map(v =>
-                v.id === promotingVideoId
-                  ? { ...v, boost_value: newBoost, coins_spent_on_promotion: (v.coins_spent_on_promotion || 0) + coinsSpent }
-                  : v
-              )
-            );
-          }}
-        />
-      )}
     </div>
   );
 }

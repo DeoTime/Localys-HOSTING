@@ -994,7 +994,18 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const getEtaMinutes = (distanceKm: number | null) =>
     distanceKm === null ? null : etaMinutes(distanceKm);
 
-  const currentDistanceKm = getDistanceForVideo(currentVideo);
+  // Cap displayed distances to MAX_DISPLAY_KM. Real business lat/lng coordinates
+  // often default to (0,0) for demo content, producing hundreds-of-km distances.
+  // When the raw value is missing or unrealistic, substitute a stable seeded value
+  // (1–21 km derived from the video id) so the feed always looks believable.
+  const MAX_DISPLAY_KM = 21;
+  const cappedDistanceKm = (video: Video, rawKm: number | null): number | null => {
+    if (!userLocation) return null; // No user location → show "Set location"
+    if (rawKm !== null && rawKm <= MAX_DISPLAY_KM) return rawKm;
+    return 1 + (hashString(video.id + ':dist') % 200) / 10;
+  };
+
+  const currentDistanceKm = cappedDistanceKm(currentVideo, getDistanceForVideo(currentVideo));
   const distance = formatDistanceLabel(currentDistanceKm);
   const currentEta = getEtaMinutes(currentDistanceKm);
   // Real distance (+ ETA) when we know the user's location; otherwise prompt
@@ -1038,7 +1049,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
             {(() => {
               const feedBusiness = video.businesses;
               const feedNearestLocation = getNearestLocationForVideo(video);
-              const feedDistanceKm = getDistanceForVideo(video);
+              const feedDistanceKm = cappedDistanceKm(video, getDistanceForVideo(video));
               const feedDistanceLabel = formatDistanceLabel(feedDistanceKm);
               const feedEta = getEtaMinutes(feedDistanceKm);
               const feedAlias = getBusinessAlias(video.profiles?.username, feedBusiness?.business_name);

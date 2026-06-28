@@ -170,6 +170,39 @@ export function addDemoComment(videoId: string, comment: Comment): void {
   persistAndEmit();
 }
 
+// ----- Local order history -----------------------------------------------------------
+
+export interface LocalOrder {
+  id: string;
+  confirmationNumber: string;
+  itemName: string;
+  price: number;
+  purchased_at: string;
+}
+
+const LOCAL_ORDERS_KEY = 'localys:local-orders';
+
+export function saveLocalOrder(order: LocalOrder): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const existing = getLocalOrders();
+    const deduped = existing.filter((o) => o.id !== order.id);
+    window.localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify([order, ...deduped]));
+  } catch {
+    // ignore quota errors
+  }
+}
+
+export function getLocalOrders(): LocalOrder[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = window.localStorage.getItem(LOCAL_ORDERS_KEY);
+    return raw ? (JSON.parse(raw) as LocalOrder[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 // ----- Ratings -----------------------------------------------------------------------
 
 export function getDemoRating(videoId: string): number | undefined {

@@ -5,6 +5,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { OrderQRCode } from '@/components/QRCode';
 import { useAuth } from '@/contexts/AuthContext';
+import { saveLocalOrder } from '@/lib/clientEngagement';
 
 interface OrderInfo {
   orderId: string;
@@ -15,13 +16,11 @@ interface OrderInfo {
 
 export default function PurchaseSuccessPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-transparent text-white flex items-center justify-center p-4">
-          <p className="text-white/70">Loading purchase details...</p>
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]" />
+      </div>
+    }>
       <PurchaseSuccessContent />
     </Suspense>
   );
@@ -36,10 +35,7 @@ function PurchaseSuccessContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!sessionId) {
-      setLoading(false);
-      return;
-    }
+    if (!sessionId) { setLoading(false); return; }
 
     const verifyPurchase = async () => {
       try {
@@ -47,25 +43,38 @@ function PurchaseSuccessContent() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
           },
           body: JSON.stringify({ sessionId }),
         });
 
         if (!response.ok) {
-          console.error('Verify item purchase failed:', response.status);
+          console.error('[purchase-success] Verify failed:', response.status);
           return;
         }
 
         const data = await response.json();
-        if (data.confirmationNumber) {
-          setConfirmationNumber(data.confirmationNumber);
-        }
-        if (data.orders && data.orders.length > 0) {
+        if (data.confirmationNumber) setConfirmationNumber(data.confirmationNumber);
+        if (data.orders?.length > 0) {
           setOrders(data.orders);
+          // Save to localStorage so demo/local orders appear in order history
+          const now = new Date().toISOString();
+          data.orders.forEach((o: OrderInfo) => {
+            try {
+              saveLocalOrder({
+                id: o.orderId,
+                confirmationNumber: data.confirmationNumber,
+                itemName: o.itemName,
+                price: o.price,
+                purchased_at: now,
+              });
+            } catch (err) {
+              console.error('[purchase-success] Could not save local order:', err);
+            }
+          });
         }
       } catch (err) {
-        console.error('Verification error:', err);
+        console.error('[purchase-success] Verification error:', err);
       } finally {
         setLoading(false);
       }
@@ -74,89 +83,94 @@ function PurchaseSuccessContent() {
     verifyPurchase();
   }, [sessionId, session?.access_token]);
 
+  const total = orders.reduce((sum, o) => sum + o.price, 0);
+
   return (
-    <div className="min-h-screen bg-transparent text-white pb-20">
-      <div className="w-full px-4 lg:px-12 py-8">
-        <div className="text-center">
-          <div className="mb-6">
-            <svg
-              className="w-16 h-16 mx-auto text-green-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
+    <div className="min-h-screen bg-white pb-20">
+      <div className="w-full max-w-lg mx-auto px-4 py-10">
+
+        {/* Success icon + heading */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="w-16 h-16 rounded-full bg-[#f97316]/10 border-2 border-[#f97316] flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-
-          <h1 className="text-3xl font-bold mb-2 text-green-400">Purchase Complete!</h1>
-          <p className="text-white/60 mb-8">Thank you for your purchase</p>
-
-          {confirmationNumber && (
-            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-6 mb-6">
-              <p className="text-white/60 text-sm mb-2">Order Confirmation Number</p>
-              <p className="text-2xl font-mono font-bold text-green-400 tracking-wider">{confirmationNumber}</p>
-              <p className="text-white/40 text-xs mt-2">Save this for your records</p>
-            </div>
-          )}
-
-          {/* QR Codes for pickup */}
-          {loading ? (
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto" />
-              <p className="text-white/40 text-sm mt-3">Generating pickup QR code...</p>
-            </div>
-          ) : orders.length > 0 ? (
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-6 mb-6">
-              <p className="text-blue-400 font-semibold mb-1">Show this QR code at pickup</p>
-              <p className="text-white/40 text-xs mb-4">
-                The business will scan this to confirm your order
-              </p>
-              <div className="space-y-6">
-                {orders.map((order) => (
-                  <div key={order.orderId} className="flex flex-col items-center">
-                    <OrderQRCode orderId={order.orderId} token={order.token} size={180} />
-                    <p className="text-white text-sm font-medium mt-2">{order.itemName}</p>
-                    <p className="text-white/40 text-xs">${order.price.toFixed(2)}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white/5 border border-white/10 rounded-lg p-6 mb-6">
-              <p className="text-white/60 text-sm">
-                Your order is confirmed. Check Order History in your profile for QR codes.
-              </p>
-            </div>
-          )}
-
-          {sessionId && (
-            <div className="bg-[#1A1A18]/40 rounded-lg p-4 mb-6 text-left">
-              <p className="text-white/60 text-xs mb-1">Session ID:</p>
-              <p className="text-white/40 font-mono text-xs break-all">{sessionId}</p>
-            </div>
-          )}
-
-          <div className="space-y-3">
-            <Link
-              href="/profile"
-              className="block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-colors"
-            >
-              View Order History
-            </Link>
-            <Link
-              href="/feed"
-              className="block w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-3 rounded-lg transition-colors"
-            >
-              Back to Home
-            </Link>
-          </div>
+          <h1 className="text-3xl font-bold text-black mb-1">Order confirmed!</h1>
+          <p className="text-gray-500 text-sm">Thank you for your purchase</p>
         </div>
+
+        {/* Order number */}
+        {confirmationNumber && (
+          <div className="bg-black rounded-2xl p-5 mb-4 text-center">
+            <p className="text-white/50 text-xs uppercase tracking-widest mb-1">Order number</p>
+            <p className="text-2xl font-mono font-bold text-[#f97316] tracking-wider">{confirmationNumber}</p>
+            <p className="text-white/40 text-xs mt-1">Save this for your records</p>
+          </div>
+        )}
+
+        {/* Loading while verifying */}
+        {loading && (
+          <div className="border border-gray-100 rounded-2xl p-6 mb-4 flex flex-col items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#f97316]" />
+            <p className="text-gray-400 text-sm">Confirming order details...</p>
+          </div>
+        )}
+
+        {/* Order summary */}
+        {!loading && orders.length > 0 && (
+          <div className="border border-gray-200 rounded-2xl p-5 mb-4">
+            <h2 className="text-sm font-semibold text-black mb-3">Order summary</h2>
+            <div className="space-y-3 divide-y divide-gray-100">
+              {orders.map((o) => (
+                <div key={o.orderId} className="flex items-center justify-between pt-3 first:pt-0">
+                  <span className="text-sm text-black font-medium">{o.itemName}</span>
+                  <span className="text-sm font-bold text-[#f97316]">${o.price.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            {orders.length > 1 && (
+              <div className="flex justify-between pt-3 mt-3 border-t border-gray-100">
+                <span className="text-sm font-semibold text-black">Total</span>
+                <span className="text-sm font-bold text-black">${total.toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* QR codes for pickup */}
+        {!loading && orders.length > 0 && (
+          <div className="border border-gray-200 rounded-2xl p-5 mb-6">
+            <p className="text-sm font-semibold text-black mb-1">Pickup QR code</p>
+            <p className="text-xs text-gray-400 mb-4">Show this at the business when you arrive</p>
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <div key={order.orderId} className="flex flex-col items-center">
+                  <OrderQRCode orderId={order.orderId} token={order.token} size={160} />
+                  <p className="text-sm font-medium text-black mt-2">{order.itemName}</p>
+                  <p className="text-xs text-gray-400">${order.price.toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="space-y-3">
+          <Link
+            href="/profile"
+            className="block w-full bg-[#f97316] hover:opacity-90 text-white font-semibold py-3.5 rounded-xl text-center transition-opacity"
+          >
+            View Order History
+          </Link>
+          <Link
+            href="/feed"
+            className="block w-full border border-gray-200 hover:border-gray-400 text-black font-semibold py-3.5 rounded-xl text-center transition-colors"
+          >
+            Back to Home
+          </Link>
+        </div>
+
       </div>
     </div>
   );

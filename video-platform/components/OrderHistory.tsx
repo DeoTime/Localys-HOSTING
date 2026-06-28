@@ -8,6 +8,7 @@ import type { CoinPurchase, ItemPurchase } from '@/models/Order';
 import { useTranslation } from '@/hooks/useTranslation';
 import { OrderQRCode } from '@/components/QRCode';
 import { RefreshCw } from 'lucide-react';
+import { getLocalOrders, type LocalOrder } from '@/lib/clientEngagement';
 
 function DiscountBadge({ item }: { item: ItemPurchase }) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -64,6 +65,7 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
   const [coinPurchases, setCoinPurchases] = useState<CoinPurchase[]>([]);
   const [itemPurchases, setItemPurchases] = useState<ItemPurchase[]>([]);
   const [itemSales, setItemSales] = useState<ItemPurchase[]>([]);
+  const [localOrders, setLocalOrders] = useState<LocalOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'purchases' | 'sales'>('purchases');
   const [tablesExist, setTablesExist] = useState(true);
@@ -98,6 +100,8 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
       setCoinPurchases([]); setItemPurchases([]); setItemSales([]);
       setTablesExist(false);
     } finally {
+      // Load client-side orders (demo items that may not be in Supabase)
+      try { setLocalOrders(getLocalOrders()); } catch { /* ignore */ }
       setLoading(false);
     }
   };
@@ -168,12 +172,19 @@ export function OrderHistory({ userId, businessId, isBusiness = false }: OrderHi
     );
   }
 
-  if (allPurchases.length === 0) {
+  // Deduplicate local orders: hide any whose id already appears in Supabase itemPurchases
+  const supabaseItemIds = new Set(itemPurchases.map((p) => p.id));
+  const dedupedLocal = localOrders.filter((o) => !supabaseItemIds.has(o.id));
+
+  if (allPurchases.length === 0 && dedupedLocal.length === 0) {
     return <div className="text-center py-8"><p className="text-gray-400 text-sm">No orders yet</p></div>;
   }
 
   return (
     <div className="space-y-2">
+      {dedupedLocal.map((order) => (
+        <LocalOrderItem key={order.id} order={order} />
+      ))}
       {allPurchases.map((order, idx) => (
         <OrderItem key={idx} order={order}
           onReorder={!('coins' in order) ? () => handleReorder(order as ItemPurchase) : undefined} />
@@ -250,6 +261,30 @@ function OrderItem({ order, onReorder }: { order: CoinPurchase | ItemPurchase; o
           <OrderQRCode orderId={item.id} token={item.verification_token} size={160} />
         </div>
       )}
+    </div>
+  );
+}
+
+function LocalOrderItem({ order }: { order: LocalOrder }) {
+  const date = new Date(order.purchased_at);
+  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl p-4">
+      <div className="flex justify-between items-start gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-900 truncate">{order.itemName}</p>
+          <p className="text-gray-700 text-xs font-semibold mt-0.5">Order #{order.confirmationNumber}</p>
+        </div>
+        <div className="text-right shrink-0">
+          <p className="font-semibold text-gray-900">${order.price.toFixed(2)}</p>
+          <p className="text-gray-400 text-xs mt-0.5">{formattedDate}</p>
+        </div>
+      </div>
+      <div className="mt-3 pt-3 border-t border-gray-100">
+        <span className="inline-flex items-center text-xs px-3 py-1 rounded-full font-semibold capitalize border bg-[#f97316]/10 text-[#f97316] border-[#f97316]/30">
+          paid
+        </span>
+      </div>
     </div>
   );
 }
