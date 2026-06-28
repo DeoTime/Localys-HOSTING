@@ -98,8 +98,8 @@ function BadgesSection({ userId }: { userId: string }) {
                 <Icon className={`h-3.5 w-3.5 ${earned ? 'text-white' : 'text-gray-400'}`} />
               </div>
               <div className="min-w-0">
-                <p className={`text-xs font-bold leading-none truncate ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
-                <p className={`text-[10px] leading-none mt-0.5 truncate ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
+                <p className={`text-xs font-bold leading-none mb-0 truncate ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
+                <p className={`text-[10px] leading-none mb-0 mt-0.5 truncate ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
               </div>
             </div>
           );
@@ -600,8 +600,8 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
                 <Store className="h-3.5 w-3.5 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900 leading-[1]">{bizCount}</p>
-                <p className="text-[10px] text-gray-500 leading-[1]">
+                <p className="text-lg font-bold text-gray-900 leading-none mb-0">{bizCount}</p>
+                <p className="text-[10px] text-gray-500 leading-none mb-0 mt-0.5">
                   {bizCount === 1 ? 'business' : 'businesses'} supported
                 </p>
               </div>
@@ -611,8 +611,8 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
                 <DollarSign className="h-3.5 w-3.5 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900 leading-[1]">${moneySpent.toFixed(0)}</p>
-                <p className="text-[10px] text-gray-500 leading-[1]">kept in community</p>
+                <p className="text-lg font-bold text-gray-900 leading-none mb-0">${moneySpent.toFixed(0)}</p>
+                <p className="text-[10px] text-gray-500 leading-none mb-0 mt-0.5">kept in community</p>
               </div>
             </div>
           </div>
