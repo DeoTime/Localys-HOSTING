@@ -27,7 +27,7 @@ export const RANKS: Rank[] = [
   { id: 'silver',         name: 'Silver',                 image: '/Ranks/silver.png',                    threshold: 500,   requirement: 'Reach an Impact Score of 500' },
   { id: 'gold',           name: 'Gold',                   image: '/Ranks/gold.png',                      threshold: 1500,  requirement: 'Reach an Impact Score of 1,500' },
   { id: 'diamond',        name: 'Diamond',                image: '/Ranks/diamond.png',                   threshold: 4000,  requirement: 'Reach an Impact Score of 4,000' },
-  { id: 'ascendant',      name: 'Ascendant',              image: '/Ranks/Ascendant.jpg',                 threshold: 9000,  requirement: 'Reach an Impact Score of 9,000' },
+  { id: 'ascendant',      name: 'Ascendant',              image: '/Ranks/Ascendant.png',                 threshold: 9000,  requirement: 'Reach an Impact Score of 9,000' },
   { id: 'philanthropist', name: 'Locally Philanthropist', image: '/Ranks/Locally%20Philanthorpist.png',  threshold: 20000, requirement: 'Reach an Impact Score of 20,000' },
 ];
 

@@ -59,10 +59,8 @@ export function RankSection({ moneySpent, points, bizCount }: ImpactInputs) {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        {/* Clean white background for the rank badge */}
-        <div className="flex h-52 w-52 shrink-0 items-center justify-center rounded-2xl border border-gray-200 bg-white sm:h-60 sm:w-60">
-          <RankBadge src={current.image} alt={current.name} className="h-44 w-44 sm:h-52 sm:w-52" />
-        </div>
+        {/* Rank badge — ~2x larger, borderless, sits cleanly on the white card */}
+        <RankBadge src={current.image} alt={current.name} className="h-80 w-80 max-w-full sm:h-96 sm:w-96" />
         <div className="w-full text-center">
           <p className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">{current.name}</p>
           <p className="mt-0.5 text-sm text-gray-500">Impact Score {score.toLocaleString()}</p>
@@ -126,15 +124,19 @@ function RanksModal({ currentId, score, onClose }: { currentId: string; score: n
             {RANKS.map((rank) => {
               const isCurrent = rank.id === currentId;
               const unlocked = score >= rank.threshold;
+              // Localy Philanthropist shows with no box/outline — just image + label on white.
+              const isPhil = rank.id === 'philanthropist';
               return (
                 <div
                   key={rank.id}
-                  className={`relative flex flex-col items-center rounded-xl border p-3 text-center transition-colors ${
-                    isCurrent
-                      ? 'border-[#f97316] bg-[#f97316]/10'
-                      : unlocked
-                        ? 'border-gray-200 bg-gray-50'
-                        : 'border-gray-100 bg-gray-50 opacity-60'
+                  className={`relative flex flex-col items-center rounded-xl p-3 text-center transition-colors ${
+                    isPhil
+                      ? 'border-0 bg-transparent'
+                      : isCurrent
+                        ? 'border border-[#f97316] bg-[#f97316]/10'
+                        : unlocked
+                          ? 'border border-gray-200 bg-gray-50'
+                          : 'border border-gray-100 bg-gray-50 opacity-60'
                   }`}
                 >
                   <p
@@ -146,16 +148,17 @@ function RanksModal({ currentId, score, onClose }: { currentId: string; score: n
                   </p>
 
                   <div className="relative">
-                    <div className={`flex h-20 w-20 items-center justify-center rounded-xl border border-gray-200 bg-white ${!unlocked ? 'opacity-30 grayscale' : ''}`}>
+                    {/* Borderless, ~2x larger rank image */}
+                    <div className={`flex h-32 w-32 items-center justify-center ${!unlocked ? 'opacity-30 grayscale' : ''}`}>
                       <RankBadge
                         src={rank.image}
                         alt={rank.name}
-                        className="h-16 w-16"
+                        className="h-32 w-32"
                       />
                     </div>
                     {!unlocked && (
                       <span className="absolute inset-0 flex items-center justify-center">
-                        <Lock className="h-5 w-5 text-gray-400" />
+                        <Lock className="h-6 w-6 text-gray-400" />
                       </span>
                     )}
                   </div>
