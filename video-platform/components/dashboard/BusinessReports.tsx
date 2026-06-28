@@ -50,12 +50,49 @@ const PDF_MUTED: [number, number, number] = [110, 110, 110];
 
 interface CapturedImage { dataUrl: string; w: number; h: number }
 
-/** Rasterize a DOM node (a rendered chart) to a PNG data URL via html2canvas. */
+/** "#f97316" → [249, 115, 22] for jsPDF. */
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * Rasterize a rendered recharts node to a PNG by serializing its inner <svg>
+ * directly (NOT html2canvas — that throws on Tailwind v4's `oklch()` colors,
+ * which was making every chart export as "(chart unavailable)"). Recharts emits
+ * plain hex fills/strokes, so the serialized SVG draws cleanly onto a canvas.
+ */
 async function nodeToImage(node: HTMLElement | null): Promise<CapturedImage | null> {
   if (!node) return null;
+  const svg = node.querySelector('svg');
+  if (!svg) return null;
   try {
-    const html2canvas = (await import('html2canvas')).default;
-    const canvas = await html2canvas(node, { backgroundColor: '#ffffff', scale: 2, logging: false });
+    const rect = svg.getBoundingClientRect();
+    const w = Math.max(1, Math.round(rect.width || Number(svg.getAttribute('width')) || 744));
+    const h = Math.max(1, Math.round(rect.height || Number(svg.getAttribute('height')) || 284));
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', String(w));
+    clone.setAttribute('height', String(h));
+    const xml = new XMLSerializer().serializeToString(clone);
+    const src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); resolve(); };
+      img.onerror = () => reject(new Error('SVG image load failed'));
+      img.src = src;
+    });
     return { dataUrl: canvas.toDataURL('image/png'), w: canvas.width, h: canvas.height };
   } catch (e) {
     console.error('Chart capture failed:', e instanceof Error ? e.message : e);
@@ -234,17 +271,38 @@ export function BusinessReports({
         margin: { left: marginX, right: marginX },
       });
 
-      // Charts as images, with page-break handling
+      // Charts as images, with page-break handling. The recharts HTML <Legend> isn't
+      // part of the serialized SVG, so we draw legends here from the same data.
       let y = lastY() + 20;
-      const addChart = (title: string, img: CapturedImage | null) => {
+      const addChart = (
+        title: string,
+        img: CapturedImage | null,
+        legend?: { label: string; color: [number, number, number] }[],
+      ) => {
         const drawW = contentW;
         const drawH = img ? img.h * (drawW / img.w) : 0;
-        if (y + 16 + drawH > pageH - 40) { doc.addPage(); y = 48; }
+        const legendH = legend && legend.length ? 16 : 0;
+        if (y + 16 + legendH + drawH > pageH - 40) { doc.addPage(); y = 48; }
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(...PDF_INK);
         doc.text(title, marginX, y);
         y += 8;
+        if (legend && legend.length) {
+          let lx = marginX;
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          for (const item of legend) {
+            doc.setFillColor(...item.color);
+            doc.rect(lx, y, 8, 8, 'F');
+            doc.setTextColor(...PDF_INK);
+            const tw = doc.getTextWidth(item.label);
+            doc.text(item.label, lx + 11, y + 7);
+            lx += 11 + tw + 14;
+            if (lx > pageW - marginX - 80) { lx = marginX; y += 12; }
+          }
+          y += 14;
+        }
         if (img) {
           doc.addImage(img.dataUrl, 'PNG', marginX, y, drawW, drawH);
           y += drawH + 20;
@@ -256,8 +314,14 @@ export function BusinessReports({
           y += 28;
         }
       };
-      addChart('Revenue & Orders Over Time', revImg);
-      addChart('Revenue by Category', catImg);
+      addChart('Revenue & Orders Over Time', revImg, [
+        { label: 'Revenue', color: hexToRgb(ORANGE) },
+        { label: 'Orders', color: hexToRgb('#fdba74') },
+      ]);
+      addChart('Revenue by Category', catImg, byCategory.map((c, i) => ({
+        label: `${c.category} (${c.pct}%)`,
+        color: hexToRgb(SLICE_COLORS[i % SLICE_COLORS.length]),
+      })));
       addChart('Top Items by Revenue', itemsImg);
 
       // Top-selling items table
@@ -326,7 +390,7 @@ export function BusinessReports({
               key={r.key}
               onClick={() => setReport(r.key)}
               className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors ${
-                report === r.key ? 'bg-[#f97316] text-white' : 'border border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                report === r.key ? 'bg-[#f97316] text-white' : 'border border-border bg-card text-foreground hover:bg-muted'
               }`}
             >
               {r.label}
@@ -334,7 +398,7 @@ export function BusinessReports({
           ))}
         </div>
         <div className="flex gap-2">
-          <button onClick={handleCSV} className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-sm font-semibold text-gray-900 hover:border-[#f97316] hover:text-[#f97316] transition-colors">
+          <button onClick={handleCSV} className="flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-sm font-semibold text-foreground hover:border-[#f97316] hover:text-[#f97316] transition-colors">
             <Download className="h-4 w-4" /> CSV
           </button>
           <button onClick={handlePDF} disabled={pdfBusy} className="flex items-center gap-1.5 rounded-xl bg-black px-3.5 py-2 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-60">
@@ -344,24 +408,24 @@ export function BusinessReports({
       </div>
 
       {usingDemo && (
-        <p className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs text-gray-600">
+        <p className="rounded-xl border border-border bg-card px-4 py-2 text-xs text-muted-foreground">
           Showing realistic demo data — your real orders will populate these reports automatically.
         </p>
       )}
 
       {/* Filters */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="flex flex-wrap items-end gap-4">
           {/* Date range */}
           <div>
-            <p className="mb-1.5 text-xs font-semibold text-gray-700">Date range</p>
+            <p className="mb-1.5 text-xs font-semibold text-foreground">Date range</p>
             <div className="flex flex-wrap gap-1.5">
               {(['7d', '30d', '90d', 'custom'] as Preset[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => setPreset(p)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    preset === p ? 'bg-[#f97316] text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    preset === p ? 'bg-[#f97316] text-white' : 'bg-muted text-foreground hover:bg-gray-200'
                   }`}
                 >
                   {p === '7d' ? 'Last 7 days' : p === '30d' ? 'Last 30 days' : p === '90d' ? 'Last 90 days' : 'Custom'}
@@ -373,26 +437,26 @@ export function BusinessReports({
           {preset === 'custom' && (
             <div className="flex items-end gap-2">
               <div>
-                <p className="mb-1.5 text-xs font-semibold text-gray-700">From</p>
+                <p className="mb-1.5 text-xs font-semibold text-foreground">From</p>
                 <input type="date" aria-label="Custom range start date" value={customStart} onChange={(e) => setCustomStart(e.target.value)}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-900 focus:border-[#f97316] focus:outline-none" />
+                  className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs text-foreground focus:border-[#f97316] focus:outline-none" />
               </div>
               <div>
-                <p className="mb-1.5 text-xs font-semibold text-gray-700">To</p>
+                <p className="mb-1.5 text-xs font-semibold text-foreground">To</p>
                 <input type="date" aria-label="Custom range end date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)}
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-900 focus:border-[#f97316] focus:outline-none" />
+                  className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs text-foreground focus:border-[#f97316] focus:outline-none" />
               </div>
             </div>
           )}
 
           {/* Category */}
           <div>
-            <p className="mb-1.5 text-xs font-semibold text-gray-700">Category</p>
+            <p className="mb-1.5 text-xs font-semibold text-foreground">Category</p>
             <select
               aria-label="Filter by category"
               value={category}
               onChange={(e) => { setCategory(e.target.value); setItem('All'); }}
-              className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-900 focus:border-[#f97316] focus:outline-none"
+              className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs text-foreground focus:border-[#f97316] focus:outline-none"
             >
               <option value="All">All categories</option>
               {categories.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -401,12 +465,12 @@ export function BusinessReports({
 
           {/* Item */}
           <div>
-            <p className="mb-1.5 text-xs font-semibold text-gray-700">Item</p>
+            <p className="mb-1.5 text-xs font-semibold text-foreground">Item</p>
             <select
               aria-label="Filter by item"
               value={item}
               onChange={(e) => setItem(e.target.value)}
-              className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-900 focus:border-[#f97316] focus:outline-none"
+              className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs text-foreground focus:border-[#f97316] focus:outline-none"
             >
               <option value="All">All items</option>
               {items.map((it) => <option key={it} value={it}>{it}</option>)}
@@ -416,7 +480,7 @@ export function BusinessReports({
           <button
             aria-label="Toggle which metric cards are shown"
             onClick={() => setShowToggles((s) => !s)}
-            className="ml-auto flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:border-[#f97316] hover:text-[#f97316] transition-colors"
+            className="ml-auto flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-[#f97316] hover:text-[#f97316] transition-colors"
           >
             <SlidersHorizontal className="h-3.5 w-3.5" /> Metrics
           </button>
@@ -425,7 +489,7 @@ export function BusinessReports({
         {showToggles && (
           <div className="mt-3 flex flex-wrap gap-3 border-t border-gray-100 pt-3">
             {METRICS.map((m) => (
-              <label key={m.key} className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+              <label key={m.key} className="flex items-center gap-1.5 text-xs font-medium text-foreground">
                 <input type="checkbox" checked={isVisible(m.key)} onChange={() => toggleMetric(m.key)} className="accent-[#f97316]" />
                 {m.label}
               </label>
@@ -437,9 +501,9 @@ export function BusinessReports({
       {/* Metric cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {metricCards.filter((c) => isVisible(c.key)).map((c) => (
-          <div key={c.key} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-medium text-gray-600">{c.label}</p>
-            <p className="mt-1 text-xl font-bold text-gray-900">{c.value}</p>
+          <div key={c.key} className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+            <p className="text-[11px] font-medium text-muted-foreground">{c.label}</p>
+            <p className="mt-1 text-xl font-bold text-foreground">{c.value}</p>
           </div>
         ))}
       </div>
@@ -579,7 +643,6 @@ export function BusinessReports({
             <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#6b7280' }} />
             <YAxis yAxisId="rev" tick={{ fontSize: 11, fill: '#6b7280' }} tickFormatter={(v) => `$${v}`} />
             <YAxis yAxisId="ord" orientation="right" tick={{ fontSize: 11, fill: '#6b7280' }} allowDecimals={false} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
             <Bar yAxisId="ord" dataKey="orders" name="Orders" fill="#fdba74" radius={[4, 4, 0, 0]} barSize={14} isAnimationActive={false} />
             <Line yAxisId="rev" type="monotone" dataKey="revenue" name="Revenue" stroke={ORANGE} strokeWidth={2.5} dot={false} isAnimationActive={false} />
           </ComposedChart>
@@ -589,7 +652,6 @@ export function BusinessReports({
             <Pie data={byCategory} dataKey="revenue" nameKey="category" cx="50%" cy="50%" innerRadius={60} outerRadius={104} paddingAngle={2} stroke="#fff" strokeWidth={2} isAnimationActive={false}>
               {byCategory.map((_, i) => <Cell key={i} fill={SLICE_COLORS[i % SLICE_COLORS.length]} />)}
             </Pie>
-            <Legend wrapperStyle={{ fontSize: 11 }} />
           </PieChart>
         </div>
         <div ref={itemsChartRef} style={{ width: 760, height: 320, background: '#fff', padding: 8 }}>
@@ -607,10 +669,10 @@ export function BusinessReports({
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-900">{title}</p>
-        {subtitle && <span className="rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-500">{subtitle}</span>}
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        {subtitle && <span className="rounded-lg bg-muted px-2 py-1 text-xs text-muted-foreground">{subtitle}</span>}
       </div>
       <div className="h-56">{children}</div>
     </div>
@@ -619,13 +681,13 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
 
 function TableCard({ headers, rows, footer }: { headers: string[]; rows: string[][]; footer?: string[] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-100 bg-gray-50 text-left">
+            <tr className="border-b border-gray-100 bg-muted text-left">
               {headers.map((h, i) => (
-                <th key={h} className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-gray-600 ${i === 0 ? '' : 'text-right'}`}>{h}</th>
+                <th key={h} className={`px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground ${i === 0 ? '' : 'text-right'}`}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -633,16 +695,16 @@ function TableCard({ headers, rows, footer }: { headers: string[]; rows: string[
             {rows.length === 0 ? (
               <tr><td colSpan={headers.length} className="px-4 py-8 text-center text-sm text-gray-400">No data for this filter</td></tr>
             ) : rows.map((r, ri) => (
-              <tr key={ri} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
+              <tr key={ri} className="border-b border-gray-50 last:border-0 hover:bg-muted">
                 {r.map((cell, ci) => (
-                  <td key={ci} className={`px-4 py-2.5 ${ci === 0 ? 'font-medium text-gray-900' : 'text-right text-gray-700'}`}>{cell}</td>
+                  <td key={ci} className={`px-4 py-2.5 ${ci === 0 ? 'font-medium text-foreground' : 'text-right text-foreground'}`}>{cell}</td>
                 ))}
               </tr>
             ))}
           </tbody>
           {footer && rows.length > 0 && (
             <tfoot>
-              <tr className="border-t border-gray-200 bg-orange-50/50 font-bold text-gray-900">
+              <tr className="border-t border-border bg-orange-50/50 font-bold text-foreground">
                 {footer.map((cell, ci) => (
                   <td key={ci} className={`px-4 py-2.5 ${ci === 0 ? '' : 'text-right'}`}>{cell}</td>
                 ))}
@@ -657,9 +719,9 @@ function TableCard({ headers, rows, footer }: { headers: string[]; rows: string[
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 text-center shadow-sm">
-      <p className="text-xl font-bold text-gray-900">{value}</p>
-      <p className="mt-0.5 text-[11px] text-gray-600">{label}</p>
+    <div className="rounded-2xl border border-border bg-card p-4 text-center shadow-sm">
+      <p className="text-xl font-bold text-foreground">{value}</p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">{label}</p>
     </div>
   );
 }

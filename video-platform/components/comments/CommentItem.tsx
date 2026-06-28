@@ -232,7 +232,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
             </div>
           )}
 
-          <p className="text-sm text-gray-800 whitespace-pre-wrap break-words mb-2">
+          <p className="text-sm text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words mb-2">
             {comment.content}
           </p>
 

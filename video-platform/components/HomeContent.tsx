@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase/client';
 import dynamic from 'next/dynamic';
 import { GoogleMap } from '@/components/GoogleMap';
 const CommentModal = dynamic(() => import('@/components/CommentModal').then(mod => mod.CommentModal), { ssr: false });
+const CommentSection = dynamic(() => import('@/components/comments/CommentSection'), { ssr: false });
 import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
 import { haversineDistance } from '@/lib/utils/geo';
@@ -1070,12 +1071,13 @@ export function HomeContent({ isActive }: HomeContentProps) {
           100% { transform: translate(-50%, 0) scale(1); }
         }
         /* Action rail — mobile: overlaid at right edge; sm+: tight beside the video.
-           Shifted slightly below center and tightened so icons sit close together. */
+           Anchored to the BOTTOM so the bottom icons (share/send) sit near the screen bottom. */
         .feed-action-rail {
           position: absolute;
           right: 0;
-          top: 56%;
-          transform: translateY(-50%);
+          bottom: 16px;
+          top: auto;
+          transform: none;
           z-index: 20;
           display: flex;
           flex-direction: column;
@@ -1087,6 +1089,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
           .feed-action-rail {
             right: auto;
             left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 4px);
+            bottom: 20px;
             padding-right: 0;
             gap: 8px;
           }
@@ -1097,12 +1100,12 @@ export function HomeContent({ isActive }: HomeContentProps) {
             gap: 10px;
           }
         }
-        /* Up/Down nav circles — hidden on mobile; on sm+ pinned near the screen's
-           right edge, to the right of both the video and the action rail. */
+        /* Up/Down nav circles — hidden on mobile; on sm+ pinned to the LEFT of the video
+           (the right side is now used by the comments panel). */
         .feed-nav-arrows {
           display: none;
           position: absolute;
-          right: 16px;
+          left: 16px;
           top: 50%;
           transform: translateY(-50%);
           z-index: 21;
@@ -1116,11 +1119,29 @@ export function HomeContent({ isActive }: HomeContentProps) {
         }
         @media (min-width: 1024px) {
           .feed-nav-arrows {
-            right: 28px;
+            left: 28px;
+          }
+        }
+        /* Comments-beside-video panel — far right, only where there's room (xl+). */
+        .feed-comments {
+          display: none;
+        }
+        @media (min-width: 1280px) {
+          .feed-comments {
+            display: flex;
+            position: absolute;
+            right: 16px;
+            top: 16px;
+            bottom: 16px;
+            width: min(360px, 26vw);
+            z-index: 20;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
           }
         }
       `}</style>
-      <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground">
+      <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground dark:bg-[#121212]">
       {/* Ambient Particle Background - CSS shimmer effect */}
       <div className="home-feed-particles" aria-hidden="true" />
 
@@ -1317,27 +1338,32 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </div>
       </div>
 
-      {/* Up/Down Navigation Circles — far right near the screen edge (prev/next video).
-          Solid black chevrons on white circles for clear contrast. */}
+      {/* Up/Down Navigation Circles — left of the video (prev/next). Visible chevrons,
+          theme-aware. Hover only SHADES the circle (no size change). */}
       <div className="feed-nav-arrows">
         <button
           onClick={goToPrev}
           aria-label="Previous video"
-          className="w-12 h-12 rounded-full bg-white border border-black/10 shadow-lg flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
+          className="w-12 h-12 rounded-full bg-white dark:bg-[#1e1e1e] border border-black/10 dark:border-white/15 shadow-lg flex items-center justify-center transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10"
         >
-          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
           </svg>
         </button>
         <button
           onClick={goToNext}
           aria-label="Next video"
-          className="w-12 h-12 rounded-full bg-white border border-black/10 shadow-lg flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
+          className="w-12 h-12 rounded-full bg-white dark:bg-[#1e1e1e] border border-black/10 dark:border-white/15 shadow-lg flex items-center justify-center transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10"
         >
-          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
+      </div>
+
+      {/* Comments beside the video (xl+). Lets users read comments while watching. */}
+      <div className="feed-comments">
+        <CommentSection videoId={currentVideo.id} className="h-full w-full overflow-y-auto" />
       </div>
 
       {/* Engagement Action Rail — beside the video on its right (see .feed-action-rail CSS above) */}
@@ -1374,18 +1400,18 @@ export function HomeContent({ isActive }: HomeContentProps) {
           )}
         </div>
 
-        {/* Like Button - show for all videos */}
+        {/* Like Button — active = RED. Hover only shades the circle (no size change). */}
         <button
           onClick={(e) => toggleLike(currentVideo.id, currentBusiness?.id, e)}
           onKeyDown={(e) => handleKeyDown(e, () => toggleLike(currentVideo.id, currentBusiness?.id))}
-          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
+          className="group flex flex-col items-center gap-1"
           aria-label={isLiked ? 'Unlike video' : 'Like video'}
         >
-          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
-            isLiked ? 'bg-[#f97316] shadow-[#f97316]/40' : 'bg-white'
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110 ${
+            isLiked ? 'bg-[#ef4444] shadow-[#ef4444]/40' : 'bg-white dark:bg-[#1e1e1e]'
           } ${likeAnimating === currentVideo.id ? 'like-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${isLiked ? 'text-white' : 'text-black'} ${likeAnimating === currentVideo.id ? 'scale-110' : ''}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-colors duration-300 ${isLiked ? 'text-white' : 'text-black dark:text-white'}`}
               fill={isLiked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1393,7 +1419,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">
+          <span className="text-black dark:text-white text-[10px] sm:text-xs font-semibold">
             {formatCount(likeCounts[likeKey] ?? stableLikeCount(currentVideo.id))}
           </span>
         </button>
@@ -1402,15 +1428,15 @@ export function HomeContent({ isActive }: HomeContentProps) {
         <button
           onClick={() => handleCommentClick(currentVideo.id)}
           onKeyDown={(e) => handleKeyDown(e, () => handleCommentClick(currentVideo.id))}
-          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          className="group flex flex-col items-center gap-1"
           aria-label="Add a review or comment"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white dark:bg-[#1e1e1e] shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || stableCount(currentVideo.id, 'cmt', 12, 520))}</span>
+          <span className="text-black dark:text-white text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || stableCount(currentVideo.id, 'cmt', 12, 520))}</span>
         </button>
 
         {/* Location Button — computes distance and opens map modal */}
@@ -1425,29 +1451,29 @@ export function HomeContent({ isActive }: HomeContentProps) {
             }
             setLocationModalOpen(true);
           }}
-          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          className="group flex flex-col items-center gap-1"
           aria-label={distance ? `Distance: ${distance}` : 'Location'}
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white dark:bg-[#1e1e1e] shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">{distanceLabel}</span>
+          <span className="text-black dark:text-white text-[10px] sm:text-xs font-semibold">{distanceLabel}</span>
         </button>
 
-        {/* Bookmark Button */}
+        {/* Bookmark / Favorite Button — active = ORANGE (never yellow). */}
         <button
           onClick={(e) => toggleBookmark(currentVideo, e)}
-          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
+          className="group flex flex-col items-center gap-1"
           aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark video'}
         >
-          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
-            isBookmarked ? 'bg-[#f97316] shadow-[#f97316]/40' : 'bg-white'
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110 ${
+            isBookmarked ? 'bg-[#f97316] shadow-[#f97316]/40' : 'bg-white dark:bg-[#1e1e1e]'
           } ${bookmarkAnimating === currentVideo.id ? 'bookmark-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${isBookmarked ? 'text-white' : 'text-black'} ${bookmarkAnimating === currentVideo.id ? 'scale-110' : ''}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-colors duration-300 ${isBookmarked ? 'text-white' : 'text-black dark:text-white'}`}
               fill={isBookmarked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1455,22 +1481,22 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(saveCount)}</span>
+          <span className="text-black dark:text-white text-[10px] sm:text-xs font-semibold">{formatCount(saveCount)}</span>
         </button>
 
         {/* Share Button */}
         <button
           onClick={() => handleShareClick(currentVideo)}
           onKeyDown={(e) => handleKeyDown(e, () => handleShareClick(currentVideo))}
-          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          className="group flex flex-col items-center gap-1"
           aria-label="Share this video"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white dark:bg-[#1e1e1e] shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(shareCount)}</span>
+          <span className="text-black dark:text-white text-[10px] sm:text-xs font-semibold">{formatCount(shareCount)}</span>
         </button>
 
         {/* Send to User Button — opens Chats with this video pre-filled */}
@@ -1480,15 +1506,15 @@ export function HomeContent({ isActive }: HomeContentProps) {
             const videoUrl = `${window.location.origin}/feed?videoId=${encodeURIComponent(currentVideo.id)}`;
             router.push(`/chats?shareVideo=${encodeURIComponent(videoUrl)}&shareTitle=${encodeURIComponent(bizName)}`);
           }}
-          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          className="group flex flex-col items-center gap-1"
           aria-label="Send video to a user"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white dark:bg-[#1e1e1e] shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
           </div>
-          <span className="text-black text-[10px] sm:text-xs font-semibold">Send</span>
+          <span className="text-black dark:text-white text-[10px] sm:text-xs font-semibold">Send</span>
         </button>
 
       </div>

@@ -602,7 +602,7 @@ function UserProfileContent() {
       {/* Toast */}
       {toastMessage && (
         <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg text-sm font-medium shadow-lg transition-all duration-300 ${
-          toastColor === 'sage' ? 'bg-[#6BAF7A] text-white' :
+          toastColor === 'sage' ? 'bg-[#f97316] text-white' :
           toastColor === 'red' ? 'bg-[#E05C3A] text-white' :
           'bg-[#f97316] text-black'
         }`}>

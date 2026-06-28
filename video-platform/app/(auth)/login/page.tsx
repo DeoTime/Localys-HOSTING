@@ -194,7 +194,7 @@ function LoginPageContent() {
 
           {resetSent ? (
             <div className="space-y-6">
-              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-center text-green-700">
+              <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-center text-[#f97316]">
                 Check your email for a password reset link.
               </div>
               <button
@@ -258,7 +258,7 @@ function LoginPageContent() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isEmailVerified && (
-            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-center text-green-700">
+            <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 text-center text-[#f97316]">
               Email verified. Please sign in to continue.
             </div>
           )}

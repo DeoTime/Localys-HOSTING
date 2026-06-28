@@ -36,11 +36,11 @@ export async function likeMenuItem(userId: string, item: LikedItemInput) {
     const { error } = await supabase.from('liked_items').insert({
       user_id: userId,
       item_id: item.id,
-      item_name: item.name,
+      name: item.name,
       price: item.price,
-      image_url: item.image ?? null,
+      image: item.image ?? null,
+      store_id: null,
       store_name: item.storeName ?? null,
-      store_href: item.href ?? null,
     });
     if (error && error.code !== '23505') {
       // 23505 = already liked (unique violation) → treat as success
@@ -80,7 +80,7 @@ export async function getUserLikedItems(userId: string): Promise<LikedItemRow[]>
   try {
     const { data, error } = await supabase
       .from('liked_items')
-      .select('item_id, item_name, price, image_url, store_name, store_href')
+      .select('item_id, name, price, image, store_name, store_id')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
     if (error || !data) {
@@ -88,15 +88,15 @@ export async function getUserLikedItems(userId: string): Promise<LikedItemRow[]>
       return [];
     }
     return data.map((r: {
-      item_id: string; item_name: string | null; price: number | null;
-      image_url: string | null; store_name: string | null; store_href: string | null;
+      item_id: string; name: string | null; price: number | null;
+      image: string | null; store_name: string | null; store_id: string | null;
     }) => ({
       id: r.item_id,
-      name: r.item_name || 'Item',
+      name: r.name || 'Item',
       price: typeof r.price === 'number' ? r.price : Number(r.price) || 0,
-      image: r.image_url || undefined,
+      image: r.image || undefined,
       storeName: r.store_name || '',
-      href: r.store_href || '/feed',
+      href: '/feed',
     }));
   } catch (error) {
     console.error('Exception fetching liked items:', error instanceof Error ? error.message : String(error));
