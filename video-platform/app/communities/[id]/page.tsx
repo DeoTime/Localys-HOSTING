@@ -74,7 +74,7 @@ function CommunityContent() {
 
   if (!community) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-[#1A1A18]">
+      <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-[#121212]">
         <div className="text-center">
           <p className="text-gray-500 dark:text-gray-400 mb-4">Community not found.</p>
           <Link href="/communities" className="text-sm font-semibold text-[#f97316] hover:underline">
@@ -86,7 +86,7 @@ function CommunityContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-[#1A1A18] text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-gray-100 dark:bg-[#121212] text-gray-900 dark:text-white">
       {/* Community header */}
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
         <div className="mx-auto max-w-3xl px-4 py-4">

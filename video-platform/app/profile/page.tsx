@@ -486,18 +486,18 @@ function ProfileContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#f97316]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 pb-20">
+    <div className="min-h-screen bg-background text-foreground pb-20">
       {/* Page header */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="w-full px-4 lg:px-12 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">{t('profile.title')}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('profile.title')}</h1>
           <LanguageSettings />
         </div>
       </div>

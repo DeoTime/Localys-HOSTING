@@ -37,7 +37,7 @@ function resolveTurnstileSiteKey(): string {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 transition focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/10';
+  'w-full rounded-lg border border-border bg-card px-4 py-3 text-foreground placeholder:text-muted-foreground transition focus:border-[#f97316] focus:outline-none focus:ring-2 focus:ring-[#f97316]/20';
 
 function GoogleIcon() {
   return (
@@ -54,7 +54,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-white px-4 text-gray-500">Loading login…</div>
+        <div className="flex min-h-screen items-center justify-center bg-background px-4 text-muted-foreground">Loading login…</div>
       }
     >
       <LoginPageContent />

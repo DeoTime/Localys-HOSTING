@@ -132,12 +132,12 @@ function CheckoutContent() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]" /></div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]" /></div>;
   }
 
   if (checkoutItems.length === 0) {
     return (
-      <div className="min-h-screen bg-white text-gray-900 p-4">
+      <div className="min-h-screen bg-background text-foreground p-4">
         <div className="max-w-md mx-auto text-center py-16">
           <p className="text-gray-500 mb-4">No items to checkout</p>
           <Link href="/feed" className="inline-block bg-[#f97316] text-white font-semibold rounded-xl px-6 py-3 hover:opacity-90 transition-opacity">
@@ -149,7 +149,7 @@ function CheckoutContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb] text-gray-900 pb-16">
+    <div className="min-h-screen bg-background text-foreground pb-16">
       <div className="w-full max-w-lg mx-auto px-4 py-6">
         {/* Header */}
         <div className="mb-6">
@@ -284,7 +284,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]" /></div>}>
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]" /></div>}>
       <CheckoutContent />
     </Suspense>
   );

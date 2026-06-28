@@ -112,7 +112,7 @@ function CommunitiesContent() {
   const recentCommunities = communities.slice(0, 6);
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-[#1A1A18] text-gray-900 dark:text-white">
+    <div className="min-h-screen bg-gray-100 dark:bg-[#121212] text-gray-900 dark:text-white">
       <div className="mx-auto max-w-6xl px-3 py-4 lg:flex lg:gap-6">
         {/* Left rail: Recent Communities */}
         <aside className="mb-4 lg:mb-0 lg:w-64 lg:shrink-0">

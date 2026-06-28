@@ -36,8 +36,8 @@ const trending = [
   { img: "/landing/biz-acuvega.jpg", title: "Acuvega Wellness Center", artist: "207-22 Richmond St" },
   { img: "/landing/biz-arnold.png", title: "Arnold Crescent Animal Hospital", artist: "26 Arnold Cres" },
   { img: "/landing/Bookstore.webp", title: "Local Bookstore", artist: "Local & independent" },
-  { img: "/landing/catering buisness.jpg", title: "Catering Co.", artist: "Local & independent" },
-  { img: "/landing/landscaping company.webp", title: "Landscaping", artist: "Local & independent" },
+  { img: "/landing/catering%20buisness.jpg", title: "Catering Co.", artist: "Local & independent" },
+  { img: "/landing/landscaping%20company.webp", title: "Landscaping", artist: "Local & independent" },
   { img: "/landing/hero-flowers.jpg", title: "Dream Rose Florist", artist: "14 Levendale Rd" },
   { img: "/landing/hero-food.jpeg", title: "Pho Shop", artist: "5051 Yonge St" },
   { img: "/landing/creator-dining.jpg", title: "Local Dining", artist: "Food & drink" },
@@ -146,6 +146,7 @@ export default function LandingScreen() {
                 className="h-full w-full object-cover"
                 width={1920}
                 height={1080}
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/40 to-black/30" />
             </motion.div>
@@ -240,7 +241,7 @@ export default function LandingScreen() {
             {[...trending, ...trending].map((t, i) => (
               <div key={i} className="mr-7 w-64 shrink-0 sm:w-72">
                 <div className="group/card relative aspect-[8/7] overflow-hidden rounded-md bg-muted">
-                  <img src={t.img} alt={t.title} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105" />
+                  <img src={t.img} alt={t.title} loading="eager" className="h-full w-full object-cover transition duration-500 group-hover/card:scale-105" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                 </div>
                 <div className="mt-3 truncate text-base font-semibold">{t.title}</div>
                 <div className="truncate text-sm text-muted-foreground">{t.artist}</div>

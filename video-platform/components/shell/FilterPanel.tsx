@@ -38,11 +38,11 @@ export function FilterPanel({
   const set = <K extends keyof Filters>(key: K, v: Filters[K]) => onChange({ ...value, [key]: v });
 
   return (
-    <div className="space-y-5 text-black">
+    <div className="space-y-5 text-foreground">
       {/* Distance slider */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="f-distance" className="text-sm font-semibold text-black">Max distance</label>
+          <label htmlFor="f-distance" className="text-sm font-semibold text-foreground">Max distance</label>
           <span className="text-sm font-bold text-[#f97316]">{value.maxDistanceKm} km</span>
         </div>
         <input
@@ -58,7 +58,7 @@ export function FilterPanel({
 
       {/* Category chips */}
       <div>
-        <p className="mb-1.5 text-sm font-semibold text-black">Category</p>
+        <p className="mb-1.5 text-sm font-semibold text-foreground">Category</p>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => {
             const active = value.category === c;
@@ -70,7 +70,7 @@ export function FilterPanel({
                 className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
                   active
                     ? 'border-[#f97316] bg-[#f97316] text-white'
-                    : 'border-gray-300 text-black hover:border-[#f97316] dark:border-gray-600'
+                    : 'border-border text-foreground hover:border-[#f97316]'
                 }`}
               >
                 {c}
@@ -82,7 +82,7 @@ export function FilterPanel({
 
       {/* Min rating */}
       <div>
-        <p className="mb-1.5 text-sm font-semibold text-black">Minimum rating</p>
+        <p className="mb-1.5 text-sm font-semibold text-foreground">Minimum rating</p>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
@@ -96,7 +96,7 @@ export function FilterPanel({
             </button>
           ))}
           {value.minRating > 0 && (
-            <button type="button" onClick={() => set('minRating', 0)} className="ml-2 text-xs font-semibold text-black underline">
+            <button type="button" onClick={() => set('minRating', 0)} className="ml-2 text-xs font-semibold text-foreground underline">
               Any
             </button>
           )}
@@ -106,7 +106,7 @@ export function FilterPanel({
       {/* Max price */}
       <div>
         <div className="mb-1.5 flex items-center justify-between">
-          <label htmlFor="f-price" className="text-sm font-semibold text-black">Max price</label>
+          <label htmlFor="f-price" className="text-sm font-semibold text-foreground">Max price</label>
           <span className="text-sm font-bold text-[#f97316]">${value.maxPrice}</span>
         </div>
         <input
@@ -123,18 +123,18 @@ export function FilterPanel({
 
       {/* Toggles */}
       <div className="flex flex-col gap-2">
-        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black">
+        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-foreground">
           Open now
           <input type="checkbox" checked={value.openNow} onChange={(e) => set('openNow', e.target.checked)} className="h-4 w-4 accent-[#f97316]" />
         </label>
-        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black">
+        <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-foreground">
           Deals only
           <input type="checkbox" checked={value.dealsOnly} onChange={(e) => set('dealsOnly', e.target.checked)} className="h-4 w-4 accent-[#f97316]" />
         </label>
       </div>
 
       {onReset && (
-        <button type="button" onClick={onReset} className="w-full rounded-full border border-gray-300 py-2 text-sm font-semibold text-black transition hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-800">
+        <button type="button" onClick={onReset} className="w-full rounded-full border border-border py-2 text-sm font-semibold text-foreground transition hover:bg-muted">
           Reset filters
         </button>
       )}
