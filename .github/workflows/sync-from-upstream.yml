@@ -1,0 +1,72 @@
+# Fork-side sync: pull changes FROM the upstream repo this is forked from
+# (KadenLi6741/Localys) into this fork's main branch.
+#
+# This MERGES upstream into the fork. It never runs `reset --hard` and never
+# pushes with --force, so the fork's own commits are preserved and the fork is
+# never force-overwritten by itself or by upstream. If upstream and the fork
+# have diverged in a way that conflicts, the merge fails loudly instead of
+# clobbering anything.
+name: Sync from upstream
+
+on:
+  # Fired by upstream's notifier (repository_dispatch event_type: upstream_push).
+  repository_dispatch:
+    types: [upstream_push]
+  # Safety net in case a dispatch is missed.
+  schedule:
+    - cron: "0 */6 * * *"
+  # Manual trigger from the Actions tab.
+  workflow_dispatch:
+
+# Never run two syncs at once, but don't cancel an in-progress merge/push.
+concurrency:
+  group: sync-from-upstream
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  UPSTREAM_REPO: KadenLi6741/Localys
+  UPSTREAM_BRANCH: main
+  TARGET_BRANCH: main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this fork (full history)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          fetch-depth: 0
+          # Use the built-in token so the later push is authenticated.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge upstream without overwriting the fork
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch upstream "${UPSTREAM_BRANCH}"
+
+          git checkout "${TARGET_BRANCH}"
+
+          # Fast-path: nothing new upstream.
+          if git merge-base --is-ancestor "upstream/${UPSTREAM_BRANCH}" HEAD; then
+            echo "Already up to date with upstream/${UPSTREAM_BRANCH}. Nothing to sync."
+            exit 0
+          fi
+
+          # Merge upstream changes into the fork. NO --force, NO reset --hard:
+          # the fork's own commits are kept; on conflict this fails the job.
+          git merge --no-edit \
+            -m "Sync from upstream ${UPSTREAM_REPO}@${UPSTREAM_BRANCH}" \
+            "upstream/${UPSTREAM_BRANCH}"
+
+          # Plain (non-force) push. Rejected rather than overwriting if the
+          # remote moved underneath us.
+          git push origin "${TARGET_BRANCH}"
