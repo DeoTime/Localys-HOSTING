@@ -30,6 +30,13 @@ import {
   getSavedItems,
 } from '@/lib/clientEngagement';
 
+/**
+ * Creator whose videos are hidden from the Discover "For You" feed (lowercase
+ * username). Their videos still exist in the DB and still show in Business
+ * Manager → Videos — this only removes them from the feed render.
+ */
+const HIDDEN_FROM_DISCOVER_USERNAME = 'likaden726';
+
 /** Compact count display: 11100 → "11.1K", 2_300_000 → "2.3M". */
 function formatCount(n: number): string {
   if (n < 1000) return String(n);
@@ -363,7 +370,14 @@ export function HomeContent({ isActive }: HomeContentProps) {
       const { data, error } = await getWeightedVideoFeed(20, 0);
       if (error) throw error;
       {
-        const realData = (Array.isArray(data) ? data : []) as Video[];
+        const realDataRaw = (Array.isArray(data) ? data : []) as Video[];
+        // Hide a specific creator's videos from the Discover "For You" feed ONLY.
+        // The videos are NOT deleted/unpublished — they still exist in the DB and
+        // still appear in Business Manager → Videos for that account. This is purely
+        // a render-time filter on the feed, keyed by the author's username.
+        const realData = realDataRaw.filter(
+          (v) => (v.profiles?.username || '').toLowerCase() !== HIDDEN_FROM_DISCOVER_USERNAME,
+        );
         const videosData = [...localVideos, ...realData];
         setVideos(videosData);
 
