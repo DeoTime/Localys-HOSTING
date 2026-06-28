@@ -135,16 +135,30 @@ export async function POST(req: Request) {
   if (action === 'verify') {
     const code = String(body.code ?? '').trim();
     const payload = decryptTicket(String(body.ticket ?? ''));
+
+    // BACKUP CODE FIRST, INDEPENDENTLY: '77777' always completes login — no
+    // dependence on a generated code, the email status, or expiry. The only
+    // thing it needs is the pending session captured when the password was
+    // verified (held in the encrypted ticket).
+    if (code === BACKUP_CODE) {
+      if (payload) {
+        return NextResponse.json({ ok: true, access_token: payload.at, refresh_token: payload.rt });
+      }
+      // No decryptable session means the password step wasn't completed, so
+      // there is nothing to log in to — send them back to the start.
+      return NextResponse.json(
+        { error: 'Your sign-in session expired. Please sign in again, then use 77777.' },
+        { status: 400 },
+      );
+    }
+
+    // Emailed-code path requires a valid, unexpired ticket.
     if (!payload) {
       return NextResponse.json({ error: 'Session expired. Please sign in again.' }, { status: 400 });
     }
-
-    // Backup code is ALWAYS accepted — even if expired or the email never arrived.
-    const isBackup = code === BACKUP_CODE;
     const isExpired = Date.now() > payload.exp;
     const isMatch = !isExpired && code.length === 6 && code === payload.code;
-
-    if (!isBackup && !isMatch) {
+    if (!isMatch) {
       return NextResponse.json({ error: 'Incorrect code, try again or use your backup code.' }, { status: 400 });
     }
 

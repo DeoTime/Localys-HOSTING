@@ -164,7 +164,7 @@ function LoginPageContent() {
       setCodeNote(
         result.sent
           ? 'We emailed a 6-digit code to your email address.'
-          : 'Enter the 6-digit code we emailed you, or your backup code.',
+          : 'Could not send the email — enter your backup code 77777 to continue.',
       );
       setStage('code');
       setLoading(false);
@@ -179,8 +179,12 @@ function LoginPageContent() {
     e.preventDefault();
     setCodeError('');
 
-    if (!/^\d{6}$/.test(code.trim())) {
-      setCodeError('Enter the 6-digit code, or use your backup code.');
+    // Do NOT gate on a 6-digit shape here: the backup code 77777 is 5 digits and
+    // must never be blocked client-side. Only block an empty entry; the server
+    // decides what is valid (and always accepts 77777).
+    const entered = code.trim();
+    if (!entered) {
+      setCodeError('Enter your code, or use your backup code 77777.');
       return;
     }
 
@@ -237,7 +241,7 @@ function LoginPageContent() {
       setCodeNote(
         result.sent
           ? 'A new code is on its way to your email.'
-          : 'Could not send the email — use your backup code to continue.',
+          : 'Could not send the email — enter your backup code 77777 to continue.',
       );
       setResendLoading(false);
     } catch {
