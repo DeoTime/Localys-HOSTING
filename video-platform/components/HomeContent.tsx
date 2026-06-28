@@ -120,6 +120,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
   const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
   const [commentModalOpen, setCommentModalOpen] = useState(false);
+  // Inline reviews/comments side panel — CLOSED by default; opens only on tap.
+  const [reviewsOpen, setReviewsOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string>('');
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string>('');
@@ -331,6 +333,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
         }
       });
       setCommentModalOpen(false);
+      setReviewsOpen(false);
       return;
     }
 
@@ -1103,40 +1106,53 @@ export function HomeContent({ isActive }: HomeContentProps) {
             gap: 10px;
           }
         }
-        /* Up/Down nav circles — hidden on mobile; on sm+ pinned to the bottom-LEFT
-           corner, clear of the centered video, the action rail (bottom-right) and the
-           comments panel (far right). z-30 keeps them above the item rail. */
+        /* Up/Down nav circles — hidden on mobile; on sm+ pinned to the RIGHT edge,
+           vertically centered. When the reviews panel opens they slide LEFT to sit
+           just beside it (still fully visible). */
         .feed-nav-arrows {
           display: none;
           position: absolute;
-          left: 16px;
-          bottom: 20px;
+          right: 16px;
+          top: 50%;
+          transform: translateY(-50%);
           z-index: 30;
           flex-direction: column;
           gap: 14px;
+          transition: right 260ms ease;
         }
         @media (min-width: 640px) {
           .feed-nav-arrows {
             display: flex;
           }
         }
-        /* Comments-beside-video panel — far right, only where there's room (xl+). */
-        .feed-comments {
-          display: none;
+        .feed-nav-arrows.shifted {
+          right: calc(min(360px, 80vw) + 28px);
         }
-        @media (min-width: 1280px) {
-          .feed-comments {
+        /* Reviews/comments side panel — CLOSED by default (slid off the right edge);
+           gently slides in when opened. Mounted on sm+ so the slide can animate. */
+        .feed-reviews {
+          display: none;
+          position: absolute;
+          top: 16px;
+          bottom: 16px;
+          right: 16px;
+          width: min(360px, 80vw);
+          z-index: 25;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+          transform: translateX(calc(100% + 24px));
+          transition: transform 260ms ease;
+          pointer-events: none;
+        }
+        @media (min-width: 640px) {
+          .feed-reviews {
             display: flex;
-            position: absolute;
-            right: 16px;
-            top: 16px;
-            bottom: 16px;
-            width: min(360px, 26vw);
-            z-index: 20;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
           }
+        }
+        .feed-reviews.open {
+          transform: translateX(0);
+          pointer-events: auto;
         }
       `}</style>
       <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground dark:bg-[#121212]">
@@ -1336,9 +1352,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </div>
       </div>
 
-      {/* Up/Down Navigation Circles — left of the video (prev/next). Visible chevrons,
-          theme-aware. Hover only SHADES the circle (no size change). */}
-      <div className="feed-nav-arrows">
+      {/* Up/Down Navigation Circles — right edge (prev/next). Visible chevrons,
+          theme-aware. Shift left when the reviews panel opens so they stay beside it. */}
+      <div className={`feed-nav-arrows${reviewsOpen ? ' shifted' : ''}`}>
         <button
           type="button"
           onClick={goToPrev}
@@ -1361,8 +1377,16 @@ export function HomeContent({ isActive }: HomeContentProps) {
         </button>
       </div>
 
-      {/* Comments beside the video (xl+). Lets users read comments while watching. */}
-      <div className="feed-comments">
+      {/* Reviews/comments side panel — slides in from the right when opened. */}
+      <div className={`feed-reviews${reviewsOpen ? ' open' : ''}`} aria-hidden={!reviewsOpen}>
+        <button
+          type="button"
+          onClick={() => setReviewsOpen(false)}
+          aria-label="Close reviews"
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 text-black transition hover:bg-black/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+        >
+          <X className="h-4 w-4" />
+        </button>
         <CommentSection videoId={currentVideo.id} className="h-full w-full overflow-y-auto" />
       </div>
 
@@ -1424,12 +1448,19 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </span>
         </button>
 
-        {/* Reviews Button */}
+        {/* Reviews Button — toggles the slide-in side panel on sm+, modal on mobile. */}
         <button
-          onClick={() => handleCommentClick(currentVideo.id)}
-          onKeyDown={(e) => handleKeyDown(e, () => handleCommentClick(currentVideo.id))}
+          onClick={() => {
+            if (typeof window !== 'undefined' && window.innerWidth < 640) {
+              handleCommentClick(currentVideo.id);
+            } else {
+              setReviewsOpen((o) => !o);
+            }
+          }}
+          onKeyDown={(e) => handleKeyDown(e, () => setReviewsOpen((o) => !o))}
           className="group flex flex-col items-center gap-1"
-          aria-label="Add a review or comment"
+          aria-label={reviewsOpen ? 'Close reviews' : 'Open reviews'}
+          aria-expanded={reviewsOpen}
         >
           <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white dark:bg-[#1e1e1e] shadow-lg transition group-hover:brightness-95 dark:group-hover:brightness-110">
             <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
