@@ -126,9 +126,9 @@ function ChatsLayout() {
             type="button"
             onClick={() => setShowNewChat(true)}
             aria-label="New message"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] transition hover:opacity-90"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] p-0 text-white transition hover:opacity-90"
           >
-            <Plus className="h-5 w-5 text-white" />
+            <Plus className="h-5 w-5" />
           </button>
         </div>
 
@@ -235,7 +235,7 @@ function ChatsLayout() {
                 type="submit"
                 disabled={!newMessage.trim() || sending}
                 aria-label="Send"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90 disabled:opacity-40"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] p-0 text-white transition hover:opacity-90 disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>

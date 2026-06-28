@@ -110,7 +110,7 @@ function ChatContent() {
           type="submit"
           disabled={!newMessage.trim() || sending}
           aria-label="Send"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-white transition hover:opacity-90 disabled:opacity-40"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] p-0 text-white transition hover:opacity-90 disabled:opacity-40"
         >
           <Send className="h-4 w-4" />
         </button>

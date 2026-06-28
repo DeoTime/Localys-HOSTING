@@ -49,7 +49,7 @@ export function AddToCartButton({ item, onAdd, isAdded }: { item: StoreItem; onA
       type="button"
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); onAdd(item); }}
       aria-label={`Add ${item.name}`}
-      className={`flex h-8 w-8 items-center justify-center rounded-full border bg-white text-black shadow-sm transition active:scale-95 ${
+      className={`flex h-8 w-8 items-center justify-center rounded-full border bg-white p-0 text-black shadow-sm transition active:scale-95 ${
         isAdded ? 'add-to-cart-pulse border-[#f97316] text-[#f97316]' : 'border-gray-200 hover:border-[#f97316] hover:text-[#f97316]'
       }`}
     >

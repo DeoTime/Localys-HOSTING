@@ -10,14 +10,28 @@ import {
   type ImpactInputs,
 } from '@/lib/ranks';
 
-/** Badge image; falls back to a neutral disc if a file is missing (never broken). */
+/** Badge image; falls back to a visible placeholder disc if a file is missing. */
 function RankBadge({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) {
-    return <div className={`rounded-full bg-white/10 ${className}`} aria-label={alt} />;
+    return (
+      <div
+        className={`rounded-full border-2 border-gray-200 bg-gray-100 flex items-center justify-center ${className}`}
+        aria-label={alt}
+      >
+        <span className="text-2xl font-black text-gray-400 select-none">{alt[0]}</span>
+      </div>
+    );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} className={`object-contain ${className}`} onError={() => setFailed(true)} />;
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`object-contain ${className}`}
+      onError={() => setFailed(true)}
+    />
+  );
 }
 
 /**
@@ -45,7 +59,10 @@ export function RankSection({ moneySpent, points, bizCount }: ImpactInputs) {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <RankBadge src={current.image} alt={current.name} className="h-52 w-52 shrink-0 sm:h-60 sm:w-60" />
+        {/* Dark background so transparent-PNG rank badges always show with contrast */}
+        <div className="flex h-52 w-52 shrink-0 items-center justify-center rounded-2xl bg-gray-900 sm:h-60 sm:w-60">
+          <RankBadge src={current.image} alt={current.name} className="h-44 w-44 sm:h-52 sm:w-52" />
+        </div>
         <div className="w-full text-center">
           <p className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">{current.name}</p>
           <p className="mt-0.5 text-sm text-gray-500">Impact Score {score.toLocaleString()}</p>
@@ -129,11 +146,13 @@ function RanksModal({ currentId, score, onClose }: { currentId: string; score: n
                   </p>
 
                   <div className="relative">
-                    <RankBadge
-                      src={rank.image}
-                      alt={rank.name}
-                      className={`h-20 w-20 ${unlocked ? '' : 'opacity-30 grayscale'}`}
-                    />
+                    <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gray-900 ${!unlocked ? 'opacity-30 grayscale' : ''}`}>
+                      <RankBadge
+                        src={rank.image}
+                        alt={rank.name}
+                        className="h-16 w-16"
+                      />
+                    </div>
                     {!unlocked && (
                       <span className="absolute inset-0 flex items-center justify-center">
                         <Lock className="h-5 w-5 text-gray-400" />

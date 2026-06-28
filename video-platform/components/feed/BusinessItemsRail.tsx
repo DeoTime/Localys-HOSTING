@@ -100,7 +100,7 @@ export function BusinessItemsRail({
                   setAddedId(item.id);
                   window.setTimeout(() => setAddedId((p) => (p === item.id ? null : p)), 1200);
                 }}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] text-white shadow-md transition hover:opacity-90 active:scale-95 lg:h-10 lg:w-10"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#f97316] p-0 text-white shadow-md transition hover:opacity-90 active:scale-95 lg:h-10 lg:w-10"
               >
                 {addedId === item.id ? <Check className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" /> : <Plus className="h-4 w-4 lg:h-5 lg:w-5 shrink-0" />}
               </button>

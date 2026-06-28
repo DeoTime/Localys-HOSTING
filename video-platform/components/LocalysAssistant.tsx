@@ -20,7 +20,7 @@ const QA = [
     id: 'points',
     question: 'How do points and rewards work?',
     keywords: ['point', 'reward', 'coin', 'credit', 'earn', 'localys credit', 'balance', 'challenge', 'convert'],
-    answer: 'Earn Localys Points by completing daily and monthly challenges — things like placing your first order, visiting 3 businesses, or leaving a review. Every 500 points converts to $2.50 in Localys Credit, which is real money off any future order. Check your balance and convert on the Points page (coin icon in the header).',
+    answer: 'Earn Localy Points by completing daily and monthly challenges — things like placing your first order, visiting 3 businesses, or leaving a review. Every 500 points converts to $2.50 in Localy Credit, which is real money off any future order. Check your balance and convert on the Points page (coin icon in the header).',
   },
   {
     id: 'discover',
@@ -44,7 +44,7 @@ const QA = [
     id: 'ranks',
     question: 'How do ranks work?',
     keywords: ['rank', 'level', 'tier', 'bronze', 'silver', 'gold', 'platinum', 'philanthropist', 'status', 'badge', 'progress'],
-    answer: 'Ranks are earned based on how much you spend supporting local businesses:\n\n• Bronze — getting started\n• Silver — growing supporter\n• Gold — committed local champion\n• Platinum — elite community member\n• Localys Philanthropist — top of the community\n\nYour current rank and progress show on your Profile page.',
+    answer: 'Ranks are earned based on how much you spend supporting local businesses:\n\n• Bronze — getting started\n• Silver — growing supporter\n• Gold — committed local champion\n• Platinum — elite community member\n• Localy Philanthropist — top of the community\n\nYour current rank and progress show on your Profile page.',
   },
   {
     id: 'messages',
@@ -84,9 +84,9 @@ const QA = [
   },
   {
     id: 'premium',
-    question: 'What is Localys Premium?',
-    keywords: ['premium', 'membership', 'subscribe', 'subscription', 'upgrade', 'pro', 'localys premium'],
-    answer: 'Localys Premium gives you extra perks for supporting local businesses: enhanced discovery in the feed, exclusive community badges, early access to local deals, and more. Look for Premium options in your account settings.',
+    question: 'What is Localy Premium?',
+    keywords: ['premium', 'membership', 'subscribe', 'subscription', 'upgrade', 'pro', 'localy premium', 'localys premium'],
+    answer: 'Localy Premium is $5/month and gives you a 15% discount across all items, double the coins on every order, enhanced discovery in the feed, and early access to local deals. Open the Premium page to subscribe.',
   },
 ];
 
@@ -106,7 +106,7 @@ function findAnswer(query: string): string | null {
 
 const GREETING: Message = {
   role: 'assistant',
-  text: 'Hi! I\'m the Localys Assistant. Ask me anything about how the app works, or pick a question below.',
+  text: 'Hi! I\'m the Localy Assistant. Ask me anything about how the app works, or pick a question below.',
   showSuggestions: true,
 };
 
@@ -146,8 +146,8 @@ export function LocalysAssistant() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-label={open ? 'Close Localys Assistant' : 'Open Localys Assistant'}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#f97316] shadow-xl transition hover:opacity-90 active:scale-95"
+        aria-label={open ? 'Close Localy Assistant' : 'Open Localy Assistant'}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#f97316] p-0 text-white shadow-xl transition hover:opacity-90 active:scale-95"
       >
         {open ? (
           <X className="h-6 w-6 text-white" />
@@ -166,7 +166,7 @@ export function LocalysAssistant() {
           <div className="flex shrink-0 items-center gap-3 bg-[#f97316] px-4 py-3">
             <MessageCircle className="h-5 w-5 shrink-0 text-white" />
             <div className="flex-1">
-              <p className="text-sm font-bold leading-none text-white">Localys Assistant</p>
+              <p className="text-sm font-bold leading-none text-white">Localy Assistant</p>
               <p className="mt-0.5 text-[11px] leading-none text-white/80">Here to help</p>
             </div>
             <button
@@ -228,7 +228,7 @@ export function LocalysAssistant() {
               type="submit"
               disabled={!input.trim()}
               aria-label="Send"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] transition hover:opacity-90 disabled:opacity-40"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f97316] p-0 text-white transition hover:opacity-90 disabled:opacity-40"
             >
               <Send className="h-4 w-4 text-white" />
             </button>
