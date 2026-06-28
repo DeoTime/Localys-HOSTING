@@ -1069,6 +1069,49 @@ export function HomeContent({ isActive }: HomeContentProps) {
           60% { transform: translate(-50%, 0) scale(1.2); }
           100% { transform: translate(-50%, 0) scale(1); }
         }
+        /* Action rail — mobile: overlaid at right edge; sm+: beside the video */
+        .feed-action-rail {
+          position: absolute;
+          right: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 20;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding-right: 8px;
+        }
+        @media (min-width: 640px) {
+          .feed-action-rail {
+            right: auto;
+            left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 12px);
+            padding-right: 0;
+            gap: 12px;
+          }
+        }
+        @media (min-width: 768px) {
+          .feed-action-rail {
+            left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 16px);
+            gap: 16px;
+          }
+        }
+        /* Up/Down nav arrows — hidden on mobile, overlaid on video's right side on sm+ */
+        .feed-nav-arrows {
+          display: none;
+          position: absolute;
+          right: calc(50% - min(50%, (100dvh - 112px) * 9 / 32) + 10px);
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 21;
+          flex-direction: column;
+          gap: 12px;
+        }
+        @media (min-width: 640px) {
+          .feed-nav-arrows {
+            display: flex;
+          }
+        }
       `}</style>
       <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground">
       {/* Ambient Particle Background - CSS shimmer effect */}
@@ -1267,8 +1310,30 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </div>
       </div>
 
-      {/* Right Side - Interaction Buttons */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
+      {/* Up/Down Navigation Arrows — sit on the right edge of the video column */}
+      <div className="feed-nav-arrows">
+        <button
+          onClick={goToPrev}
+          aria-label="Previous video"
+          className="w-11 h-11 rounded-full bg-white border border-black/10 shadow-md flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
+        >
+          <svg className="w-5 h-5 text-black/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+        <button
+          onClick={goToNext}
+          aria-label="Next video"
+          className="w-11 h-11 rounded-full bg-white border border-black/10 shadow-md flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
+        >
+          <svg className="w-5 h-5 text-black/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Engagement Action Rail — beside the video on its right (see .feed-action-rail CSS above) */}
+      <div className="feed-action-rail">
         {/* Profile Picture */}
         <div className="relative">
           <button
