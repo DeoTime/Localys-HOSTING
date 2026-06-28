@@ -198,7 +198,18 @@ export async function POST(request: NextRequest) {
     };
   });
 
-  const itemsMetadata = items.map((item) => ({ id: item.itemId, qty: item.quantity }));
+  // Save resolved (server-trusted) name/price alongside id so verify-item-purchase
+  // can reconstruct order details from the Stripe session without a second DB query.
+  const itemsMetadata = items.map((item) => {
+    const resolved = menuMap.get(item.itemId);
+    return {
+      id: item.itemId,
+      name: resolved?.name ?? item.itemName,
+      sid: item.sellerId,
+      price: resolved?.price ?? 0,
+      qty: item.quantity,
+    };
+  });
   const firstSellerId = items[0].sellerId;
 
   try {

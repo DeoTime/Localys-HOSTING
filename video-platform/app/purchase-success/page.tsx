@@ -27,7 +27,7 @@ export default function PurchaseSuccessPage() {
 }
 
 function PurchaseSuccessContent() {
-  const { session } = useAuth();
+  const { session, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const [confirmationNumber, setConfirmationNumber] = useState('');
@@ -36,6 +36,9 @@ function PurchaseSuccessContent() {
 
   useEffect(() => {
     if (!sessionId) { setLoading(false); return; }
+    // Wait until AuthContext has finished initialising — otherwise the token is
+    // not yet available and the request goes out without an Authorization header.
+    if (authLoading) return;
 
     const verifyPurchase = async () => {
       try {
@@ -81,7 +84,7 @@ function PurchaseSuccessContent() {
     };
 
     verifyPurchase();
-  }, [sessionId, session?.access_token]);
+  }, [sessionId, session?.access_token, authLoading]);
 
   const total = orders.reduce((sum, o) => sum + o.price, 0);
 

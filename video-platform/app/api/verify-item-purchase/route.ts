@@ -5,6 +5,21 @@ import { generateToken } from '@/lib/verification';
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 import { VerifyItemPurchaseSchema, parseBody } from '@/lib/schemas';
 import { getAuthenticatedUser } from '@/lib/server-auth';
+import storeMenus from '@/data/store-menus.json';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Trusted prices for built-in demo-store items (ids like "jays-burger-0"). */
+const MANIFEST_PRICES: Map<string, { name: string; price: number }> = (() => {
+  const map = new Map<string, { name: string; price: number }>();
+  const stores = storeMenus as Record<string, { items?: { id: string; name: string; price: number }[] }>;
+  for (const store of Object.values(stores)) {
+    for (const it of store.items ?? []) {
+      if (it?.id && typeof it.price === 'number') map.set(it.id, { name: it.name, price: it.price });
+    }
+  }
+  return map;
+})();
 
 function getSupabaseAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -74,17 +89,27 @@ export async function POST(request: NextRequest) {
   try {
     // Multi-item format
     if (metadata.items && metadata.buyerId) {
-      let items: { id: string; name: string; sid: string; price: number }[];
+      let rawItems: { id: string; name?: string; sid?: string; price?: number; qty?: number }[];
       try {
-        items = JSON.parse(metadata.items);
+        rawItems = JSON.parse(metadata.items);
       } catch {
         return NextResponse.json({ error: 'Invalid session data' }, { status: 400 });
       }
 
       const orders = [];
-      for (const item of items) {
+      for (const item of rawItems) {
+        // Resolve name + price: prefer metadata fields (written by checkout-item),
+        // fall back to the manifest so old Stripe sessions still work.
+        const manifest = MANIFEST_PRICES.get(item.id);
+        const resolvedName = item.name || manifest?.name || item.id;
+        const resolvedPrice = typeof item.price === 'number' && item.price > 0
+          ? item.price
+          : (manifest?.price ?? 0);
+        // sid may be missing on old sessions — use top-level sellerId from metadata
+        const resolvedSellerId = item.sid || metadata.sellerId || item.id;
+
         const result = await processPurchase(
-          item.id, item.sid, userId, item.name, item.price,
+          item.id, resolvedSellerId, userId, resolvedName, resolvedPrice,
           sessionId, couponCode, discountPercentage
         );
         if (result) orders.push(result);
@@ -96,8 +121,11 @@ export async function POST(request: NextRequest) {
     // Legacy single-item format
     const { itemId, sellerId, itemName, itemPrice } = metadata;
     if (itemId && sellerId && itemName && itemPrice) {
+      const manifest = MANIFEST_PRICES.get(itemId);
+      const resolvedName = itemName || manifest?.name || itemId;
+      const resolvedPrice = parseFloat(itemPrice) || manifest?.price || 0;
       const result = await processPurchase(
-        itemId, sellerId, userId, itemName, parseFloat(itemPrice),
+        itemId, sellerId, userId, resolvedName, resolvedPrice,
         sessionId, couponCode, discountPercentage
       );
       return NextResponse.json({
@@ -124,6 +152,19 @@ async function processPurchase(
   couponCode: string | null,
   discountPercentage: number
 ): Promise<{ orderId: string; token: string; itemName: string; price: number } | null> {
+  // Demo/built-in store items have non-UUID ids (e.g. "jays-burger-0").
+  // Inserting a non-UUID into a Supabase uuid column throws — return a synthetic
+  // result instead so the confirmation page always has order details.
+  if (!UUID_RE.test(itemId)) {
+    const orderId = `demo-${sessionId.slice(-12)}-${itemId}`.slice(0, 80);
+    const token = generateToken(orderId);
+    const paidPrice = discountPercentage > 0
+      ? Math.max(0, itemPrice - itemPrice * (discountPercentage / 100))
+      : itemPrice;
+    console.log(`[verify-item-purchase] Demo item "${itemId}" — synthetic order ${orderId}`);
+    return { orderId, token, itemName, price: paidPrice };
+  }
+
   const supabase = getSupabaseAdminClient();
   if (!supabase) {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is not configured');
