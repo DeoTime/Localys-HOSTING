@@ -58,6 +58,25 @@ export async function POST(request: NextRequest) {
 
       const metadata = session.metadata || {};
 
+      // --- LOCALY PREMIUM SUBSCRIPTION ---
+      if (metadata.premium === 'true' && metadata.userId) {
+        const premiumUntil = new Date();
+        premiumUntil.setMonth(premiumUntil.getMonth() + 1);
+        const { error: premiumError } = await supabase
+          .from('profiles')
+          .update({
+            is_premium: true,
+            premium_until: premiumUntil.toISOString(),
+            stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+          })
+          .eq('id', metadata.userId);
+        if (premiumError) {
+          console.error('Failed to mark user premium:', premiumError.message);
+          return NextResponse.json({ error: 'Failed to activate premium' }, { status: 500 });
+        }
+        return NextResponse.json({ received: true });
+      }
+
       // Determine if this is a coin purchase or item purchase
       if (metadata.coins && metadata.userId) {
         // --- COIN PURCHASE ---
@@ -121,6 +140,10 @@ export async function POST(request: NextRequest) {
         const buyerId = metadata.buyerId;
         const couponCode = metadata.couponCode || null;
         const discountPercentage = parseInt(metadata.discountPercentage || '0');
+        const scheduledAt = metadata.scheduledAt || null;
+        const groupOrderId = metadata.groupOrderId || null;
+        const promoCodeId = metadata.promoCodeId || null;
+        const promoUsedCount = metadata.promoUsedCount ? parseInt(metadata.promoUsedCount) : null;
 
         // Check if already processed (deduplication)
         const { data: existingItem } = await supabase
@@ -175,6 +198,8 @@ export async function POST(request: NextRequest) {
             stripe_session_id: session.id,
             status: 'paid',
             purchased_at: new Date().toISOString(),
+            ...(scheduledAt && { scheduled_at: scheduledAt }),
+            ...(groupOrderId && { group_order_id: groupOrderId }),
           };
         });
 
@@ -200,6 +225,14 @@ export async function POST(request: NextRequest) {
               .update({ verification_token: token })
               .eq('id', row.id);
           }
+        }
+
+        // Increment promo code use count after confirmed payment
+        if (promoCodeId && promoUsedCount !== null) {
+          await supabase
+            .from('promo_codes')
+            .update({ used_count: promoUsedCount + 1 })
+            .eq('id', promoCodeId);
         }
 
         const itemNames = purchaseRecords.map(r => r.item_name).join(', ');
@@ -270,6 +303,20 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+  }
+
+  // Premium subscription ended (cancelled / payment failed out) — revoke premium.
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as Stripe.Subscription;
+    const userId = subscription.metadata?.userId;
+    if (userId) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_premium: false, premium_until: null })
+        .eq('id', userId);
+      if (error) console.error('Failed to revoke premium:', error.message);
+    }
+    return NextResponse.json({ received: true });
   }
 
   return NextResponse.json({ received: true });

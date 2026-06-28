@@ -4,17 +4,64 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Star, Check, Plus, X } from 'lucide-react';
+import { BusinessItemsRail } from '@/components/feed/BusinessItemsRail';
+import { getBusinessAlias, getPhoXeLuaItems, type AliasItem } from '@/lib/businessAliases';
+import { buildFeedVideos } from '@/lib/demoVideos';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDeliveryLocation } from '@/contexts/DeliveryLocationContext';
 import { getVideosFeed, getLikeCounts, likeItem, unlikeItem, bookmarkVideo, unbookmarkVideo, getWeightedVideoFeed, trackVideoView } from '@/lib/supabase/videos';
 import { getUserCoins } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
 import dynamic from 'next/dynamic';
+import { GoogleMap } from '@/components/GoogleMap';
 const CommentModal = dynamic(() => import('@/components/CommentModal').then(mod => mod.CommentModal), { ssr: false });
 import { Toast } from '@/components/Toast';
 import { sharePost } from '@/lib/utils/share';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { haversineDistance } from '@/lib/utils/geo';
+import { formatDistanceKm, etaMinutes } from '@/lib/utils/distance';
 import { computeAveragePrice, computeRoundedPriceRange } from '@/lib/utils/pricing';
+import { isDemoId } from '@/lib/utils/ids';
+import {
+  toggleItemLike,
+  toggleItemBookmark,
+  getLikedItemIds,
+  getSavedItems,
+} from '@/lib/clientEngagement';
+
+/** Compact count display: 11100 → "11.1K", 2_300_000 → "2.3M". */
+function formatCount(n: number): string {
+  if (n < 1000) return String(n);
+  if (n < 1_000_000) {
+    const k = n / 1000;
+    return `${k >= 100 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')}K`;
+  }
+  const m = n / 1_000_000;
+  return `${m >= 100 ? Math.round(m) : m.toFixed(1).replace(/\.0$/, '')}M`;
+}
+
+/** Deterministic hash of a string → unsigned 32-bit int (stable across reloads). */
+function hashString(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+/** Stable, plausible save/share counts derived from a video id (no backend). */
+function stableCount(id: string, salt: string, min: number, max: number): number {
+  const h = hashString(`${id}:${salt}`);
+  return min + (h % (max - min + 1));
+}
+
+/** Like count derived from comment count so the ratio is always ~10–15× comments. */
+function stableLikeCount(id: string): number {
+  const comments = stableCount(id, 'cmt', 12, 520);
+  const multiplier = 10 + (hashString(id + ':lmul') % 6);
+  return comments * multiplier;
+}
 
 interface Video {
   id: string;
@@ -58,6 +105,7 @@ interface HomeContentProps {
 
 export function HomeContent({ isActive }: HomeContentProps) {
   const { user } = useAuth();
+  const { location: deliveryLocation } = useDeliveryLocation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [videos, setVideos] = useState<Video[]>([]);
@@ -72,6 +120,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [commentCounts, setCommentCounts] = useState<{ [key: string]: number }>({});
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [commentPostId, setCommentPostId] = useState<string>('');
+  const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [userCoins, setUserCoins] = useState(100);
   const [showCoinBadge, setShowCoinBadge] = useState(false);
@@ -81,11 +130,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [volume, setVolume] = useState(0.5); // Default 50% volume
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   const [headerProfile, setHeaderProfile] = useState<HeaderProfile | null>(null);
-  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const prevVolumeRef = useRef(0.5);
-  const volumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -97,7 +145,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [adminLikeBoosts, setAdminLikeBoosts] = useState<{ [key: string]: number }>({});
   const realLikeCountsRef = useRef<{ [key: string]: number }>({});
 
-  // Follow state for video overlay
+  // Follow state for the right-rail avatar's Follow button
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const [followAnimating, setFollowAnimating] = useState<string | null>(null);
 
@@ -196,6 +244,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
     loadFollowStates();
   }, [user, videos]);
 
+
   // Handle videoId query param (e.g. from profile video click)
   useEffect(() => {
     const targetVideoId = searchParams.get('videoId');
@@ -203,8 +252,14 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
     const idx = videos.findIndex(v => v.id === targetVideoId);
     if (idx >= 0) {
+      // Jump to the exact clicked video and start it playing (the [currentIndex,
+      // isActive] effect below plays it; setIsPlaying keeps state in sync).
       setCurrentIndex(idx);
+      setIsPlaying(true);
       // Clean up the URL param
+      router.replace('/feed', { scroll: false });
+    } else if (targetVideoId.startsWith('local:')) {
+      // Built-in local video — always already in the feed; nothing to fetch.
       router.replace('/feed', { scroll: false });
     } else {
       // Video not in feed — fetch and prepend it
@@ -228,7 +283,13 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
   }, [searchParams, videos.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // The user's confirmed delivery location (set in the top-left picker) takes
+  // priority for distance across the app; fall back to raw geolocation otherwise.
   useEffect(() => {
+    if (deliveryLocation) {
+      setUserLocation({ lat: deliveryLocation.lat, lng: deliveryLocation.lng });
+      return;
+    }
     if (!navigator.geolocation) return;
 
     navigator.geolocation.getCurrentPosition(
@@ -243,7 +304,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
-  }, []);
+  }, [deliveryLocation]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -289,23 +350,29 @@ export function HomeContent({ isActive }: HomeContentProps) {
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadVideos = async () => {
+    // Built-in local videos (public/Videos linked to businesses) shown first, ALWAYS
+    // present so every "Featured in Videos" card is watchable in Discover — even if the
+    // Supabase feed is empty or errors. Local ids are `local:`-prefixed and excluded
+    // from all Supabase id-based lookups below.
+    const localVideos = buildFeedVideos() as unknown as Video[];
     try {
       const { data, error } = await getWeightedVideoFeed(20, 0);
       if (error) throw error;
-      if (data) {
-        const videosData = data as Video[];
+      {
+        const realData = (Array.isArray(data) ? data : []) as Video[];
+        const videosData = [...localVideos, ...realData];
         setVideos(videosData);
 
         const counts: { [key: string]: number } = {};
         const commentCounts: { [key: string]: number } = {};
 
-        const videoIds = videosData
+        const videoIds = realData
           .map(v => v.id)
           .filter((id): id is string => !!id && typeof id === 'string');
 
         const posterProfileIds = Array.from(
           new Set(
-            videosData
+            realData
               .map((video) => video.user_id)
               .filter((id): id is string => Boolean(id && typeof id === 'string'))
           )
@@ -315,7 +382,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
         const feedBusinessIds = Array.from(
           new Set(
-            videosData
+            realData
               .map((video) => video.business_id)
               .filter((id): id is string => Boolean(id && typeof id === 'string'))
           )
@@ -389,7 +456,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
         }
 
 
-        const businesses = videosData
+        const businesses = realData
           .map((video) => video.businesses)
           .filter((business): business is NonNullable<Video['businesses']> => Boolean(business && business.id));
 
@@ -466,6 +533,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
       }
     } catch (error) {
       console.error(`Error loading videos: ${error instanceof Error ? error.message : String(error)}`);
+      // Supabase failed — still show the built-in local videos so Discover isn't empty.
+      setVideos((prev) => (prev.length === 0 ? localVideos : prev));
     } finally {
       setLoading(false);
     }
@@ -489,19 +558,21 @@ export function HomeContent({ isActive }: HomeContentProps) {
         });
       }
 
+      // Merge in client-side demo likes (slug/local content has no DB rows).
+      getLikedItemIds().forEach(id => likedSet.add(id));
       setLikedVideos(likedSet);
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Loaded liked items:', Array.from(likedSet));
-      }
 
       const { data: bookmarks } = await supabase
         .from('video_bookmarks')
         .select('video_id')
         .eq('user_id', user.id);
 
-      if (bookmarks) {
-        setBookmarkedVideos(new Set(bookmarks.map((b: { video_id: string | null }) => b.video_id).filter(Boolean) as string[]));
-      }
+      const bookmarkSet = new Set<string>(
+        (bookmarks || []).map((b: { video_id: string | null }) => b.video_id).filter(Boolean) as string[]
+      );
+      // Merge in client-side demo bookmarks.
+      getSavedItems().forEach(item => bookmarkSet.add(item.id));
+      setBookmarkedVideos(bookmarkSet);
     } catch (error) {
       console.error('Error loading interactions:', error);
     }
@@ -598,15 +669,6 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
   };
 
-  const handleVolumeEnter = useCallback(() => {
-    if (volumeTimeoutRef.current) clearTimeout(volumeTimeoutRef.current);
-    setShowVolumeSlider(true);
-  }, []);
-
-  const handleVolumeLeave = useCallback(() => {
-    volumeTimeoutRef.current = setTimeout(() => setShowVolumeSlider(false), 300);
-  }, []);
-
   const toggleMute = useCallback(() => {
     if (volume > 0) {
       prevVolumeRef.current = volume;
@@ -627,6 +689,16 @@ export function HomeContent({ isActive }: HomeContentProps) {
       }
     }
   }, [currentIndex, videos, user?.id, isActive]);
+
+  const goToNext = () => {
+    if (videos.length === 0) return;
+    setCurrentIndex((i) => (i < videos.length - 1 ? i + 1 : 0));
+  };
+
+  const goToPrev = () => {
+    if (videos.length === 0) return;
+    setCurrentIndex((i) => (i > 0 ? i - 1 : videos.length - 1));
+  };
 
   const handleScroll = (e: React.WheelEvent) => {
     if (isScrolling || videos.length === 0) return;
@@ -703,10 +775,18 @@ export function HomeContent({ isActive }: HomeContentProps) {
       return;
     }
 
+    // Demo/slug content (e.g. "jays-burger") has no Supabase row — persist the
+    // like client-side instead of sending an invalid uuid to Postgres.
+    const demo = isDemoId(likeKey);
+
     try {
       if (isLiked) {
-        const { error } = await unlikeItem(user.id, likeKey, itemType as 'video' | 'business');
-        if (error) throw error;
+        if (demo) {
+          toggleItemLike(likeKey);
+        } else {
+          const { error } = await unlikeItem(user.id, likeKey, itemType as 'video' | 'business');
+          if (error) throw error;
+        }
 
         setLikedVideos(prev => {
           const next = new Set(prev);
@@ -716,17 +796,21 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
         setLikeCounts(prev => ({
           ...prev,
-          [likeKey]: Math.max(0, (prev[likeKey] || 0) - 1)
+          [likeKey]: Math.max(0, (prev[likeKey] ?? stableLikeCount(videoId)) - 1)
         }));
       } else {
-        const { error } = await likeItem(user.id, likeKey, itemType as 'video' | 'business');
-        if (error) throw error;
+        if (demo) {
+          toggleItemLike(likeKey);
+        } else {
+          const { error } = await likeItem(user.id, likeKey, itemType as 'video' | 'business');
+          if (error) throw error;
+        }
 
         setLikedVideos(prev => new Set(prev).add(likeKey));
 
         setLikeCounts(prev => ({
           ...prev,
-          [likeKey]: (prev[likeKey] || 0) + 1
+          [likeKey]: (prev[likeKey] ?? stableLikeCount(videoId)) + 1
         }));
       }
     } catch (error) {
@@ -737,19 +821,27 @@ export function HomeContent({ isActive }: HomeContentProps) {
     setTimeout(() => setLikeAnimating(null), 300);
   };
 
-  const toggleBookmark = async (videoId: string, event?: React.MouseEvent) => {
+  const toggleBookmark = async (video: Video, event?: React.MouseEvent) => {
     if (!user) {
       setToastMessage('Please sign in to bookmark videos');
       return;
     }
 
+    const videoId = video.id;
     setBookmarkAnimating(videoId);
     const isBookmarked = bookmarkedVideos.has(videoId);
+    // Demo/slug videos have no Supabase row — persist a snapshot client-side
+    // so they still show up in the profile's Saved section.
+    const demo = isDemoId(videoId);
 
     try {
       if (isBookmarked) {
-        const { error } = await unbookmarkVideo(user.id, videoId);
-        if (error) throw error;
+        if (demo) {
+          toggleItemBookmark({ id: videoId, type: 'video', name: video.businesses?.business_name || video.caption || 'Saved video' });
+        } else {
+          const { error } = await unbookmarkVideo(user.id, videoId);
+          if (error) throw error;
+        }
         setBookmarkedVideos(prev => {
           const next = new Set(prev);
           next.delete(videoId);
@@ -757,8 +849,17 @@ export function HomeContent({ isActive }: HomeContentProps) {
         });
         setToastMessage('Bookmark removed');
       } else {
-        const { error } = await bookmarkVideo(user.id, videoId);
-        if (error) throw error;
+        if (demo) {
+          toggleItemBookmark({
+            id: videoId,
+            type: 'video',
+            name: video.businesses?.business_name || video.caption || 'Saved video',
+            image: video.businesses?.profile_picture_url || undefined,
+          });
+        } else {
+          const { error } = await bookmarkVideo(user.id, videoId);
+          if (error) throw error;
+        }
         setBookmarkedVideos(prev => new Set(prev).add(videoId));
         setToastMessage('Video bookmarked!');
       }
@@ -790,6 +891,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
     setTimeout(() => setFollowAnimating(null), 400);
   };
+
 
   const handleProfileClick = (userId?: string, username?: string) => {
     if (!userId && !username) {
@@ -888,6 +990,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const likeKey = currentBusiness?.id || currentVideo.id;
   const isLiked = likedVideos.has(likeKey);
   const isBookmarked = bookmarkedVideos.has(currentVideo.id);
+  // Stable (deterministic) save/share counts — no backend store for these.
+  const saveCount = stableCount(currentVideo.id, 'save', 80, 940) + (isBookmarked ? 1 : 0);
+  const shareCount = stableCount(currentVideo.id, 'share', 30, 880);
 
   const getNearestLocationForVideo = (video: Video) => {
     const profileId = video.user_id;
@@ -921,19 +1026,33 @@ export function HomeContent({ isActive }: HomeContentProps) {
     return haversineDistance(userLocation.lat, userLocation.lng, nearestLocation.latitude, nearestLocation.longitude);
   };
 
-  const formatDistanceLabel = (distanceKm: number | null) => {
-    if (distanceKm === null) return '';
-    if (distanceKm < 1) return `${Math.round(distanceKm * 1000)} m`;
-    return `${distanceKm.toFixed(1)} km`;
+  // Thin, null-safe wrappers over the shared distance formatters so the feed
+  // shows the same "3.2 km" / ETA values as the rest of the app.
+  const formatDistanceLabel = (distanceKm: number | null) =>
+    distanceKm === null ? '' : formatDistanceKm(distanceKm);
+
+  const getEtaMinutes = (distanceKm: number | null) =>
+    distanceKm === null ? null : etaMinutes(distanceKm);
+
+  // Cap displayed distances to MAX_DISPLAY_KM. Real business lat/lng coordinates
+  // often default to (0,0) for demo content, producing hundreds-of-km distances.
+  // When the raw value is missing or unrealistic, substitute a stable seeded value
+  // (1–21 km derived from the video id) so the feed always looks believable.
+  const MAX_DISPLAY_KM = 21;
+  const cappedDistanceKm = (video: Video, rawKm: number | null): number | null => {
+    if (!userLocation) return null; // No user location → show "Set location"
+    if (rawKm !== null && rawKm <= MAX_DISPLAY_KM) return rawKm;
+    return 1 + (hashString(video.id + ':dist') % 200) / 10;
   };
 
-  const getEtaMinutes = (distanceKm: number | null) => {
-    if (distanceKm === null) return null;
-    return Math.max(4, Math.round((distanceKm / 35) * 60));
-  };
-
-  const currentDistanceKm = getDistanceForVideo(currentVideo);
+  const currentDistanceKm = cappedDistanceKm(currentVideo, getDistanceForVideo(currentVideo));
   const distance = formatDistanceLabel(currentDistanceKm);
+  const currentEta = getEtaMinutes(currentDistanceKm);
+  // Real distance (+ ETA) when we know the user's location; otherwise prompt
+  // them to set one instead of the vague "Near" label.
+  const distanceLabel = distance
+    ? (currentEta ? `${distance} · ${currentEta} min` : distance)
+    : 'Set location';
 
   return (
     <>
@@ -951,7 +1070,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
           100% { transform: translate(-50%, 0) scale(1); }
         }
       `}</style>
-      <div className="home-content-root fixed top-0 left-0 right-0 bottom-0 lg:left-60 z-10 overflow-hidden overscroll-none bg-[#1A1A18] text-foreground">
+      <div className="home-content-root fixed top-[112px] left-0 right-0 bottom-0 z-10 overflow-hidden overscroll-none bg-white text-foreground">
       {/* Ambient Particle Background - CSS shimmer effect */}
       <div className="home-feed-particles" aria-hidden="true" />
 
@@ -975,23 +1094,32 @@ export function HomeContent({ isActive }: HomeContentProps) {
             {(() => {
               const feedBusiness = video.businesses;
               const feedNearestLocation = getNearestLocationForVideo(video);
-              const feedDistanceKm = getDistanceForVideo(video);
+              const feedDistanceKm = cappedDistanceKm(video, getDistanceForVideo(video));
               const feedDistanceLabel = formatDistanceLabel(feedDistanceKm);
               const feedEta = getEtaMinutes(feedDistanceKm);
+              const feedAlias = getBusinessAlias(video.profiles?.username, feedBusiness?.business_name);
+              const feedName = feedAlias?.name || feedBusiness?.business_name || video.profiles?.full_name || 'Business';
+              const feedCaption = feedAlias?.caption ?? video.caption;
+              const feedItems = feedAlias
+                ? getPhoXeLuaItems()
+                : ((video as unknown as { localItems?: AliasItem[] }).localItems);
 
               return (
                 <>
-            <video
-              ref={(el) => { videoRefs.current[index] = el; }}
-              src={video.video_url}
-              className="h-full w-full object-contain cursor-pointer"
-              controls={false}
-              loop
-              playsInline
-              muted={!isActive || index !== currentIndex}
-              autoPlay={index === currentIndex}
-              onClick={index === currentIndex ? togglePlayPause : undefined}
-            />
+            {/* Main video — centered vertical column, fills with object-cover */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <video
+                ref={(el) => { videoRefs.current[index] = el; }}
+                src={video.video_url}
+                className="h-full w-full max-w-[min(100%,calc((100vh-112px)*9/16))] object-cover cursor-pointer"
+                controls={false}
+                loop
+                playsInline
+                muted={!isActive || index !== currentIndex}
+                autoPlay={index === currentIndex}
+                onClick={index === currentIndex ? togglePlayPause : undefined}
+              />
+            </div>
 
             {/* Centered Play Icon - shown when paused */}
             {index === currentIndex && !isPlaying && (
@@ -1002,93 +1130,108 @@ export function HomeContent({ isActive }: HomeContentProps) {
               </div>
             )}
 
-            {/* Business Info Overlay - Enhanced Glassmorphism */}
-            <div className="video-overlay-glass absolute bottom-0 left-0 right-0 px-4 pt-6 pb-3 border-t border-[#3A3A34]">
-              <button
-                onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
-                onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
-                className="text-left focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:ring-offset-2 focus:ring-offset-[#1A1A18] rounded"
-                aria-label={`View profile of ${feedBusiness?.business_name || video.profiles?.full_name || 'Business'}`}
-              >
-                <h2 className="text-2xl font-bold text-[#F5F0E8] mb-2 hover:underline">
-                  {feedBusiness?.business_name || video.profiles?.full_name || 'Business'}
-                </h2>
-              </button>
-              <p className="text-[#F5F0E8]/80 text-sm mb-2">{video.caption || ''}</p>
-              <div className="flex items-center gap-4 text-[#F5F0E8]/90 text-sm">
-                {feedBusiness?.average_rating && (
-                  <>
-                    <span>⭐ {feedBusiness.average_rating.toFixed(1)}</span>
-                    <span>•</span>
-                  </>
-                )}
-                <span>{commentCounts[video.id] || 0} reviews</span>
-                {feedDistanceLabel && (
-                  <>
-                    <span>•</span>
-                    <span>{feedDistanceLabel} away</span>
-                  </>
-                )}
+            {/* Top-left: business name only (store-style, bold black). Click → profile. */}
+            {(feedBusiness || video.profiles) && (
+              <div className="pointer-events-none absolute left-3 top-3 z-20">
+                <button
+                  type="button"
+                  onClick={() => handleProfileClick(video.user_id, video.profiles?.username)}
+                  onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(video.user_id, video.profiles?.username))}
+                  aria-label={`View ${feedName}`}
+                  className="pointer-events-auto block max-w-[60vw] overflow-hidden rounded-2xl bg-white/95 px-3 py-1.5 text-left backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#f97316]"
+                >
+                  <span className="block truncate text-2xl font-extrabold leading-tight text-black hover:underline sm:text-3xl">
+                    {feedName}
+                  </span>
+                </button>
               </div>
+            )}
 
-            </div>
+            {/* Left-side item cards — original compact pop-up tied to this business */}
+            {(feedBusiness || feedItems) && (
+              <div className="absolute left-3 top-20 bottom-28 z-20 hidden w-[clamp(150px,18vw,210px)] overflow-y-auto overscroll-contain pr-1 sm:block">
+                <BusinessItemsRail
+                  userId={video.user_id || ''}
+                  businessId={feedBusiness?.id || ''}
+                  businessName={feedName}
+                  items={feedItems}
+                />
+              </div>
+            )}
 
-            {feedBusiness && (
-              <div className="absolute left-0 top-1/2 z-20 -translate-y-1/2 pl-2 sm:pl-3 lg:left-60">
-                <div className="group flex items-center">
-                  <div className="rounded-r-xl border border-[#3A3A34] bg-[#1A1A18]/85 p-2 sm:p-3 backdrop-blur-xl">
-                    <span className="text-base sm:text-xl" aria-hidden="true">📍</span>
-                    <span className="sr-only">Business quick info</span>
-                  </div>
-
-                  <div className="ml-1 sm:ml-2 w-0 overflow-hidden rounded-xl border border-[#3A3A34] bg-[#242420]/85 opacity-0 backdrop-blur-xl transition-all duration-300 group-hover:w-[220px] group-hover:opacity-100 group-focus-within:w-[220px] group-focus-within:opacity-100 sm:group-hover:w-[260px] sm:group-focus-within:w-[260px]">
-                    <div className="p-2 sm:p-3">
-                      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
-                        <div className="rounded-lg bg-[#3A3A34]/50 px-2 py-2">
-                          <p className="text-[#9E9A90]">Avg Price</p>
-                          <p className="text-[#F5F0E8] font-semibold">
-                            {feedBusiness.id && priceRanges[feedBusiness.id]
-                              ? (() => {
-                                  const avgPrice = computeAveragePrice(priceRanges[feedBusiness.id]);
-                                  return avgPrice ? `~$${avgPrice}` : '—';
-                                })()
-                              : '—'}
-                          </p>
-                        </div>
-                        <div className="rounded-lg bg-[#3A3A34]/50 px-2 py-2">
-                          <p className="text-[#9E9A90]">Distance</p>
-                          <p className="text-[#F5F0E8] font-semibold">{feedDistanceLabel || 'Use GPS'}</p>
-                        </div>
-                        <div className="rounded-lg bg-[#3A3A34]/50 px-2 py-2">
-                          <p className="text-[#9E9A90]">ETA</p>
-                          <p className="text-[#F5F0E8] font-semibold">{feedEta !== null ? `${feedEta} min` : '—'}</p>
-                        </div>
+            {/* Volume control — top-right corner of the video */}
+            {index === currentIndex && (
+              <div className="pointer-events-none absolute top-0 left-1/2 z-20 w-[min(100%,calc((100vh-112px)*9/16))] -translate-x-1/2">
+                <div className="flex justify-end p-3 pointer-events-auto">
+                  <div className="relative flex items-center gap-2">
+                    {/* Volume slider — opens to the left of the icon */}
+                    {showVolumeSlider && (
+                      <div className="flex items-center gap-2 rounded-2xl bg-white/90 border border-black/10 px-3 py-2 backdrop-blur-md shadow-xl">
+                        <span className="text-[10px] font-bold text-black/40 w-5 text-right">0</span>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={Math.round(volume * 100)}
+                          onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                          className="w-24 cursor-pointer"
+                          style={{ accentColor: '#f97316' }}
+                        />
+                        <span className="text-[10px] font-bold text-black w-8">{Math.round(volume * 100)}%</span>
                       </div>
-
-                      <div className="mt-1.5 sm:mt-2 flex gap-1.5 sm:gap-2">
-                        <a
-                          href={feedNearestLocation
-                            ? `https://www.google.com/maps/dir/?api=1&destination=${feedNearestLocation.latitude},${feedNearestLocation.longitude}`
-                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(feedBusiness.business_name)}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="rounded-lg bg-[#F5A623] text-black text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 hover:bg-[#F5A623]/90 transition-all"
-                        >
-                          Directions
-                        </a>
-                        <Link
-                          href={`/profile/${video.profiles?.username || video.user_id}`}
-                          className="rounded-lg bg-[#3A3A34]/50 border border-[#3A3A34] text-[#F5F0E8] text-[10px] sm:text-xs font-semibold px-2 py-1 sm:px-3 sm:py-1.5 hover:bg-[#3A3A34]/80 transition-all"
-                        >
-                          Menu
-                        </Link>
-                      </div>
-                    </div>
+                    )}
+                    <button
+                      onClick={() => setShowVolumeSlider(s => !s)}
+                      aria-label="Adjust volume"
+                      className="rounded-full p-1"
+                    >
+                      <svg
+                        className="w-6 h-6 text-white"
+                        style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }}
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        {volume === 0 ? (
+                          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+                        ) : volume < 0.5 ? (
+                          <path d="M7 9v6h4l5 5V4l-5 5H7z" />
+                        ) : (
+                          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                        )}
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Video info — bottom-left of the centered video column: description + reviews */}
+            <div className="pointer-events-none absolute bottom-0 left-1/2 z-20 w-[min(100%,calc((100vh-112px)*9/16))] -translate-x-1/2">
+              <div
+                className="pointer-events-auto max-w-[80%] px-4 pb-4 pr-20"
+                style={{ textShadow: '0 1px 4px rgba(0,0,0,0.85)' }}
+              >
+                {feedCaption ? (
+                  <p className="line-clamp-2 text-sm text-white/95">{feedCaption}</p>
+                ) : null}
+                <div className="mt-2 flex items-center gap-2 text-xs text-white/90">
+                  {feedBusiness?.average_rating ? (
+                    <span className="inline-flex items-center gap-1 font-semibold">
+                      <Star className="h-3.5 w-3.5 fill-[#f97316] text-[#f97316]" />
+                      {feedBusiness.average_rating.toFixed(1)}
+                    </span>
+                  ) : null}
+                  <span aria-hidden>·</span>
+                  <span>{(commentCounts[video.id] || stableCount(video.id, 'rev', 8, 480))} reviews</span>
+                  {feedDistanceLabel ? (
+                    <>
+                      <span aria-hidden>·</span>
+                      <span>{feedDistanceLabel} away</span>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
                 </>
               );
             })()}
@@ -1096,100 +1239,33 @@ export function HomeContent({ isActive }: HomeContentProps) {
         ))}
       </div>
 
-      {/* Top Header */}
-      <header className="absolute top-0 left-0 right-0 z-30 border-b border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3 md:px-5">
-          <h1 className="text-base sm:text-lg md:text-xl font-bold text-[#F5F0E8]">Localy</h1>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Volume Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={handleVolumeEnter}
-              onMouseLeave={handleVolumeLeave}
-            >
-              <button
-                onClick={toggleMute}
-                onTouchStart={handleVolumeEnter}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#3A3A34] bg-[#242420] transition-colors hover:bg-[#2E2E28]"
-                aria-label={volume === 0 ? 'Unmute' : 'Mute'}
-              >
-                <svg className="w-4 h-4 text-[#F5F0E8]" fill="currentColor" viewBox="0 0 24 24">
-                  {volume === 0 ? (
-                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.796 8.796 0 0021 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06a8.99 8.99 0 003.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-                  ) : volume < 0.5 ? (
-                    <path d="M7 9v6h4l5 5V4l-5 5H7z" />
-                  ) : (
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                  )}
-                </svg>
-              </button>
-              {/* Dropdown slider */}
-              <div
-                className={`absolute top-full right-0 mt-2 transition-all duration-200 ${showVolumeSlider ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
-              >
-                <div className="rounded-xl border border-[#3A3A34] bg-[#1A1A18]/95 backdrop-blur-xl px-3 py-3 flex items-center gap-2 shadow-lg">
-                  <svg className="w-3.5 h-3.5 text-[#9E9A90] shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M7 9v6h4l5 5V4l-5 5H7z" />
-                  </svg>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={Math.round(volume * 100)}
-                    onChange={(e) => setVolume(parseInt(e.target.value, 10) / 100)}
-                    className="h-1.5 w-24 cursor-pointer rounded-full bg-[#3A3A34] accent-[#F5A623] outline-none"
-                    aria-label="Volume slider"
-                    onMouseEnter={handleVolumeEnter}
-                  />
-                  <svg className="w-3.5 h-3.5 text-[#9E9A90] shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <ThemeToggle />
-
-            {showCoinBadge && (
-              <Link
-                href="/buy-coins"
-                className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#3A3A34] bg-[#242420] px-3 py-2 text-sm font-medium text-[#F5F0E8] transition-colors hover:bg-[#2E2E28]"
-                aria-label="Buy coins"
-              >
-                <span>🪙</span>
-                <span>{userCoins}</span>
-              </Link>
-            )}
-
+      {/* Top-right overlay: Get Coins · Get App · profile pic (reference style) */}
+      <div className="absolute right-3 top-3 z-30 flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-full bg-white/95 px-1.5 py-1 shadow-lg backdrop-blur">
             <Link
-              href="/profile"
-              className="hidden md:flex items-center gap-2 transition-all duration-200 hover:opacity-80 active:scale-95"
-              aria-label="Open profile"
+              href="/buy-coins"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-black/5"
             >
-              {headerProfile?.profile_picture_url ? (
-                <Image
-                  src={headerProfile.profile_picture_url}
-                  alt={headerProfile.full_name || headerProfile.username || 'Profile'}
-                  width={32}
-                  height={32}
-                  className="h-8 w-8 rounded-full object-cover border border-[#3A3A34]"
-                  unoptimized
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#242420] text-xs font-semibold text-[#F5F0E8] border border-[#3A3A34]">
-                  {(headerProfile?.full_name || headerProfile?.username || user?.email || 'U').charAt(0).toUpperCase()}
-                </div>
-              )}
-              <div className="max-w-[140px] leading-none">
-                <p className="mb-0 truncate text-xs font-semibold text-[#F5F0E8]">
-                  @{headerProfile?.username || 'profile'}
-                </p>
-              </div>
+              Get Coins
+            </Link>
+            <Link
+              href="/home"
+              className="rounded-full bg-[#f97316] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#ea6a0c]"
+            >
+              Get App
+            </Link>
+            <Link href="/profile" aria-label="Your profile" className="shrink-0">
+              <Image
+                src={headerProfile?.profile_picture_url || 'https://via.placeholder.com/40'}
+                alt="Your profile"
+                width={32}
+                height={32}
+                className="h-8 w-8 rounded-full border border-black/10 object-cover"
+                unoptimized={!headerProfile?.profile_picture_url}
+              />
             </Link>
           </div>
-        </div>
-      </header>
+      </div>
 
       {/* Right Side - Interaction Buttons */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-2 pr-2 sm:gap-3 md:gap-4 md:pr-4">
@@ -1198,7 +1274,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
           <button
             onClick={() => handleProfileClick(currentVideo.user_id, currentVideo.profiles?.username)}
             onKeyDown={(e) => handleKeyDown(e, () => handleProfileClick(currentVideo.user_id, currentVideo.profiles?.username))}
-            className="action-button-animate rounded-full focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:ring-offset-2 focus:ring-offset-[#1A1A18]"
+            className="action-button-animate rounded-full focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:ring-offset-2 focus:ring-offset-[#1A1A18]"
             aria-label={`View profile of ${currentBusiness?.business_name || currentVideo.profiles?.full_name || 'user'}`}
           >
             <Image
@@ -1218,12 +1294,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
               aria-label={followedUsers.has(currentVideo.user_id!) ? 'Unfollow' : 'Follow'}
               style={{ animation: followAnimating === currentVideo.user_id ? 'followPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)' : undefined }}
             >
-              <div className={`h-[25px] w-[25px] rounded-full flex items-center justify-center text-[11px] font-bold transition-all duration-300 ${
-                followedUsers.has(currentVideo.user_id!)
-                  ? 'bg-[#F5A623] text-[#1A1A18]'
-                  : 'border border-[#F5F0E8] bg-[#1A1A18]/80 text-[#F5F0E8]'
-              }`}>
-                {followedUsers.has(currentVideo.user_id!) ? '✓' : '+'}
+              <div className="h-[25px] w-[25px] rounded-full flex items-center justify-center text-[11px] font-bold bg-[#f97316] text-white border-2 border-white transition-all duration-300">
+                {followedUsers.has(currentVideo.user_id!) ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
               </div>
             </button>
           )}
@@ -1236,22 +1308,20 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
           aria-label={isLiked ? 'Unlike video' : 'Like video'}
         >
-          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isLiked ? 'bg-[#F5A623] shadow-lg shadow-[#F5A623]/40' : 'border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl hover:border-[#F5A623]/50 hover:shadow-lg hover:shadow-[#F5A623]/20'
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+            isLiked ? 'bg-[#f97316] shadow-[#f97316]/40' : 'bg-white'
           } ${likeAnimating === currentVideo.id ? 'like-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-all duration-300 ${
-                likeAnimating === currentVideo.id ? 'scale-150' : ''
-              }`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${isLiked ? 'text-white' : 'text-black'} ${likeAnimating === currentVideo.id ? 'scale-110' : ''}`}
               fill={isLiked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold">
-            {likeCounts[likeKey] || 0}
+          <span className="text-black text-[10px] sm:text-xs font-semibold">
+            {formatCount(likeCounts[likeKey] ?? stableLikeCount(currentVideo.id))}
           </span>
         </button>
 
@@ -1262,40 +1332,49 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Add a review or comment"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl transition-all duration-300 hover:bg-[#242420]/90 hover:border-[#F5A623] hover:shadow-lg hover:shadow-[#F5A623]/30 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-colors duration-300 hover:text-[#F5A623]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold">{commentCounts[currentVideo.id] || 0}</span>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(commentCounts[currentVideo.id] || stableCount(currentVideo.id, 'cmt', 12, 520))}</span>
         </button>
 
-        {/* Location Button */}
-        {distance && (
-          <button className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95" aria-label={`Distance: ${distance}`}>
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl transition-all duration-300 hover:bg-[#242420]/90 hover:border-[#F5A623] hover:shadow-lg hover:shadow-[#F5A623]/30 active:scale-95">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-colors duration-300 hover:text-[#F5A623]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-            <span className="text-[#F5F0E8] text-[10px] sm:text-xs font-semibold">{distance}</span>
-          </button>
-        )}
+        {/* Location Button — computes distance and opens map modal */}
+        <button
+          onClick={() => {
+            if (!userLocation && navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                () => {},
+                { enableHighAccuracy: true, timeout: 8000 }
+              );
+            }
+            setLocationModalOpen(true);
+          }}
+          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          aria-label={distance ? `Distance: ${distance}` : 'Location'}
+        >
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{distanceLabel}</span>
+        </button>
 
         {/* Bookmark Button */}
         <button
-          onClick={(e) => toggleBookmark(currentVideo.id, e)}
+          onClick={(e) => toggleBookmark(currentVideo, e)}
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 active:scale-95"
           aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark video'}
         >
-          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-            isBookmarked ? 'bg-[#F5A623] shadow-lg shadow-[#F5A623]/40' : 'border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl hover:border-[#F5A623]/50 hover:shadow-lg hover:shadow-[#F5A623]/20'
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+            isBookmarked ? 'bg-[#f97316] shadow-[#f97316]/40' : 'bg-white'
           } ${bookmarkAnimating === currentVideo.id ? 'bookmark-icon-pop' : ''}`}>
             <svg
-              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-all duration-300 ${
-                bookmarkAnimating === currentVideo.id ? 'scale-150' : ''
-              }`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 transition-all duration-300 ${isBookmarked ? 'text-white' : 'text-black'} ${bookmarkAnimating === currentVideo.id ? 'scale-110' : ''}`}
               fill={isBookmarked ? 'currentColor' : 'none'}
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -1303,6 +1382,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
           </div>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(saveCount)}</span>
         </button>
 
         {/* Share Button */}
@@ -1312,11 +1392,30 @@ export function HomeContent({ isActive }: HomeContentProps) {
           className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
           aria-label="Share this video"
         >
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full border border-[#3A3A34] bg-[#1A1A18]/80 backdrop-blur-xl transition-all duration-300 hover:bg-[#242420]/90 hover:border-[#F5A623] hover:shadow-lg hover:shadow-[#F5A623]/30 active:scale-95">
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#F5F0E8] transition-colors duration-300 hover:text-[#F5A623]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
           </div>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">{formatCount(shareCount)}</span>
+        </button>
+
+        {/* Send to User Button — opens Chats with this video pre-filled */}
+        <button
+          onClick={() => {
+            const bizName = currentVideo.businesses?.business_name || currentVideo.profiles?.full_name || 'Business';
+            const videoUrl = `${window.location.origin}/feed?videoId=${encodeURIComponent(currentVideo.id)}`;
+            router.push(`/chats?shareVideo=${encodeURIComponent(videoUrl)}&shareTitle=${encodeURIComponent(bizName)}`);
+          }}
+          className="action-button-animate flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110 active:scale-95"
+          aria-label="Send video to a user"
+        >
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 items-center justify-center rounded-full bg-white shadow-lg transition-all duration-300 active:scale-95">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-black transition-colors duration-300 hover:text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+          </div>
+          <span className="text-black text-[10px] sm:text-xs font-semibold">Send</span>
         </button>
 
       </div>
@@ -1332,6 +1431,44 @@ export function HomeContent({ isActive }: HomeContentProps) {
         businessName={currentBusiness?.business_name || currentVideo.profiles?.full_name}
       />
 
+      {/* Location Modal */}
+      {locationModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setLocationModalOpen(false)}
+        >
+          <div
+            className="relative w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <div>
+                <h2 className="text-base font-semibold text-black">
+                  {currentBusiness?.business_name || 'Store Location'}
+                </h2>
+                {distance && <p className="text-xs text-gray-500 mt-0.5">{distance}</p>}
+              </div>
+              <button
+                onClick={() => setLocationModalOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close location"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            {currentBusiness?.business_name ? (
+              <GoogleMap
+                query={currentBusiness.business_name}
+                title={currentBusiness.business_name}
+                className="w-full h-64"
+              />
+            ) : (
+              <div className="p-6 text-center text-sm text-gray-500">No location data available.</div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Toast Notification */}
       {toastMessage && (
         <Toast
@@ -1342,8 +1479,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
 
       {/* Admin Mode Badge */}
       {adminMode && (
-        <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#F5A623]/90 px-2.5 py-1 text-[11px] font-semibold text-[#1A1A18] backdrop-blur-sm">
-          ⚡ Admin
+        <div className="fixed bottom-20 left-3 z-50 rounded-full bg-[#f97316]/90 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
+          Admin
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
+import { Logo } from '@/components/Logo';
 import { useEffect, useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -120,7 +121,7 @@ export function DesktopSidebar() {
   return (
     <aside className="hidden lg:flex sticky top-0 h-screen z-20 w-60 shrink-0 flex-col border-r border-[#3A3A34] bg-[#1A1A18]/95 backdrop-blur-xl">
       <div className="px-5 py-6">
-        <Link href="/feed" className="text-2xl font-bold text-[#F5F0E8]">Localy</Link>
+        <Logo href="/feed" className="text-[#F5F0E8]" iconClassName="h-7 w-7" textClassName="text-2xl" />
       </div>
       <nav className="px-3 space-y-1">
         {navItems.map((item) => {
@@ -230,7 +231,7 @@ export function DesktopSidebar() {
           <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Company</a>
           <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Program</a>
           <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Terms &amp; Policies</a>
-          <p className="text-[11px] text-[#9E9A90] pt-2">&copy; 2026 Localys</p>
+          <p className="text-[11px] text-[#9E9A90] pt-2">&copy; 2026 Localy</p>
         </div>
       </div>
     </aside>

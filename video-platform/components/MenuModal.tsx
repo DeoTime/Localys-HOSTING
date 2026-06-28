@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Menu, MenuItem, createMenu, updateMenu, addMenuItemToMenu, updateMenuItem } from '@/lib/supabase/profiles';
 import { supabase } from '@/lib/supabase/client';
+import { validateRequired, validatePrice } from '@/lib/utils/validation';
 
 interface MenuModalProps {
   userId: string;
@@ -29,6 +30,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
   const [itemPrice, setItemPrice] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [itemCategory, setItemCategory] = useState('');
+  const [itemErrors, setItemErrors] = useState<{ name?: string | null; price?: string | null }>({});
   const [addingItem, setAddingItem] = useState(false);
   
   // Item image upload state
@@ -71,6 +73,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     setItemPrice('');
     setItemDescription('');
     setItemCategory('');
+    setItemErrors({});
     setSelectedImage(null);
     setImagePreview(null);
     setUploadError(null);
@@ -232,24 +235,18 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     if (!menu) return;
 
     setError(null);
+
+    // Syntactic + semantic validation: name required; price must be numeric and
+    // greater than $0 (rejects empty, non-numeric, zero, and negative prices).
+    const nameError = validateRequired(itemName, 'Item name');
+    const priceError = validatePrice(itemPrice, 'Price');
+    setItemErrors({ name: nameError, price: priceError });
+    if (nameError || priceError) return;
+
     setAddingItem(true);
     setUploading(!!selectedImage);
 
     try {
-      if (!itemName.trim()) {
-        setError('Item name is required');
-        setAddingItem(false);
-        setUploading(false);
-        return;
-      }
-
-      if (!itemPrice || isNaN(parseFloat(itemPrice))) {
-        setError('Valid price is required');
-        setAddingItem(false);
-        setUploading(false);
-        return;
-      }
-
       let imageUrl: string | undefined;
       if (selectedImage) {
         const url = await uploadItemImage();
@@ -417,10 +414,12 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                     <input
                       type="text"
                       value={itemName}
-                      onChange={(e) => setItemName(e.target.value)}
+                      onChange={(e) => { setItemName(e.target.value); if (itemErrors.name) setItemErrors((p) => ({ ...p, name: null })); }}
                       placeholder="e.g., Caesar Salad"
+                      aria-invalid={!!itemErrors.name}
                       className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
                     />
+                    {itemErrors.name && <p role="alert" className="mt-1 text-xs font-medium text-red-400">{itemErrors.name}</p>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -429,11 +428,14 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                       <input
                         type="number"
                         step="0.01"
+                        min="0.01"
                         value={itemPrice}
-                        onChange={(e) => setItemPrice(e.target.value)}
+                        onChange={(e) => { setItemPrice(e.target.value); if (itemErrors.price) setItemErrors((p) => ({ ...p, price: null })); }}
                         placeholder="0.00"
+                        aria-invalid={!!itemErrors.price}
                         className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
                       />
+                      {itemErrors.price && <p role="alert" className="mt-1 text-xs font-medium text-red-400">{itemErrors.price}</p>}
                     </div>
                     <div>
                       <label className="block text-[#F5F0E8] text-xs font-medium mb-2">Category</label>
@@ -504,7 +506,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                       className="px-4 py-2 rounded-xl font-medium text-sm bg-[#242420] border border-[#3A3A34] text-[#F5F0E8] hover:bg-[#2E2E28] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                       title="Add item photo"
                     >
-                      📷 Add Photo
+                      Add Photo
                     </button>
                   </div>
 

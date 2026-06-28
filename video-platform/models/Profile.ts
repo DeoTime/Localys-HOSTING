@@ -7,6 +7,10 @@ export interface Profile {
   profile_picture_url?: string;
   coin_balance?: number;
   type?: string | null;
+  /** Localy Premium subscription state (see supabase/*_premium.sql). */
+  is_premium?: boolean;
+  premium_until?: string | null;
+  stripe_customer_id?: string | null;
 }
 
 export interface BusinessHours {
@@ -28,6 +32,9 @@ export interface Business {
   business_type?: string;
   business_hours?: BusinessHours;
   custom_messages?: string[];
+  phone?: string;
+  address?: string;
+  misc_info?: string;
 }
 
 export interface ProfileUpdateData {
@@ -42,4 +49,7 @@ export interface BusinessUpdateData {
   business_type?: string;
   custom_messages?: string[];
   business_hours?: BusinessHours;
+  phone?: string;
+  address?: string;
+  misc_info?: string;
 }

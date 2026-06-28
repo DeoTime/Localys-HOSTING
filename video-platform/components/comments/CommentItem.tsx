@@ -18,6 +18,8 @@ import {
   Comment,
   CreateReplyPayload,
 } from '@/lib/supabase/comments';
+import { isDemoId } from '@/lib/utils/ids';
+import { toggleCommentLikeLocal } from '@/lib/clientEngagement';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import CommentForm from './CommentForm';
 
@@ -93,11 +95,15 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
 
     setLiking(true);
     try {
-      const { error } = await toggleCommentLike(comment.id, comment.is_liked);
-
-      if (error) {
-        alert(`Failed to ${comment.is_liked ? 'unlike' : 'like'} comment: ${error.message}`);
-        return;
+      // Demo comments persist client-side; real comments hit Supabase.
+      if (isDemoId(comment.id)) {
+        toggleCommentLikeLocal(comment.id);
+      } else {
+        const { error } = await toggleCommentLike(comment.id, comment.is_liked);
+        if (error) {
+          alert(`Failed to ${comment.is_liked ? 'unlike' : 'like'} comment: ${error.message}`);
+          return;
+        }
       }
 
       const newLikeCount = comment.is_liked ? comment.like_count - 1 : comment.like_count + 1;
@@ -175,7 +181,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
   };
 
   return (
-    <div className={`${isReply ? 'ml-8 border-l border-white/20 pl-4' : 'p-4'}`}>
+    <div className={`${isReply ? 'ml-8 border-l border-gray-200 pl-4' : 'p-4'}`}>
       {/* Comment Header */}
       <div className="flex items-start gap-3 mb-2">
         {/* Avatar */}
@@ -187,8 +193,8 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-              <span className="text-sm font-semibold">
+            <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <span className="text-sm font-semibold text-gray-700">
                 {comment.username?.[0]?.toUpperCase() || '?'}
               </span>
             </div>
@@ -201,7 +207,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
             <span className="font-semibold text-sm">
               {comment.full_name || comment.username}
             </span>
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-500">
               {formatTimestamp(comment.created_at)}
             </span>
           </div>
@@ -213,7 +219,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
                 <svg
                   key={star}
                   className={`w-4 h-4 ${
-                    comment.rating && comment.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'
+                    comment.rating && comment.rating >= star ? 'fill-[#f97316] text-[#f97316]' : 'text-gray-600'
                   }`}
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -226,7 +232,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
             </div>
           )}
 
-          <p className="text-sm text-gray-200 whitespace-pre-wrap break-words mb-2">
+          <p className="text-sm text-gray-800 whitespace-pre-wrap break-words mb-2">
             {comment.content}
           </p>
 
@@ -242,13 +248,13 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
           )}
 
           {/* Comment Actions */}
-          <div className="flex items-center gap-4 text-xs text-gray-400">
+          <div className="flex items-center gap-4 text-xs text-gray-500">
             {/* Like Button */}
             <button
               onClick={handleLikeToggle}
               disabled={!user || liking}
-              className={`flex items-center gap-1 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                comment.is_liked ? 'text-red-400' : ''
+              className={`flex items-center gap-1 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                comment.is_liked ? 'text-[#f97316]' : ''
               }`}
             >
               {liking ? (
@@ -265,7 +271,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
             {!isReply && user && (
               <button
                 onClick={() => setShowReplyForm(!showReplyForm)}
-                className="hover:text-white transition-colors"
+                className="hover:text-black transition-colors"
               >
                 Reply
               </button>
@@ -275,7 +281,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
             {!isReply && comment.reply_count && comment.reply_count > 0 && (
               <button
                 onClick={handleShowReplies}
-                className="hover:text-white transition-colors"
+                className="hover:text-black transition-colors"
               >
                 {showReplies ? 'Hide' : 'View'} {comment.reply_count} {comment.reply_count === 1 ? 'reply' : 'replies'}
               </button>
@@ -313,7 +319,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
           />
           <button
             onClick={() => setShowReplyForm(false)}
-            className="mt-2 text-xs text-gray-400 hover:text-white transition-colors"
+            className="mt-2 text-xs text-gray-500 hover:text-black transition-colors"
           >
             Cancel
           </button>
@@ -325,7 +331,7 @@ export default function CommentItem({ comment, videoId, onLikeUpdate, onCommentD
         <div className="mt-3">
           {loadingReplies ? (
             <div className="flex items-center justify-center py-4 ml-11">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400"></div>
             </div>
           ) : (
             <div className="space-y-3">

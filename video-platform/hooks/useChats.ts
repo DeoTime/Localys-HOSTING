@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getChats, ChatWithDetails } from '@/lib/supabase/messaging';
+import { getDemoChats, DEMO_CHAT_EVENT } from '@/lib/demoChat';
 
 export function useChats(userId: string | undefined) {
   const [chats, setChats] = useState<ChatWithDetails[]>([]);
@@ -12,32 +13,28 @@ export function useChats(userId: string | undefined) {
       return;
     }
 
+    // Client-side demo conversations (demo stores) always show, regardless of Supabase.
+    const demoChats = getDemoChats();
+
     try {
       setLoading(true);
       setError(null);
-      console.log('useChats: Loading chats for user', userId);
-      
+
       const { data, error: fetchError } = await getChats(userId);
-      
+
       if (fetchError) {
-        console.error('useChats: fetchError returned:', fetchError);
-        throw fetchError;
+        const msg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+        throw new Error(msg || 'Unknown error loading chats');
       }
-      
-      if (!data) {
-        console.warn('useChats: No data returned, setting to empty array');
-        setChats([]);
-      } else {
-        console.log('useChats: Successfully loaded', data.length, 'chats');
-        setChats(data);
-      }
+
+      setChats([...demoChats, ...(data ?? [])]);
       setError(null);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : JSON.stringify(err);
-      console.error('Error loading chats:', errorMsg, err);
-      const finalError = err instanceof Error ? err : new Error(errorMsg || 'Unknown error loading chats');
-      setError(finalError);
-      setChats([]);
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error loading chats';
+      console.error('Error loading chats:', errorMsg);
+      setError(err instanceof Error ? err : new Error(errorMsg));
+      // Still surface demo chats even if the Supabase fetch failed.
+      setChats(demoChats);
     } finally {
       setLoading(false);
     }
@@ -45,6 +42,10 @@ export function useChats(userId: string | undefined) {
 
   useEffect(() => {
     loadChats();
+    if (typeof window === 'undefined') return;
+    const onDemoChange = () => loadChats();
+    window.addEventListener(DEMO_CHAT_EVENT, onDemoChange);
+    return () => window.removeEventListener(DEMO_CHAT_EVENT, onDemoChange);
   }, [loadChats]);
 
   return {

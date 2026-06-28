@@ -2,15 +2,23 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
+export interface CartDeal {
+  type: 'percent' | 'dollar_off' | 'bogo' | 'free_delivery' | 'bundle' | 'first_order';
+  label: string;
+  value?: number;
+  threshold?: number;
+}
+
 export interface CartItem {
   itemId: string;
   itemName: string;
-  itemPrice: number;
+  itemPrice: number; // base unit price (deal applied at checkout)
   itemImage?: string;
   sellerId: string;
   buyerId: string;
   quantity: number;
   specialRequests?: string;
+  deal?: CartDeal;
 }
 
 interface CartContextType {

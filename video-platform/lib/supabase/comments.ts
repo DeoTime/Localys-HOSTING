@@ -11,6 +11,77 @@ import type {
 
 export type { Comment, CreateCommentPayload, CreateReplyPayload, UpdateCommentPayload, CommentSubscriptionCallback, LikeSubscriptionCallback };
 
+import { isDemoId } from '../utils/ids';
+
+// Demo comment ids are intentionally non-UUID so isDemoId() routes their
+// likes/replies through the client-side path (no Supabase, no FK violation).
+const LOCAL_DEMO_COMMENTS: Comment[] = [
+  {
+    id: 'demo-comment-1',
+    video_id: 'local',
+    user_id: '00000000-0000-0000-0000-000000000001',
+    content: 'Absolutely love this place — been coming here for years and the quality never slips. The staff are genuinely friendly and the food speaks for itself.',
+    parent_comment_id: null,
+    created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+    like_count: 24,
+    is_liked: false,
+    username: 'localfoodie_raj',
+    full_name: 'Raj M.',
+    avatar_url: null,
+    reply_count: 0,
+    rating: 5,
+  },
+  {
+    id: 'demo-comment-2',
+    video_id: 'local',
+    user_id: '00000000-0000-0000-0000-000000000002',
+    content: 'Solid spot. Prices are fair and everything comes out fresh.',
+    parent_comment_id: null,
+    created_at: new Date(Date.now() - 3600000 * 8).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 8).toISOString(),
+    like_count: 11,
+    is_liked: false,
+    username: 'corner_table_k',
+    full_name: 'Kate L.',
+    avatar_url: null,
+    reply_count: 0,
+    rating: 4,
+  },
+  {
+    id: 'demo-comment-3',
+    video_id: 'local',
+    user_id: '00000000-0000-0000-0000-000000000003',
+    content: 'Discovered this after seeing the video and I was not disappointed. Went on a Wednesday evening and the place was busy — always a good sign.',
+    parent_comment_id: null,
+    created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+    like_count: 8,
+    is_liked: false,
+    username: 'dev_eats',
+    full_name: 'Devon A.',
+    avatar_url: null,
+    reply_count: 0,
+    rating: null,
+  },
+  {
+    id: 'demo-comment-4',
+    video_id: 'local',
+    user_id: '00000000-0000-0000-0000-000000000004',
+    content: 'Highly recommend.',
+    parent_comment_id: null,
+    created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+    updated_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+    like_count: 5,
+    is_liked: false,
+    username: 'spoonandfork',
+    full_name: 'Sam T.',
+    avatar_url: null,
+    reply_count: 0,
+    rating: 5,
+  },
+];
+
 /**
  * Get the current authenticated user's ID
  * @throws Error if user is not authenticated
@@ -59,6 +130,9 @@ export async function getVideoComments(
   limit: number = 20,
   offset: number = 0
 ): Promise<{ data: Comment[] | null; error: Error | null }> {
+  if (isDemoId(videoId)) {
+    return { data: LOCAL_DEMO_COMMENTS.map(c => ({ ...c, video_id: videoId })), error: null };
+  }
   try {
     let currentUserId: string | null = null;
     try {
@@ -136,10 +210,29 @@ export async function getCommentReplies(
 export async function createComment(
   payload: CreateCommentPayload
 ): Promise<{ data: Comment | null; error: Error | null }> {
+  if (isDemoId(payload.video_id)) {
+    const { data: { user } } = await supabase.auth.getUser();
+    const username = user?.email?.split('@')[0] || 'you';
+    const comment: Comment = {
+      id: `demo-comment-${Date.now()}`,
+      video_id: payload.video_id,
+      user_id: user?.id || 'local-user',
+      content: payload.content,
+      parent_comment_id: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      like_count: 0,
+      is_liked: false,
+      username,
+      full_name: username,
+      avatar_url: null,
+      reply_count: 0,
+      rating: payload.rating || null,
+    };
+    return { data: comment, error: null };
+  }
   try {
     const currentUserId = await getCurrentUserId();
-
-    console.log('Creating comment for video:', payload.video_id, 'user:', currentUserId);
 
     const { data, error } = await supabase
       .from('comments')
@@ -155,11 +248,9 @@ export async function createComment(
       .single();
 
     if (error) {
-      console.error('Insert error:', error);
+      console.error('Insert error:', error.message || error.details || error.code);
       return { data: null, error: new Error(error.message) };
     }
-
-    console.log('Comment created successfully:', data.id);
 
     const { data: commentWithLikes, error: fetchError } = await supabase.rpc('get_comment_with_likes', {
       p_comment_id: data.id,
@@ -206,6 +297,28 @@ export async function createComment(
 export async function createReply(
   payload: CreateReplyPayload
 ): Promise<{ data: Comment | null; error: Error | null }> {
+  // Demo parent comment → build the reply client-side, no Supabase insert.
+  if (isDemoId(payload.parent_comment_id)) {
+    const { data: { user } } = await supabase.auth.getUser();
+    const username = user?.email?.split('@')[0] || 'you';
+    const reply: Comment = {
+      id: `demo-comment-${Date.now()}`,
+      video_id: 'local',
+      user_id: user?.id || 'local-user',
+      content: payload.content,
+      parent_comment_id: payload.parent_comment_id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      like_count: 0,
+      is_liked: false,
+      username,
+      full_name: username,
+      avatar_url: null,
+      reply_count: 0,
+      rating: payload.rating || null,
+    };
+    return { data: reply, error: null };
+  }
   try {
     const currentUserId = await getCurrentUserId();
 
@@ -338,6 +451,8 @@ export async function deleteComment(
 export async function likeComment(
   commentId: string
 ): Promise<{ error: Error | null }> {
+  // Demo comments aren't real rows — caller persists the like client-side.
+  if (isDemoId(commentId)) return { error: null };
   try {
     const currentUserId = await getCurrentUserId();
 
@@ -353,6 +468,7 @@ export async function likeComment(
       if (error.code === '23505') {
         return { error: new Error('You have already liked this comment') };
       }
+      console.error('Error liking comment:', error.message || error.details || error.code);
       return { error: new Error(error.message) };
     }
 
@@ -371,6 +487,8 @@ export async function likeComment(
 export async function unlikeComment(
   commentId: string
 ): Promise<{ error: Error | null }> {
+  // Demo comments aren't real rows — caller persists the unlike client-side.
+  if (isDemoId(commentId)) return { error: null };
   try {
     const currentUserId = await getCurrentUserId();
 
@@ -381,6 +499,7 @@ export async function unlikeComment(
       .eq('user_id', currentUserId);
 
     if (error) {
+      console.error('Error unliking comment:', error.message || error.details || error.code);
       return { error: new Error(error.message) };
     }
 
@@ -419,6 +538,9 @@ export function subscribeToVideoComments(
   videoId: string,
   callback: CommentSubscriptionCallback
 ): RealtimeChannel {
+  if (isDemoId(videoId)) {
+    return supabase.channel(`local_noop:${videoId}`);
+  }
   const channel = supabase
     .channel(`video_comments:${videoId}`)
     .on(

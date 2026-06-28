@@ -28,6 +28,21 @@ import {
 import { RealtimeChannel } from '@supabase/supabase-js';
 import CommentItem from './CommentItem';
 import CommentForm from './CommentForm';
+import { isDemoId } from '@/lib/utils/ids';
+import {
+  getDemoComments,
+  addDemoComment,
+  isCommentLiked,
+  setDemoRating,
+} from '@/lib/clientEngagement';
+
+/** Average rating across comments that carry a rating (demo videos). */
+function averageOf(list: Comment[]): { avg: number | null; count: number } {
+  const rated = list.filter((c) => c.rating != null);
+  if (rated.length === 0) return { avg: null, count: 0 };
+  const sum = rated.reduce((s, c) => s + (c.rating || 0), 0);
+  return { avg: sum / rated.length, count: rated.length };
+}
 
 interface CommentSectionProps {
   videoId: string;
@@ -69,13 +84,29 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
       }
 
       if (data) {
+        const demo = isDemoId(videoId);
+
         if (loadMore) {
           setComments(prev => [...prev, ...data]);
           setOffset(prev => prev + data.length);
+        } else if (demo) {
+          // Overlay client-side state: persisted user comments + saved likes.
+          const seeded = data.map(c =>
+            isCommentLiked(c.id)
+              ? { ...c, is_liked: true, like_count: c.like_count + 1 }
+              : c
+          );
+          const merged = [...getDemoComments(videoId), ...seeded];
+          setComments(merged);
+          setOffset(merged.length);
+
+          const { avg, count } = averageOf(merged);
+          setAverageRating(avg);
+          setTotalRatedComments(count);
         } else {
           setComments(data);
           setOffset(data.length);
-          
+
           const { data: ratingData, error: ratingErr } = await getVideoAverageRating(videoId);
           if (!ratingErr && ratingData) {
             setAverageRating(ratingData.average_rating);
@@ -83,7 +114,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
           }
         }
 
-        setHasMore(data.length === COMMENTS_PER_PAGE);
+        setHasMore(!demo && data.length === COMMENTS_PER_PAGE);
       }
     } catch (err: any) {
       console.error('Exception loading comments:', err);
@@ -106,22 +137,29 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
         image_url: imageUrl,
       };
 
-      console.log('Submitting comment:', payload);
-
       const { data, error: err } = await createComment(payload);
 
       if (err) {
-        console.error('Comment creation failed:', err);
+        console.error('Comment creation failed:', err.message);
         alert(`Failed to post comment: ${err.message}`);
         return;
       }
 
-      console.log('Comment created successfully:', data);
-
       if (data) {
-        setComments(prev => [data, ...prev]);
-        
-        if (rating) {
+        setComments(prev => {
+          const next = [data, ...prev];
+          if (isDemoId(videoId)) {
+            // Persist the demo comment + recompute the client-side average.
+            addDemoComment(videoId, data);
+            if (rating) setDemoRating(videoId, rating);
+            const { avg, count } = averageOf(next);
+            setAverageRating(avg);
+            setTotalRatedComments(count);
+          }
+          return next;
+        });
+
+        if (rating && !isDemoId(videoId)) {
           const { data: ratingData, error: ratingErr } = await getVideoAverageRating(videoId);
           if (!ratingErr && ratingData) {
             setAverageRating(ratingData.average_rating);
@@ -183,24 +221,24 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
     return (
       <div className={`p-4 ${className}`}>
         <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`bg-transparent text-white ${className}`}>
+    <div className={`bg-white text-black ${className}`}>
       {/* Average Rating Display */}
       {(averageRating || totalRatedComments > 0) && (
-        <div className="p-4 bg-white/5 border-b border-white/10">
+        <div className="p-4 bg-gray-50 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                   key={star}
                   className={`w-5 h-5 ${
-                    averageRating && averageRating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'
+                    averageRating && averageRating >= star ? 'fill-[#f97316] text-[#f97316]' : 'text-gray-300'
                   }`}
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -210,17 +248,17 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
                 </svg>
               ))}
             </div>
-            <span className="text-sm text-gray-300">
+            <span className="text-sm text-gray-700">
               {averageRating ? `${averageRating.toFixed(1)}/5 ` : 'No ratings'}
-              <span className="text-gray-400">({totalRatedComments} {totalRatedComments === 1 ? 'rating' : 'ratings'})</span>
+              <span className="text-gray-500">({totalRatedComments} {totalRatedComments === 1 ? 'rating' : 'ratings'})</span>
             </span>
           </div>
         </div>
       )}
-      
+
       {/* Comment Form */}
       {user && (
-        <div className="p-4 border-b border-white/10">
+        <div className="p-4 border-b border-gray-200">
           <CommentForm
             onSubmit={handleCreateComment}
             loading={posting}
@@ -230,9 +268,9 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
       )}
 
       {/* Comments List */}
-      <div className="divide-y divide-white/10">
+      <div className="divide-y divide-gray-100">
         {comments.length === 0 ? (
-          <div className="p-8 text-center text-gray-400">
+          <div className="p-8 text-center text-gray-500">
             <p>No comments yet</p>
             <p className="text-sm mt-2">Be the first to share your thoughts!</p>
           </div>
@@ -254,11 +292,11 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
                 <button
                   onClick={() => loadComments(true)}
                   disabled={loadingMore}
-                  className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-black rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loadingMore ? (
                     <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
                       Loading...
                     </div>
                   ) : (
@@ -273,7 +311,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
 
       {/* Error Message */}
       {error && (
-        <div className="p-4 bg-red-500/20 text-red-400 text-sm border-t border-red-500/30">
+        <div className="p-4 bg-red-50 text-red-600 text-sm border-t border-red-200">
           <p>Error: {error}</p>
           <button
             onClick={() => loadComments()}
