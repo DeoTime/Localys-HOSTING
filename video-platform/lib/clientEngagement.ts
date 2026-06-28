@@ -219,6 +219,11 @@ export interface LocalOrder {
   itemName: string;
   price: number;
   purchased_at: string;
+  /** Buyer-chosen pickup/delivery time (ISO), special concerns, QR token, qty. */
+  scheduledAt?: string | null;
+  specialRequests?: string | null;
+  token?: string | null;
+  quantity?: number;
 }
 
 const LOCAL_ORDERS_KEY = 'localys:local-orders';

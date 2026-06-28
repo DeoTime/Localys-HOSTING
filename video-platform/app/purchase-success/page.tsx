@@ -13,11 +13,21 @@ interface OrderInfo {
   itemName: string;
   price: number;
   quantity?: number;
+  scheduledAt?: string | null;
+  specialRequests?: string | null;
 }
 
 /** Last-resort order number when verification is unavailable (demo/offline). */
 function fallbackOrderNumber(sessionId: string): string {
   return `ORD-${sessionId.slice(-8).toUpperCase()}`;
+}
+
+/** "Sat, Jun 28 at 6:30 PM" from an ISO string, or null. */
+function formatSchedule(iso?: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return `${d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
 }
 
 export default function PurchaseSuccessPage() {
@@ -93,6 +103,10 @@ function PurchaseSuccessContent() {
                 itemName: o.itemName,
                 price: o.price,
                 purchased_at: now,
+                scheduledAt: o.scheduledAt ?? null,
+                specialRequests: o.specialRequests ?? null,
+                token: o.token || null,
+                quantity: o.quantity,
               });
             } catch (err) {
               console.error('[purchase-success] Could not save local order:', err);
@@ -115,6 +129,7 @@ function PurchaseSuccessContent() {
   const computedTotal = orders.reduce((sum, o) => sum + o.price * (o.quantity ?? 1), 0);
   const total = serverTotal ?? computedTotal;
   const qrOrders = orders.filter((o) => o.token);
+  const scheduledLabel = formatSchedule(orders.find((o) => o.scheduledAt)?.scheduledAt);
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -161,14 +176,25 @@ function PurchaseSuccessContent() {
             <h2 className="text-sm font-semibold text-black mb-3">Order summary</h2>
             <div className="space-y-3 divide-y divide-gray-100">
               {orders.map((o) => (
-                <div key={o.orderId} className="flex items-center justify-between pt-3 first:pt-0">
-                  <span className="text-sm text-black font-medium">
-                    {o.itemName}{o.quantity && o.quantity > 1 ? <span className="text-gray-500 font-normal"> ×{o.quantity}</span> : null}
-                  </span>
-                  <span className="text-sm font-bold text-[#f97316]">${(o.price * (o.quantity ?? 1)).toFixed(2)}</span>
+                <div key={o.orderId} className="flex items-start justify-between pt-3 first:pt-0">
+                  <div className="min-w-0 pr-3">
+                    <span className="text-sm text-black font-medium">
+                      {o.itemName}{o.quantity && o.quantity > 1 ? <span className="text-gray-500 font-normal"> ×{o.quantity}</span> : null}
+                    </span>
+                    {o.specialRequests && (
+                      <p className="text-xs text-gray-500 mt-0.5">Note: {o.specialRequests}</p>
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-[#f97316] shrink-0">${(o.price * (o.quantity ?? 1)).toFixed(2)}</span>
                 </div>
               ))}
             </div>
+            {scheduledLabel && (
+              <div className="flex justify-between items-center pt-3 mt-3 border-t border-gray-100">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Scheduled for</span>
+                <span className="text-sm font-semibold text-black">{scheduledLabel}</span>
+              </div>
+            )}
             <div className="flex justify-between pt-3 mt-3 border-t border-gray-100">
               <span className="text-sm font-semibold text-black">Total</span>
               <span className="text-sm font-bold text-black">${total.toFixed(2)}</span>

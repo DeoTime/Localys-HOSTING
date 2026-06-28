@@ -24,6 +24,7 @@ function ChatContent() {
   const chatId = params.id as string;
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const didInitialScrollRef = useRef(false);
 
   const { messages, loading, sending, send } = useMessages(chatId, user?.id);
   const { chats } = useChats(user?.id);
@@ -31,8 +32,18 @@ function ChatContent() {
   const other = chat?.other_user;
   const displayName = other?.full_name || other?.username || 'Chat';
 
+  // Auto-scroll to the newest message. Runs in requestAnimationFrame so it fires
+  // AFTER the messages paint (lands on the true bottom, not a stale position).
+  // Instant jump on first load; smooth for later sent/received messages.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const el = messagesEndRef.current;
+    if (!el || messages.length === 0) return;
+    const instant = !didInitialScrollRef.current;
+    const raf = requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: instant ? 'auto' : 'smooth', block: 'end' });
+      didInitialScrollRef.current = true;
+    });
+    return () => cancelAnimationFrame(raf);
   }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {

@@ -15,6 +15,8 @@ interface OrderResult {
   itemName: string;
   price: number;
   quantity: number;
+  scheduledAt: string | null;
+  specialRequests: string | null;
 }
 
 /** Trusted prices for built-in demo-store items (ids like "jays-burger-0"). */
@@ -69,7 +71,7 @@ async function ordersFromDb(sessionId: string, userId: string): Promise<OrderRes
   if (!supabase) return [];
   const { data } = await supabase
     .from('item_purchases')
-    .select('id, item_name, price, quantity, verification_token')
+    .select('id, item_name, price, quantity, verification_token, scheduled_at, special_requests')
     .eq('stripe_session_id', sessionId)
     .eq('buyer_id', userId);
   return (data ?? []).map((r) => ({
@@ -78,6 +80,8 @@ async function ordersFromDb(sessionId: string, userId: string): Promise<OrderRes
     itemName: r.item_name || 'Item',
     price: typeof r.price === 'number' ? r.price : 0,
     quantity: r.quantity ?? 1,
+    scheduledAt: r.scheduled_at ?? null,
+    specialRequests: r.special_requests ?? null,
   }));
 }
 
@@ -154,13 +158,14 @@ export async function POST(request: NextRequest) {
     const metadata = session.metadata;
     const couponCode = metadata.couponCode || null;
     const discountPercentage = parseInt(metadata.discountPercentage || '0');
+    const scheduledAt = metadata.scheduledAt || null; // buyer-chosen pickup/delivery time
     const stripeLines = extractLines(session);
     // Authoritative total straight from Stripe (cents → dollars).
     const sessionTotal = typeof session.amount_total === 'number' ? session.amount_total / 100 : null;
 
     // Multi-item format
     if (metadata.items && metadata.buyerId) {
-      let rawItems: { id: string; name?: string; sid?: string; price?: number; qty?: number }[];
+      let rawItems: { id: string; name?: string; sid?: string; price?: number; qty?: number; sr?: string }[];
       try {
         rawItems = JSON.parse(metadata.items);
       } catch {
@@ -183,7 +188,7 @@ export async function POST(request: NextRequest) {
 
         const result = await processPurchase(
           item.id, resolvedSellerId, userId, resolvedName, resolvedPrice, resolvedQty,
-          sessionId, couponCode, discountPercentage,
+          sessionId, couponCode, discountPercentage, scheduledAt, item.sr || null,
         );
         if (result) orders.push(result);
       }
@@ -202,7 +207,7 @@ export async function POST(request: NextRequest) {
       const resolvedQty = line?.qty ?? 1;
       const result = await processPurchase(
         itemId, sellerId, userId, resolvedName, resolvedPrice, resolvedQty,
-        sessionId, couponCode, discountPercentage,
+        sessionId, couponCode, discountPercentage, scheduledAt, metadata.specialRequests || null,
       );
       const total = sessionTotal ?? (result ? result.price * result.quantity : 0);
       return NextResponse.json({
@@ -231,6 +236,8 @@ async function processPurchase(
   sessionId: string,
   couponCode: string | null,
   discountPercentage: number,
+  scheduledAt: string | null,
+  specialRequests: string | null,
 ): Promise<OrderResult | null> {
   // Demo/built-in store items have non-UUID ids (e.g. "jays-burger-0").
   // Inserting a non-UUID into a Supabase uuid column throws — return a synthetic
@@ -242,7 +249,7 @@ async function processPurchase(
       ? Math.max(0, itemPrice - itemPrice * (discountPercentage / 100))
       : itemPrice;
     console.log(`[verify-item-purchase] Demo item "${itemId}" — synthetic order ${orderId}`);
-    return { orderId, token, itemName, price: paidPrice, quantity };
+    return { orderId, token, itemName, price: paidPrice, quantity, scheduledAt, specialRequests };
   }
 
   const supabase = getSupabaseAdminClient();
@@ -253,7 +260,7 @@ async function processPurchase(
   // Idempotency check — webhook may have already processed this
   const { data: existing } = await supabase
     .from('item_purchases')
-    .select('id, verification_token, quantity')
+    .select('id, verification_token, quantity, scheduled_at, special_requests')
     .eq('stripe_session_id', sessionId)
     .eq('item_id', itemId)
     .limit(1);
@@ -266,6 +273,8 @@ async function processPurchase(
       itemName,
       price: itemPrice,
       quantity: existing[0].quantity ?? quantity,
+      scheduledAt: existing[0].scheduled_at ?? scheduledAt,
+      specialRequests: existing[0].special_requests ?? specialRequests,
     };
   }
 
@@ -288,6 +297,8 @@ async function processPurchase(
         coupon_code: couponCode,
         discount_percentage: discountPercentage,
       }),
+      ...(scheduledAt && { scheduled_at: scheduledAt }),
+      ...(specialRequests && { special_requests: specialRequests }),
       stripe_session_id: sessionId,
       status: 'paid',
       purchased_at: new Date().toISOString(),
@@ -306,5 +317,5 @@ async function processPurchase(
     .update({ verification_token: token })
     .eq('id', inserted.id);
 
-  return { orderId: inserted.id, token, itemName, price: paidPrice, quantity };
+  return { orderId: inserted.id, token, itemName, price: paidPrice, quantity, scheduledAt, specialRequests };
 }
