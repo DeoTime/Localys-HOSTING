@@ -223,7 +223,7 @@ function DashboardContent() {
     <div className="min-h-screen bg-[#f8f9fb] text-gray-900 pb-24">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 lg:px-10 pt-6 pb-0">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-screen-2xl mx-auto">
           <div className="flex items-end justify-between mb-4">
             <div>
               <p className="text-xs text-gray-600 font-medium uppercase tracking-wide mb-1">Business Manager</p>
@@ -249,7 +249,7 @@ function DashboardContent() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 lg:px-10 py-6">
+      <div className="max-w-screen-2xl mx-auto px-4 lg:px-10 py-6">
         {scanResult && (
           <div className={`mb-4 p-4 rounded-2xl border flex items-start justify-between ${scanResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
             <p className={`font-medium text-sm ${scanResult.success ? 'text-green-700' : 'text-red-600'}`}>{scanResult.message}</p>
