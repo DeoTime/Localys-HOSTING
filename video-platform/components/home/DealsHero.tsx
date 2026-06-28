@@ -14,6 +14,12 @@ import { useAuth } from '@/contexts/AuthContext';
 const CAROUSEL_INTERVAL_MS = 5000;
 
 /**
+ * Duration of the "Featured near you" slide/intro animation (seconds). Lower =
+ * faster & snappier on load. Single source of truth — tune here.
+ */
+const FEATURED_ANIM_DURATION_S = 0.45;
+
+/**
  * (A) Walmart-style top block: ONE large featured business that auto-shifts
  * every ~5s, surrounded by a grid of smaller business tiles. Uses the shared
  * feed's reserved hero set, so its photos are unique and not repeated below.
@@ -93,7 +99,7 @@ export function DealsHero() {
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
-                transition={{ duration: 0.9, ease: [0.65, 0, 0.35, 1] }}
+                transition={{ duration: FEATURED_ANIM_DURATION_S, ease: [0.65, 0, 0.35, 1] }}
                 className="absolute inset-0"
               >
                 <Link href={current.href} className="block h-full w-full">

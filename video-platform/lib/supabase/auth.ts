@@ -218,11 +218,56 @@ export async function signOut() {
 }
 
 /**
- * Get current session
+ * True when an auth error is the "stale/missing refresh token" case that happens
+ * for logged-out users or after cookies/localStorage were cleared. We treat this
+ * as "no user" rather than a real error so the app doesn't crash or spam console.
+ */
+function isInvalidRefreshTokenError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return /invalid refresh token|refresh token not found/i.test(message);
+}
+
+/**
+ * Best-effort local cleanup of a stale Supabase session (clears stored
+ * cookies/localStorage for this client without a network round-trip).
+ */
+async function clearStaleSession() {
+  try {
+    await supabase.auth.signOut({ scope: 'local' });
+  } catch {
+    // Ignore — this is best-effort cleanup of already-invalid state.
+  }
+}
+
+/**
+ * Get current session.
+ *
+ * A logged-out user (or one whose cookies/localStorage were cleared or expired)
+ * can have a stale refresh token, which makes supabase throw/return
+ * "Invalid Refresh Token: Refresh Token Not Found". We swallow that specific
+ * case: clear the stale session and report "no session" so the landing page
+ * loads normally for signed-out users without a scary console error.
  */
 export async function getSession() {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  return { session, error };
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+
+    if (error) {
+      if (isInvalidRefreshTokenError(error)) {
+        await clearStaleSession();
+        return { session: null, error: null };
+      }
+      return { session, error };
+    }
+
+    return { session, error: null };
+  } catch (error) {
+    if (isInvalidRefreshTokenError(error)) {
+      await clearStaleSession();
+      return { session: null, error: null };
+    }
+    return { session: null, error: error as Error };
+  }
 }
 
 /**

@@ -16,7 +16,10 @@ function isTurnstileEnabled(): boolean {
   if (process.env.NODE_ENV === 'production') {
     return true;
   }
-  return process.env.NEXT_PUBLIC_TURNSTILE_ENABLED_IN_DEV === 'true';
+  // Default ON so the Cloudflare bot check is visible during dev too (localhost
+  // falls back to Cloudflare's always-passing test key). Only hidden when
+  // explicitly disabled.
+  return process.env.NEXT_PUBLIC_TURNSTILE_ENABLED_IN_DEV !== 'false';
 }
 
 function resolveTurnstileSiteKey(): string {
@@ -150,7 +153,7 @@ export default function SignUpPage() {
 
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold sm:text-4xl">Join Localys</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">Join Localy</h1>
           <p className="mt-2 text-sm text-gray-500">Create your account to discover and support local.</p>
         </div>
 

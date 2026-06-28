@@ -16,7 +16,10 @@ function isTurnstileEnabled(): boolean {
   if (process.env.NODE_ENV === 'production') {
     return true;
   }
-  return process.env.NEXT_PUBLIC_TURNSTILE_ENABLED_IN_DEV === 'true';
+  // Default ON so the Cloudflare bot check is visible on sign-in during dev too
+  // (localhost falls back to Cloudflare's always-passing test key). Only hidden
+  // when explicitly disabled.
+  return process.env.NEXT_PUBLIC_TURNSTILE_ENABLED_IN_DEV !== 'false';
 }
 
 function resolveTurnstileSiteKey(): string {
@@ -249,7 +252,7 @@ function LoginPageContent() {
 
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-3xl font-bold sm:text-4xl">Sign in to Localys</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">Sign in to Localy</h1>
           <p className="mt-2 text-sm text-gray-500">Welcome back — enter your details to continue.</p>
         </div>
 
