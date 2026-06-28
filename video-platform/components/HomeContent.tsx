@@ -1167,8 +1167,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
              first review are never hidden behind it. */
           top: 64px;
           bottom: 16px;
-          right: 16px;
-          width: min(360px, 80vw);
+          /* Shift further from the right edge and cap the width to the viewport so the
+             whole panel — right edge + the comment form's Post button — is on-screen. */
+          right: 24px;
+          width: min(340px, calc(100vw - 48px));
           z-index: 25;
           border-radius: 16px;
           overflow: hidden;
@@ -1415,9 +1417,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
           type="button"
           onClick={() => setReviewsOpen(false)}
           aria-label="Close reviews"
-          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/5 text-black transition hover:bg-black/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+          className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/10 p-0 text-black transition hover:bg-black/20 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
         >
-          <X className="h-4 w-4" />
+          <X className="h-4 w-4" color="currentColor" strokeWidth={2.5} />
         </button>
         <CommentSection videoId={currentVideo.id} className="h-full w-full overflow-y-auto" />
       </div>

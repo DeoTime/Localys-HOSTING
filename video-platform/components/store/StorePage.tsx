@@ -168,20 +168,21 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
               onClick={handleToggleSave}
               aria-label={saved ? 'Remove from saved' : 'Save'}
               aria-pressed={saved}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black ring-1 ring-black/10 shadow-lg transition hover:bg-white/90"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white p-0 ring-1 ring-black/10 shadow-lg transition hover:bg-gray-50"
             >
               <Heart
-                className={`h-5 w-5 ${saved ? 'text-[#f97316]' : 'text-black'}`}
-                fill={saved ? '#f97316' : 'none'}
+                className="h-5 w-5"
+                color={saved ? '#ef4444' : '#000000'}
+                fill={saved ? '#ef4444' : 'none'}
                 strokeWidth={2.2}
               />
             </button>
             <button
               onClick={handleShare}
               aria-label="Share"
-              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white text-black ring-1 ring-black/10 shadow-lg transition hover:bg-white/90"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full bg-white p-0 ring-1 ring-black/10 shadow-lg transition hover:bg-gray-50"
             >
-              <Share2 className="h-5 w-5 text-black" strokeWidth={2.2} />
+              <Share2 className="h-5 w-5" color="#000000" strokeWidth={2.2} />
               {shareCopied && (
                 <span className="absolute -bottom-7 right-0 whitespace-nowrap rounded-md bg-black px-2 py-0.5 text-[11px] font-semibold text-white">
                   Link copied
