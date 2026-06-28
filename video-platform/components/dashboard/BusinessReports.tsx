@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  BarChart, Bar, LineChart, Line, ComposedChart, PieChart, Pie, Cell, Legend,
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from 'recharts';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -12,10 +13,12 @@ import type { BusinessReview } from '@/lib/supabase/reviews';
 import {
   normalizeOrders, generateDemoOrders, filterOrders, categoriesOf, itemsOf,
   salesSummary, revenueOverTime, topItems, customerStats, ratingTrend,
-  rangeForPreset, toCSV, type DateRange,
+  categoryBreakdown, rangeForPreset, toCSV, type DateRange,
 } from '@/lib/reports';
 
 const ORANGE = '#f97316';
+/** Orange-family + grays only — keeps multi-series charts on-brand (no blue/green/yellow). */
+const SLICE_COLORS = ['#f97316', '#111111', '#fdba74', '#9ca3af', '#fb923c', '#d1d5db', '#c2410c'];
 type ReportKind = 'sales' | 'items' | 'customers';
 type Preset = '7d' | '30d' | '90d' | 'custom';
 
@@ -168,6 +171,7 @@ export function BusinessReports({
   const summary = useMemo(() => salesSummary(filtered), [filtered]);
   const overTime = useMemo(() => revenueOverTime(filtered, range), [filtered, range]);
   const items5 = useMemo(() => topItems(filtered), [filtered]);
+  const byCategory = useMemo(() => categoryBreakdown(filtered), [filtered]);
   const custs = useMemo(() => customerStats(filtered), [filtered]);
   const ratings = useMemo(() => ratingTrend(reviews, range), [reviews, range]);
 
@@ -372,15 +376,22 @@ export function BusinessReports({
       {/* ---- SALES ---- */}
       {report === 'sales' && (
         <>
-          <ChartCard title="Revenue over time" subtitle={rangeLabel}>
+          <ChartCard title="Revenue & orders over time" subtitle={rangeLabel}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={overTime} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <ComposedChart data={overTime} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
-                <Tooltip formatter={(v: number | undefined) => [fmtMoney(v ?? 0), 'Revenue']} contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} />
-                <Line type="monotone" dataKey="revenue" stroke={ORANGE} strokeWidth={2.5} dot={false} />
-              </LineChart>
+                <YAxis yAxisId="rev" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                <YAxis yAxisId="ord" orientation="right" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <Tooltip
+                  formatter={(v: number | undefined, name) => name === 'Revenue' ? [fmtMoney(v ?? 0), 'Revenue'] : [String(v ?? 0), 'Orders']}
+                  contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }}
+                  cursor={{ fill: '#f97316', opacity: 0.06 }}
+                />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar yAxisId="ord" dataKey="orders" name="Orders" fill="#fdba74" radius={[4, 4, 0, 0]} barSize={14} />
+                <Line yAxisId="rev" type="monotone" dataKey="revenue" name="Revenue" stroke={ORANGE} strokeWidth={2.5} dot={false} />
+              </ComposedChart>
             </ResponsiveContainer>
           </ChartCard>
 
@@ -395,17 +406,31 @@ export function BusinessReports({
       {/* ---- TOP ITEMS ---- */}
       {report === 'items' && (
         <>
-          <ChartCard title="Top items by revenue" subtitle={rangeLabel}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={items5.slice(0, 8)} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={(v: number | undefined) => [fmtMoney(v ?? 0), 'Revenue']} contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} cursor={{ fill: '#f97316', opacity: 0.06 }} />
-                <Bar dataKey="revenue" fill={ORANGE} radius={[0, 6, 6, 0]} barSize={16} />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <ChartCard title="Top items by revenue" subtitle={rangeLabel}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={items5.slice(0, 8)} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                  <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(v: number | undefined) => [fmtMoney(v ?? 0), 'Revenue']} contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} cursor={{ fill: '#f97316', opacity: 0.06 }} />
+                  <Bar dataKey="revenue" fill={ORANGE} radius={[0, 6, 6, 0]} barSize={16} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Revenue share by category" subtitle={rangeLabel}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={byCategory} dataKey="revenue" nameKey="category" cx="50%" cy="50%" innerRadius={48} outerRadius={78} paddingAngle={2} stroke="#fff" strokeWidth={2}>
+                    {byCategory.map((_, i) => <Cell key={i} fill={SLICE_COLORS[i % SLICE_COLORS.length]} />)}
+                  </Pie>
+                  <Tooltip formatter={(v: number | undefined, name) => [fmtMoney(v ?? 0), name as string]} contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          </div>
 
           <TableCard
             headers={['#', 'Item', 'Category', 'Qty', 'Revenue', '% of Sales']}
@@ -453,6 +478,18 @@ export function BusinessReports({
             <MiniStat label="New" value={String(custs.newCustomers)} />
             <MiniStat label="Reviews" value={String(reviews.length || ratings.reduce((s, r) => s + r.count, 0))} />
           </div>
+
+          <ChartCard title="Top customers by revenue" subtitle={rangeLabel}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={custs.topCustomers} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                <YAxis type="category" dataKey="buyerId" width={120} tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v: number | undefined) => [fmtMoney(v ?? 0), 'Revenue']} contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} cursor={{ fill: '#f97316', opacity: 0.06 }} />
+                <Bar dataKey="revenue" fill={ORANGE} radius={[0, 6, 6, 0]} barSize={16} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
           <TableCard
             headers={['Customer', 'Orders', 'Revenue']}
