@@ -203,6 +203,17 @@ function DashboardContent() {
 
   const hasRevenue = totalRevenue > 0;
   const displayRevenue = hasRevenue ? totalRevenue : 3500.45;
+
+  // Localy keeps 5% of gross sales; the business keeps 95%. Tax (8.25%) is
+  // collected from customers and remitted — consistent with the checkout breakdown.
+  const LOCALY_FEE_RATE = 0.05;
+  const TAX_RATE = 0.0825;
+  const grossSales = displayRevenue;
+  const localyFee = grossSales * LOCALY_FEE_RATE;
+  const netEarnings = grossSales * (1 - LOCALY_FEE_RATE);
+  const taxCollected = grossSales * TAX_RATE;
+  const money = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   const avgRating = reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
   const mostPopularOrder = useMemo(() => {
@@ -291,6 +302,35 @@ function DashboardContent() {
                   <span className="text-[11px] font-semibold text-red-500 bg-red-50 px-1.5 py-0.5 rounded mt-1 inline-block">-12.5%</span>
                 </div>
               </div>
+            </div>
+
+            {/* Earnings breakdown — 5% Localy fee, 95% net, 8.25% tax (consistent with checkout) */}
+            <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-semibold text-foreground">Earnings breakdown</p>
+                <span className="text-[11px] font-semibold text-[#f97316] bg-orange-50 px-2 py-0.5 rounded-lg">Localy takes just 5%</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Gross sales</p>
+                  <p className="text-xl font-bold text-foreground">${money(grossSales)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Localy fee (5%)</p>
+                  <p className="text-xl font-bold text-[#f97316]">-${money(localyFee)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Your net earnings (95%)</p>
+                  <p className="text-xl font-bold text-foreground">${money(netEarnings)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Tax collected (8.25%)</p>
+                  <p className="text-xl font-bold text-foreground">${money(taxCollected)}</p>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-4">
+                Localy only takes 5% — you keep 95% of every sale. Tax (8.25%) is collected from customers and remitted, not part of your earnings.
+              </p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

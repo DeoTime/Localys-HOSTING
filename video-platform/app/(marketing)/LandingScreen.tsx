@@ -7,22 +7,36 @@ import { Search, X, ChevronDown } from "lucide-react";
 import { Footer } from "@/components/layout/Footer";
 import { Logo } from "@/components/Logo";
 
+const DEFAULT_SUB =
+  "Discover and support your community's collection of local businesses: popular spots, hidden gems, and exclusive deals you won't find anywhere else.";
+
 const slides = [
   {
     image: "/landing/hero-food.jpeg",
     title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
+    subtitle: DEFAULT_SUB,
     artist: "Pho Shop",
     role: "5051 Yonge St Unit #2",
   },
   {
+    image: "/landing/creator-dining.jpg",
+    title: ["LOCALY ONLY", "TAKES 5%."],
+    subtitle:
+      "So more of every order stays with local businesses — and comes back to you as rewards.",
+    artist: "95% stays local",
+    role: "Localy keeps just 5%",
+  },
+  {
     image: "/landing/hero-restaurant.png",
     title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
+    subtitle: DEFAULT_SUB,
     artist: "Andy's Pho",
     role: "5051 Yonge St Unit #2",
   },
   {
     image: "/landing/hero-flowers.jpg",
     title: ["DISCOVER LOCAL.", "SUPPORT LOCAL."],
+    subtitle: DEFAULT_SUB,
     artist: "Dream Rose Florist",
     role: "14 Levendale Rd, Richmond Hill",
   },
@@ -95,7 +109,7 @@ export default function LandingScreen() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => setSlide((s) => (s + 1) % slides.length), 6000);
+    const id = setInterval(() => setSlide((s) => (s + 1) % slides.length), 3000);
     return () => clearInterval(id);
   }, []);
 
@@ -178,7 +192,7 @@ export default function LandingScreen() {
                   {current.title[0]}<br />{current.title[1]}
                 </h1>
                 <p className="mt-8 max-w-xl text-base leading-loose text-primary/85 [word-spacing:0.08em] sm:text-lg">
-                  Discover and support your community&apos;s collection of local businesses: popular spots, hidden gems, and exclusive deals you won&apos;t find anywhere else.
+                  {current.subtitle}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-4">
                   <Link href="/feed" className="rounded-full bg-primary px-12 py-4 text-lg font-semibold text-primary-foreground transition hover:scale-[1.02]">Browse local</Link>
