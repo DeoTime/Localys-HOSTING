@@ -1069,47 +1069,54 @@ export function HomeContent({ isActive }: HomeContentProps) {
           60% { transform: translate(-50%, 0) scale(1.2); }
           100% { transform: translate(-50%, 0) scale(1); }
         }
-        /* Action rail — mobile: overlaid at right edge; sm+: beside the video */
+        /* Action rail — mobile: overlaid at right edge; sm+: tight beside the video.
+           Shifted slightly below center and tightened so icons sit close together. */
         .feed-action-rail {
           position: absolute;
           right: 0;
-          top: 50%;
+          top: 56%;
           transform: translateY(-50%);
           z-index: 20;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 8px;
-          padding-right: 8px;
+          gap: 6px;
+          padding-right: 6px;
         }
         @media (min-width: 640px) {
           .feed-action-rail {
             right: auto;
-            left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 12px);
+            left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 4px);
             padding-right: 0;
-            gap: 12px;
+            gap: 8px;
           }
         }
         @media (min-width: 768px) {
           .feed-action-rail {
-            left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 16px);
-            gap: 16px;
+            left: calc(50% + min(50%, (100dvh - 112px) * 9 / 32) + 6px);
+            gap: 10px;
           }
         }
-        /* Up/Down nav arrows — hidden on mobile, overlaid on video's right side on sm+ */
+        /* Up/Down nav circles — hidden on mobile; on sm+ pinned near the screen's
+           right edge, to the right of both the video and the action rail. */
         .feed-nav-arrows {
           display: none;
           position: absolute;
-          right: calc(50% - min(50%, (100dvh - 112px) * 9 / 32) + 10px);
+          right: 16px;
           top: 50%;
           transform: translateY(-50%);
           z-index: 21;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
         @media (min-width: 640px) {
           .feed-nav-arrows {
             display: flex;
+          }
+        }
+        @media (min-width: 1024px) {
+          .feed-nav-arrows {
+            right: 28px;
           }
         }
       `}</style>
@@ -1310,24 +1317,25 @@ export function HomeContent({ isActive }: HomeContentProps) {
           </div>
       </div>
 
-      {/* Up/Down Navigation Arrows — sit on the right edge of the video column */}
+      {/* Up/Down Navigation Circles — far right near the screen edge (prev/next video).
+          Solid black chevrons on white circles for clear contrast. */}
       <div className="feed-nav-arrows">
         <button
           onClick={goToPrev}
           aria-label="Previous video"
-          className="w-11 h-11 rounded-full bg-white border border-black/10 shadow-md flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
+          className="w-12 h-12 rounded-full bg-white border border-black/10 shadow-lg flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
         >
-          <svg className="w-5 h-5 text-black/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
           </svg>
         </button>
         <button
           onClick={goToNext}
           aria-label="Next video"
-          className="w-11 h-11 rounded-full bg-white border border-black/10 shadow-md flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
+          className="w-12 h-12 rounded-full bg-white border border-black/10 shadow-lg flex items-center justify-center transition-transform duration-150 hover:scale-105 active:scale-95"
         >
-          <svg className="w-5 h-5 text-black/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+          <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
           </svg>
         </button>
       </div>
