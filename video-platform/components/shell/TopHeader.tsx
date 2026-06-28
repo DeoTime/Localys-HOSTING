@@ -46,7 +46,7 @@ export function TopHeader() {
 
   const [lang, setLang] = useState('EN');
   const [openMenu, setOpenMenu] = useState<null | 'location' | 'lang' | 'profile'>(null);
-  const [coins, setCoins] = useState<number | null>(null);
+  const [coins, setCoins] = useState<number>(0);
 
   useEffect(() => {
     if (!user) return;
@@ -139,7 +139,7 @@ export function TopHeader() {
         >
           <div className="flex items-center gap-1">
             <Coins className="h-4 w-4 text-[#f97316]" />
-            <span className="text-sm font-bold text-[#f97316]">{coins ?? '—'}</span>
+            <span className="text-sm font-bold text-[#f97316]">{coins}</span>
           </div>
           <span className="text-[11px] font-medium">Points</span>
         </Link>

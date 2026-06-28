@@ -84,22 +84,22 @@ function BadgesSection({ userId }: { userId: string }) {
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4">
       <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-2.5">Achievements</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
         {BADGE_DEFS.map(({ id, Icon, name, desc, check }) => {
           const earned = check(stats);
           return (
             <div
               key={id}
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-xl border transition-colors ${
+              className={`flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl border transition-colors ${
                 earned ? 'border-[#f97316]/20 bg-[#f97316]/5' : 'border-gray-100 bg-gray-50 opacity-50'
               }`}
             >
-              <div className={`w-8 h-8 shrink-0 rounded-lg flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
-                <Icon className={`h-4 w-4 ${earned ? 'text-white' : 'text-gray-400'}`} />
+              <div className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center ${earned ? 'bg-[#f97316]' : 'bg-gray-200'}`}>
+                <Icon className={`h-3.5 w-3.5 ${earned ? 'text-white' : 'text-gray-400'}`} />
               </div>
               <div className="min-w-0">
-                <p className={`text-xs font-bold leading-tight truncate ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
-                <p className={`text-[10px] leading-tight truncate ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
+                <p className={`text-xs font-bold leading-none truncate ${earned ? 'text-gray-900' : 'text-gray-400'}`}>{name}</p>
+                <p className={`text-[10px] leading-none mt-0.5 truncate ${earned ? 'text-gray-500' : 'text-gray-300'}`}>{desc}</p>
               </div>
             </div>
           );
@@ -600,8 +600,8 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
                 <Store className="h-3.5 w-3.5 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900 leading-none">{bizCount}</p>
-                <p className="text-[10px] text-gray-500 leading-none mt-px">
+                <p className="text-lg font-bold text-gray-900 leading-[1]">{bizCount}</p>
+                <p className="text-[10px] text-gray-500 leading-[1]">
                   {bizCount === 1 ? 'business' : 'businesses'} supported
                 </p>
               </div>
@@ -611,8 +611,8 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
                 <DollarSign className="h-3.5 w-3.5 text-[#f97316]" />
               </div>
               <div>
-                <p className="text-lg font-bold text-gray-900 leading-none">${moneySpent.toFixed(0)}</p>
-                <p className="text-[10px] text-gray-500 leading-none mt-px">kept in community</p>
+                <p className="text-lg font-bold text-gray-900 leading-[1]">${moneySpent.toFixed(0)}</p>
+                <p className="text-[10px] text-gray-500 leading-[1]">kept in community</p>
               </div>
             </div>
           </div>

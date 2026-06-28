@@ -92,7 +92,7 @@ export function FilterPanel({
               onClick={() => set('minRating', value.minRating === n ? 0 : n)}
               className="p-0.5"
             >
-              <Star className={`h-5 w-5 ${n <= value.minRating ? 'fill-[#f97316] text-[#f97316]' : 'text-gray-300 dark:text-gray-600'}`} />
+              <Star className={`h-5 w-5 ${n <= value.minRating ? 'fill-[#f97316] text-[#f97316]' : 'text-black dark:text-gray-300'}`} />
             </button>
           ))}
           {value.minRating > 0 && (
@@ -122,7 +122,7 @@ export function FilterPanel({
       </div>
 
       {/* Toggles */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 pl-3">
         <label className="flex cursor-pointer items-center justify-between text-sm font-semibold text-black! dark:text-white!">
           Open now
           <input type="checkbox" checked={value.openNow} onChange={(e) => set('openNow', e.target.checked)} className="h-4 w-4 m-0 shrink-0 self-center align-middle accent-[#f97316]" />
