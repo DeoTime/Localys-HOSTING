@@ -159,13 +159,19 @@ export function HomeContent({ isActive }: HomeContentProps) {
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
   const [followAnimating, setFollowAnimating] = useState<string | null>(null);
 
+  // A video opened directly by id (e.g. from Business Manager → Videos). It must
+  // ALWAYS stay playable in Discover even if its author is excluded from the For You
+  // feed, so we keep it here and re-inject it whenever the feed reloads (the feed
+  // exclusion is applied only to the listing, never to this single-video request).
+  const pinnedVideoRef = useRef<Video | null>(null);
+
   useEffect(() => {
     loadVideos();
     if (user) {
       loadUserInteractions();
       loadUserCoins();
     }
-  }, [user]);
+  }, [user?.id]); // key off the stable id so the feed doesn't reload on every auth re-render
 
   // Real-time subscription for comment counts
   useEffect(() => {
@@ -285,6 +291,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
             .single();
 
           if (data) {
+            // Pin it so a later feed reload re-injects it instead of filtering it out.
+            pinnedVideoRef.current = data as Video;
             setVideos(prev => (prev.some(v => v.id === targetVideoId) ? prev : [data as Video, ...prev]));
             setCurrentIndex(0);
             setIsPlaying(true);
@@ -382,7 +390,11 @@ export function HomeContent({ isActive }: HomeContentProps) {
         const realData = realDataRaw.filter(
           (v) => (v.profiles?.username || '').toLowerCase() !== HIDDEN_FROM_DISCOVER_USERNAME,
         );
-        const videosData = [...localVideos, ...realData];
+        // Re-inject a directly-opened (pinned) video so a feed reload never drops it,
+        // even when its author is excluded from the listing above.
+        const base = [...localVideos, ...realData];
+        const pinned = pinnedVideoRef.current;
+        const videosData = pinned && !base.some((v) => v.id === pinned.id) ? [pinned, ...base] : base;
         setVideos(videosData);
 
         const counts: { [key: string]: number } = {};
