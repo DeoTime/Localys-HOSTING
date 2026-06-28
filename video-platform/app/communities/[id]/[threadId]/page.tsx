@@ -84,18 +84,18 @@ function ThreadContent() {
               className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 thread.userVote === 1
                   ? 'text-[#f97316]'
-                  : 'text-gray-400 hover:text-[#f97316] hover:bg-orange-50 dark:hover:bg-orange-950/20'
+                  : 'text-black dark:text-white hover:text-[#f97316]'
               }`}
             >
-              <ChevronUp className="h-5 w-5" />
+              <ChevronUp className="h-5 w-5" strokeWidth={2.5} />
             </button>
             <span
               className={`text-sm font-bold tabular-nums ${
                 thread.userVote === 1
                   ? 'text-[#f97316]'
                   : thread.userVote === -1
-                  ? 'text-gray-500'
-                  : 'text-gray-700 dark:text-gray-300'
+                  ? 'text-[#f97316]'
+                  : 'text-black dark:text-white'
               }`}
             >
               {thread.votes}
@@ -105,11 +105,11 @@ function ThreadContent() {
               aria-label="Downvote"
               className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 thread.userVote === -1
-                  ? 'text-gray-700 dark:text-gray-300'
-                  : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  ? 'text-[#f97316]'
+                  : 'text-black dark:text-white hover:text-[#f97316]'
               }`}
             >
-              <ChevronDown className="h-5 w-5" />
+              <ChevronDown className="h-5 w-5" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -194,22 +194,22 @@ function ThreadContent() {
                       onClick={() => voteComment(c.id, 1)}
                       aria-label="Upvote comment"
                       className={`h-5 w-5 flex items-center justify-center rounded text-xs transition-colors ${
-                        c.userVote === 1 ? 'text-[#f97316]' : 'text-gray-400 hover:text-[#f97316]'
+                        c.userVote === 1 ? 'text-[#f97316]' : 'text-black dark:text-white hover:text-[#f97316]'
                       }`}
                     >
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4" strokeWidth={2.5} />
                     </button>
-                    <span className={`text-[11px] font-semibold tabular-nums ${c.userVote === 1 ? 'text-[#f97316]' : 'text-gray-400'}`}>
+                    <span className={`text-[11px] font-semibold tabular-nums ${c.userVote === 1 ? 'text-[#f97316]' : 'text-black dark:text-white'}`}>
                       {c.votes}
                     </span>
                     <button
                       onClick={() => voteComment(c.id, -1)}
                       aria-label="Downvote comment"
                       className={`h-5 w-5 flex items-center justify-center rounded text-xs transition-colors ${
-                        c.userVote === -1 ? 'text-gray-600 dark:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                        c.userVote === -1 ? 'text-[#f97316]' : 'text-black dark:text-white hover:text-[#f97316]'
                       }`}
                     >
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4 w-4" strokeWidth={2.5} />
                     </button>
                   </div>
                 </div>
