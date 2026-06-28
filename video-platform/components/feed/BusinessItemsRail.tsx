@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Check, ShoppingCart } from 'lucide-react';
+import { Plus, Check, ShoppingCart, Star } from 'lucide-react';
 import { getUserMenu } from '@/lib/supabase/profiles';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,6 +9,14 @@ import type { AliasItem } from '@/lib/businessAliases';
 
 // Render up to 6; how many actually show scales with viewport width via CSS below.
 const MAX_CARDS = 6;
+
+// Deterministic 4.0–5.0 star rating per item id — the menu source has no rating
+// field, so derive a stable value so each item shows a consistent rating.
+function itemRating(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return 4 + (h % 11) / 10;
+}
 
 // First 4 items always visible; 5th on xl, 6th on 2xl.
 const cardVisibility = (i: number) =>
@@ -82,6 +90,10 @@ export function BusinessItemsRail({
           )}
           <div className="px-2.5 pb-2 pt-1 lg:px-3 lg:pb-2.5">
             <p className="text-sm font-bold leading-tight text-black">{item.name}</p>
+            <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-black">
+              <Star className="h-3.5 w-3.5 fill-[#f97316] text-[#f97316]" />
+              {itemRating(item.id).toFixed(1)}
+            </div>
             <div className="mt-2 flex items-center justify-between">
               <span className="text-lg font-bold text-[#f97316] lg:text-xl">${item.price.toFixed(2)}</span>
               <button

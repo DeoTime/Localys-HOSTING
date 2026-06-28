@@ -501,6 +501,20 @@ button, a {
   }
 }
 
+/* Calmer, subtler pop for the Discover like/favorite icons — gentle scale, soft
+   ease-out, no bouncy overshoot. */
+@keyframes likeIconPopCalm {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 /* Particle burst animation */
 @keyframes particleBurst {
   0% {
@@ -1462,14 +1476,14 @@ div#devtools-indicator.nextjs-toast {
   transform: scale(0.95);
 }
 
-/* Like icon pop animation */
+/* Like icon pop animation — calm/subtle */
 .like-icon-pop {
-  animation: likeButtonPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  animation: likeIconPopCalm 0.25s ease-out !important;
 }
 
-/* Bookmark icon pop animation */
+/* Bookmark icon pop animation — calm/subtle */
 .bookmark-icon-pop {
-  animation: likeButtonPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  animation: likeIconPopCalm 0.25s ease-out !important;
 }
 
 /* Particle elements in home feed */
@@ -3147,14 +3161,14 @@ html {
   animation: buttonSpringGlow 0.4s ease-out;
 }
 
-/* Like icon animation - pop on click */
+/* Like icon animation - calm/subtle pop on click */
 .like-icon-pop {
-  animation: likeSpringPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: likeIconPopCalm 0.25s ease-out;
 }
 
-/* Bookmark icon animation - pop on click */
+/* Bookmark icon animation - calm/subtle pop on click */
 .bookmark-icon-pop {
-  animation: likeSpringPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: likeIconPopCalm 0.25s ease-out;
 }
 
 /* Video fade-in on appearance */
