@@ -59,8 +59,8 @@ export function RankSection({ moneySpent, points, bizCount }: ImpactInputs) {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        {/* Dark background so transparent-PNG rank badges always show with contrast */}
-        <div className="flex h-52 w-52 shrink-0 items-center justify-center rounded-2xl bg-gray-900 sm:h-60 sm:w-60">
+        {/* Clean white background for the rank badge */}
+        <div className="flex h-52 w-52 shrink-0 items-center justify-center rounded-2xl border border-gray-200 bg-white sm:h-60 sm:w-60">
           <RankBadge src={current.image} alt={current.name} className="h-44 w-44 sm:h-52 sm:w-52" />
         </div>
         <div className="w-full text-center">
@@ -146,7 +146,7 @@ function RanksModal({ currentId, score, onClose }: { currentId: string; score: n
                   </p>
 
                   <div className="relative">
-                    <div className={`flex h-20 w-20 items-center justify-center rounded-xl bg-gray-900 ${!unlocked ? 'opacity-30 grayscale' : ''}`}>
+                    <div className={`flex h-20 w-20 items-center justify-center rounded-xl border border-gray-200 bg-white ${!unlocked ? 'opacity-30 grayscale' : ''}`}>
                       <RankBadge
                         src={rank.image}
                         alt={rank.name}

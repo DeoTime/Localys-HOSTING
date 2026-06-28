@@ -26,9 +26,21 @@ export interface SavedItem {
   href?: string;
 }
 
+/** A liked menu item snapshot — enough to render the profile "Liked Items" card. */
+export interface LikedMenuItem {
+  id: string;
+  name: string;
+  price: number;
+  image?: string;
+  storeName: string;
+  /** Where the card links (the store/item page). */
+  href: string;
+}
+
 interface EngagementState {
   likedItems: Record<string, true>;
   bookmarkedItems: Record<string, SavedItem>;
+  likedMenuItems: Record<string, LikedMenuItem>;
   commentLikes: Record<string, true>;
   demoComments: Record<string, Comment[]>;
   ratings: Record<string, number>;
@@ -37,6 +49,7 @@ interface EngagementState {
 const EMPTY: EngagementState = {
   likedItems: {},
   bookmarkedItems: {},
+  likedMenuItems: {},
   commentLikes: {},
   demoComments: {},
   ratings: {},
@@ -56,6 +69,7 @@ function hydrate() {
       state = {
         likedItems: parsed.likedItems ?? {},
         bookmarkedItems: parsed.bookmarkedItems ?? {},
+        likedMenuItems: parsed.likedMenuItems ?? {},
         commentLikes: parsed.commentLikes ?? {},
         demoComments: parsed.demoComments ?? {},
         ratings: parsed.ratings ?? {},
@@ -131,6 +145,33 @@ export function toggleItemBookmark(item: SavedItem): boolean {
 export function getSavedItems(): SavedItem[] {
   hydrate();
   return Object.values(state.bookmarkedItems);
+}
+
+// ----- Liked menu items --------------------------------------------------------------
+// A client snapshot is kept for every liked item (demo AND real) so the heart
+// state + profile "Liked Items" tab work offline; real items are additionally
+// persisted to Supabase by the caller (lib/supabase/likedItems.ts).
+
+export function isMenuItemLiked(id: string): boolean {
+  hydrate();
+  return !!state.likedMenuItems[id];
+}
+
+/** Toggle a liked menu item snapshot. Returns the new liked state. */
+export function toggleMenuItemLike(item: LikedMenuItem): boolean {
+  hydrate();
+  const exists = !!state.likedMenuItems[item.id];
+  const likedMenuItems = { ...state.likedMenuItems };
+  if (exists) delete likedMenuItems[item.id];
+  else likedMenuItems[item.id] = item;
+  state = { ...state, likedMenuItems };
+  persistAndEmit();
+  return !exists;
+}
+
+export function getLikedMenuItems(): LikedMenuItem[] {
+  hydrate();
+  return Object.values(state.likedMenuItems);
 }
 
 // ----- Comment likes -----------------------------------------------------------------
