@@ -217,9 +217,9 @@ export default function CommentForm({
           disabled={loading}
           rows={compact ? 1 : 3}
           className={`w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-black placeholder-gray-400 focus:outline-none focus:border-[#f97316] focus:ring-1 focus:ring-[#f97316]/20 disabled:opacity-50 disabled:cursor-not-allowed resize-none ${
-            compact ? 'text-sm min-h-[32px]' : 'text-sm'
+            compact ? 'text-sm min-h-[32px]' : 'text-sm min-h-[96px]'
           }`}
-          style={{ maxHeight: compact ? '80px' : '120px' }}
+          style={{ maxHeight: compact ? '80px' : '160px' }}
         />
 
         {/* Star Rating */}

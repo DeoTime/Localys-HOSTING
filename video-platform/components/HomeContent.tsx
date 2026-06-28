@@ -1133,7 +1133,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
         .feed-reviews {
           display: none;
           position: absolute;
-          top: 16px;
+          /* Start below the top-right coins/Get App bar so the panel's stars and
+             first review are never hidden behind it. */
+          top: 64px;
           bottom: 16px;
           right: 16px;
           width: min(360px, 80vw);
