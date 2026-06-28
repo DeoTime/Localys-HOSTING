@@ -22,15 +22,15 @@ export function Logo({
   const inner = (
     <>
       <MapPin className={iconClassName} strokeWidth={1.5} aria-hidden />
-      {showText && <span className={`font-semibold tracking-wide ${textClassName}`}>Localys</span>}
+      {showText && <span className={`font-semibold tracking-wide ${textClassName}`}>Localy</span>}
     </>
   );
   const cls = `inline-flex items-center gap-2 ${className}`;
   if (href === null) {
-    return <span className={cls} aria-label="Localys">{inner}</span>;
+    return <span className={cls} aria-label="Localy">{inner}</span>;
   }
   return (
-    <Link href={href} className={cls} aria-label="Localys home">
+    <Link href={href} className={cls} aria-label="Localy home">
       {inner}
     </Link>
   );

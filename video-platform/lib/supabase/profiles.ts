@@ -958,6 +958,31 @@ export async function getUserItemPurchases(userId: string) {
 }
 
 /**
+ * Read the user's Localy Premium status. Fault-tolerant: if the premium columns
+ * don't exist yet (migration not applied) or the query fails, returns
+ * `isPremium: false` instead of throwing, so the UI never breaks.
+ */
+export async function getUserPremiumStatus(
+  userId: string
+): Promise<{ isPremium: boolean; premiumUntil: string | null }> {
+  if (!userId) return { isPremium: false, premiumUntil: null };
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('is_premium, premium_until')
+      .eq('id', userId)
+      .single();
+    if (error || !data) return { isPremium: false, premiumUntil: null };
+    return {
+      isPremium: !!(data as { is_premium?: boolean }).is_premium,
+      premiumUntil: (data as { premium_until?: string | null }).premium_until ?? null,
+    };
+  } catch {
+    return { isPremium: false, premiumUntil: null };
+  }
+}
+
+/**
  * Get item sales where user is the seller (for business)
  */
 export async function getBusinessItemSales(userId: string) {

@@ -25,7 +25,7 @@ import { getUserBookmarkedVideos } from '@/lib/supabase/videos';
 import { getSavedItems, getLikedItemIds, subscribeEngagement, type SavedItem } from '@/lib/clientEngagement';
 import { isDemoId } from '@/lib/utils/ids';
 import { DEMO_VIDEOS, buildFeedVideos } from '@/lib/demoVideos';
-import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award, Play } from 'lucide-react';
+import { ChevronRight, Store, DollarSign, MapPin, ShoppingBag, Heart, Trophy, Star, MessageCircle, Award, Play, Crown } from 'lucide-react';
 
 // Demo feed (videos for slug/local content) keyed for quick enrichment of the
 // profile Saved/Liked cards — same source the Home "Featured in Videos" cards use.
@@ -43,7 +43,7 @@ interface BadgeStats {
 }
 
 const BADGE_DEFS = [
-  { id: 'explorer',      Icon: MapPin,        name: 'Local Explorer',    desc: 'Joined Localys',                 check: (_: BadgeStats) => true },
+  { id: 'explorer',      Icon: MapPin,        name: 'Local Explorer',    desc: 'Joined Localy',                 check: (_: BadgeStats) => true },
   { id: 'first-order',   Icon: ShoppingBag,   name: 'First Order',       desc: 'Placed your first order',        check: (s: BadgeStats) => s.purchases >= 1 },
   { id: 'regular',       Icon: Store,         name: 'Regular',           desc: 'Supported 3+ businesses',        check: (s: BadgeStats) => s.bizCount >= 3 },
   { id: 'hero',          Icon: Heart,         name: 'Community Hero',    desc: 'Supported 5+ businesses',        check: (s: BadgeStats) => s.bizCount >= 5 },
@@ -618,6 +618,15 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
         <h3 className="text-base font-semibold text-gray-900 mb-3">{t('common.settings')}</h3>
         <div className="space-y-2">
           <Link
+            href="/premium"
+            className="flex items-center justify-between p-4 bg-white border border-[#f97316]/30 rounded-xl hover:bg-[#f97316]/5 transition-colors"
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+              <Crown className="w-4 h-4 text-[#f97316]" /> Localy Premium
+            </span>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </Link>
+          <Link
             href="/settings"
             className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
           >
@@ -656,7 +665,7 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
           <a href="#" className="text-gray-400 text-xs hover:text-gray-700 transition-colors">Program</a>
           <a href="#" className="text-gray-400 text-xs hover:text-gray-700 transition-colors">Terms &amp; Policies</a>
         </div>
-        <p className="text-gray-400 text-xs">2026 Localys</p>
+        <p className="text-gray-400 text-xs">2026 Localy</p>
       </div>
     </div>
   );

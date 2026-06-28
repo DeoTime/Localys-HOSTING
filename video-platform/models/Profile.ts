@@ -7,6 +7,10 @@ export interface Profile {
   profile_picture_url?: string;
   coin_balance?: number;
   type?: string | null;
+  /** Localy Premium subscription state (see supabase/*_premium.sql). */
+  is_premium?: boolean;
+  premium_until?: string | null;
+  stripe_customer_id?: string | null;
 }
 
 export interface BusinessHours {

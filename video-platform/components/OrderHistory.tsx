@@ -7,8 +7,20 @@ import { supabase } from '@/lib/supabase/client';
 import type { CoinPurchase, ItemPurchase } from '@/models/Order';
 import { useTranslation } from '@/hooks/useTranslation';
 import { OrderQRCode } from '@/components/QRCode';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Star } from 'lucide-react';
 import { getLocalOrders, type LocalOrder } from '@/lib/clientEngagement';
+import { getReviewStats } from '@/lib/utils/reviewStats';
+
+/** Star rating + review count shown under an order name. */
+function OrderReviews({ statsKey }: { statsKey: string }) {
+  const { rating, reviews } = getReviewStats(statsKey);
+  return (
+    <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-600">
+      <Star className="h-3 w-3 fill-[#f97316] text-[#f97316]" strokeWidth={1.5} />
+      {rating.toFixed(1)} · {reviews} reviews
+    </p>
+  );
+}
 
 function DiscountBadge({ item }: { item: ItemPurchase }) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -225,6 +237,7 @@ function OrderItem({ order, onReorder }: { order: CoinPurchase | ItemPurchase; o
       <div className="flex justify-between items-start gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 truncate">{item.item_name}</p>
+          <OrderReviews statsKey={item.seller_id || item.item_name} />
           <p className="text-gray-700 text-xs font-semibold mt-0.5">Order #{item.id.substring(0, 8).toUpperCase()}</p>
         </div>
         <div className="text-right shrink-0">
@@ -273,6 +286,7 @@ function LocalOrderItem({ order }: { order: LocalOrder }) {
       <div className="flex justify-between items-start gap-3">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-900 truncate">{order.itemName}</p>
+          <OrderReviews statsKey={order.itemName} />
           <p className="text-gray-700 text-xs font-semibold mt-0.5">Order #{order.confirmationNumber}</p>
         </div>
         <div className="text-right shrink-0">

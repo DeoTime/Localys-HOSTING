@@ -58,6 +58,25 @@ export async function POST(request: NextRequest) {
 
       const metadata = session.metadata || {};
 
+      // --- LOCALY PREMIUM SUBSCRIPTION ---
+      if (metadata.premium === 'true' && metadata.userId) {
+        const premiumUntil = new Date();
+        premiumUntil.setMonth(premiumUntil.getMonth() + 1);
+        const { error: premiumError } = await supabase
+          .from('profiles')
+          .update({
+            is_premium: true,
+            premium_until: premiumUntil.toISOString(),
+            stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+          })
+          .eq('id', metadata.userId);
+        if (premiumError) {
+          console.error('Failed to mark user premium:', premiumError.message);
+          return NextResponse.json({ error: 'Failed to activate premium' }, { status: 500 });
+        }
+        return NextResponse.json({ received: true });
+      }
+
       // Determine if this is a coin purchase or item purchase
       if (metadata.coins && metadata.userId) {
         // --- COIN PURCHASE ---
@@ -284,6 +303,20 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+  }
+
+  // Premium subscription ended (cancelled / payment failed out) — revoke premium.
+  if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object as Stripe.Subscription;
+    const userId = subscription.metadata?.userId;
+    if (userId) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_premium: false, premium_until: null })
+        .eq('id', userId);
+      if (error) console.error('Failed to revoke premium:', error.message);
+    }
+    return NextResponse.json({ received: true });
   }
 
   return NextResponse.json({ received: true });

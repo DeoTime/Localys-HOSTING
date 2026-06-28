@@ -47,14 +47,14 @@ function PointsContent() {
             <span className="text-sm font-semibold uppercase tracking-wide text-[#f97316]">Your Balance</span>
           </div>
           <p className="text-5xl font-bold text-white">{coins ?? '—'}</p>
-          <p className="mt-1 text-sm text-gray-400">Localys Points</p>
+          <p className="mt-1 text-sm text-gray-400">Localy Points</p>
         </div>
 
         {/* What are points */}
         <div className="mb-6 rounded-2xl border border-gray-200 p-4">
           <h2 className="mb-2 text-sm font-bold text-black">What are Points?</h2>
           <p className="text-sm leading-relaxed text-black">
-            Points are earned by completing daily and monthly challenges. Accumulate enough points and convert them into <strong>Localys credit</strong> — real money off your next order at any local business.
+            Points are earned by completing daily and monthly challenges. Accumulate enough points and convert them into <strong>Localy credit</strong> — real money off your next order at any local business.
           </p>
         </div>
 
@@ -92,9 +92,9 @@ function PointsContent() {
 
         {/* Convert to credit */}
         <div className="rounded-2xl border border-[#f97316]/40 bg-[#f97316]/5 p-5">
-          <h2 className="mb-1 text-sm font-bold text-black">Convert to Localys Credit</h2>
+          <h2 className="mb-1 text-sm font-bold text-black">Convert to Localy Credit</h2>
           <p className="mb-4 text-sm text-black">
-            Reach <strong>500 points</strong> to convert into real Localys credit, spendable on any order.
+            Reach <strong>500 points</strong> to convert into real Localy credit, spendable on any order.
           </p>
           <div className="mb-4 space-y-1.5">
             {[

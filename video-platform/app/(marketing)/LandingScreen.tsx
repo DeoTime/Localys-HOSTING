@@ -51,12 +51,12 @@ const stats = [
 ];
 
 const faqs = [
-  { q: "How do I find local businesses near me?", a: "Open Localys and your feed fills with shops, cafés, and services near your location. Browse by video, or search by name and category to jump straight to a spot." },
-  { q: "Is Localys free to use?", a: "Yes. Creating an account and browsing is completely free for shoppers — and you collect coins as you order, review, and engage." },
+  { q: "How do I find local businesses near me?", a: "Open Localy and your feed fills with shops, cafés, and services near your location. Browse by video, or search by name and category to jump straight to a spot." },
+  { q: "Is Localy free to use?", a: "Yes. Creating an account and browsing is completely free for shoppers — and you collect coins as you order, review, and engage." },
   { q: "How do I order — pickup or a service?", a: "Add items to your cart for pickup, or book a service appointment right from a business's page. You'll get updates as your order or booking is confirmed." },
   { q: "How do coins and rewards work?", a: "You earn coins for ordering, leaving reviews, and engaging with the community. Redeem them for deals and perks at participating local businesses." },
-  { q: "How do I list my business on Localys?", a: "Tap “List your business” to set up your storefront in Localys Manager — add your menu, photos, and start taking orders and bookings." },
-  { q: "What makes Localys different?", a: "Localys blends video discovery, community reviews, and ordering in one app — and keeps just 5%, so far more stays with the local owners you support." },
+  { q: "How do I list my business on Localy?", a: "Tap “List your business” to set up your storefront in Localy Manager — add your menu, photos, and start taking orders and bookings." },
+  { q: "What makes Localy different?", a: "Localy blends video discovery, community reviews, and ordering in one app — and keeps just 5%, so far more stays with the local owners you support." },
 ];
 
 function FaqItem({ q, a, index }: { q: string; a: string; index: number }) {
@@ -361,7 +361,7 @@ export default function LandingScreen() {
             </div>
           </div>
           <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-border pt-8 sm:flex-row">
-            <p className="text-xs text-muted-foreground">{new Date().getFullYear()} Localys. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground">{new Date().getFullYear()} Localy. All rights reserved.</p>
             <div className="flex gap-6 text-muted-foreground">
               <a href="#" aria-label="Twitter" className="transition hover:text-foreground"><Twitter size={18} /></a>
               <a href="#" aria-label="YouTube" className="transition hover:text-foreground"><Youtube size={18} /></a>

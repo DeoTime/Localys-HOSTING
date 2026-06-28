@@ -14,6 +14,7 @@
  *   - types            → StoreMenu, StoreItem, StoreDeal (re-exported below)
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Heart, MoreHorizontal, Search, Users, ChevronLeft, ChevronRight,
@@ -66,7 +67,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
 
   const handleShare = async () => {
     const url = typeof window !== 'undefined' ? window.location.href : '';
-    const shareData = { title: storeName, text: `Check out ${storeName} on Localys`, url };
+    const shareData = { title: storeName, text: `Check out ${storeName} on Localy`, url };
     try {
       if (typeof navigator !== 'undefined' && navigator.share) {
         await navigator.share(shareData);
@@ -202,7 +203,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
               <button
                 onClick={handleMessageClick}
                 disabled={messagingLoading}
-                className="inline-flex items-center gap-1 font-medium text-black underline-offset-2 hover:underline disabled:opacity-60"
+                className="inline-flex items-center gap-1 rounded-full border border-[#f97316] px-3 py-1 text-sm font-semibold text-black transition hover:bg-[#f97316]/10 disabled:opacity-60"
               >
                 <MessageCircle className="h-3.5 w-3.5 text-[#f97316]" strokeWidth={2} />
                 {messagingLoading ? 'Opening…' : 'Message'}
@@ -292,7 +293,7 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex items-center justify-between gap-3 rounded-2xl border border-orange-100 bg-orange-50 p-4">
                   <div>
-                    <p className="text-sm font-semibold text-black">Save with $0 Delivery &amp; Service Fees when you order $30+</p>
+                    <p className="text-sm font-semibold text-black">Save 15% across all orders when you order $30+</p>
                     <p className="mt-1 text-xs text-gray-600">Expires tomorrow by 1:13 p.m.</p>
                   </div>
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f97316] text-white">
@@ -301,8 +302,8 @@ export function StorePage({ storeName, sellerId, menu }: { storeName: string; se
                 </div>
                 <div className="flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-gray-200 bg-white p-4">
                   <div>
-                    <p className="text-sm font-semibold text-black">$0 Delivery Fee + 5% off with Localys Premium</p>
-                    <button className="mt-1 text-xs font-semibold text-[#f97316] hover:underline">Try free for 4 weeks</button>
+                    <p className="text-sm font-semibold text-black">15% discounts across all items with Localy Premium</p>
+                    <Link href="/premium" className="mt-1 inline-block text-xs font-semibold text-[#f97316] hover:underline">Get Premium — $5/month</Link>
                   </div>
                   <ItemImage src={menu.banner || undefined} alt="" className="h-16 w-24 shrink-0 rounded-lg object-cover" />
                 </div>

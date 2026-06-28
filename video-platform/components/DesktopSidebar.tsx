@@ -231,7 +231,7 @@ export function DesktopSidebar() {
           <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Company</a>
           <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Program</a>
           <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Terms &amp; Policies</a>
-          <p className="text-[11px] text-[#9E9A90] pt-2">&copy; 2026 Localys</p>
+          <p className="text-[11px] text-[#9E9A90] pt-2">&copy; 2026 Localy</p>
         </div>
       </div>
     </aside>
