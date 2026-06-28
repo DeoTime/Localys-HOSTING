@@ -272,7 +272,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
       // Built-in local video — always already in the feed; nothing to fetch.
       router.replace('/feed', { scroll: false });
     } else {
-      // Video not in feed — fetch and prepend it
+      // Video not in the (possibly filtered) feed — fetch it directly and prepend so
+      // it plays. This is how a creator's video that's HIDDEN from the For You feed
+      // (e.g. @likaden726) still opens in Discover when clicked from Business Manager →
+      // Videos. The direct fetch ignores the feed filter on purpose.
       (async () => {
         try {
           const { data } = await supabase
@@ -282,8 +285,9 @@ export function HomeContent({ isActive }: HomeContentProps) {
             .single();
 
           if (data) {
-            setVideos(prev => [data as Video, ...prev]);
+            setVideos(prev => (prev.some(v => v.id === targetVideoId) ? prev : [data as Video, ...prev]));
             setCurrentIndex(0);
+            setIsPlaying(true);
           }
         } catch (err) {
           console.error('Error fetching video by ID:', err);
