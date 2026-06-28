@@ -764,8 +764,10 @@ export function HomeContent({ isActive }: HomeContentProps) {
     }
 
     setLikeAnimating(videoId);
-    const likeKey = businessId || videoId;
-    const itemType = businessId ? 'business' : 'video';
+    // Like state is keyed by the unique VIDEO id (not business) so liking one video
+    // never marks other videos from the same business as liked.
+    const likeKey = videoId;
+    const itemType = 'video' as const;
     const isLiked = likedVideos.has(likeKey);
 
     // Admin Mode: every click adds +1 display-only
@@ -988,7 +990,8 @@ export function HomeContent({ isActive }: HomeContentProps) {
     );
   }
   const currentBusiness = currentVideo.businesses;
-  const likeKey = currentBusiness?.id || currentVideo.id;
+  // Per-video like key (see toggleLike) — must match so each video's heart is independent.
+  const likeKey = currentVideo.id;
   const isLiked = likedVideos.has(likeKey);
   const isBookmarked = bookmarkedVideos.has(currentVideo.id);
   // Stable (deterministic) save/share counts — no backend store for these.
@@ -1100,26 +1103,21 @@ export function HomeContent({ isActive }: HomeContentProps) {
             gap: 10px;
           }
         }
-        /* Up/Down nav circles — hidden on mobile; on sm+ pinned to the LEFT of the video
-           (the right side is now used by the comments panel). */
+        /* Up/Down nav circles — hidden on mobile; on sm+ pinned to the bottom-LEFT
+           corner, clear of the centered video, the action rail (bottom-right) and the
+           comments panel (far right). z-30 keeps them above the item rail. */
         .feed-nav-arrows {
           display: none;
           position: absolute;
           left: 16px;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 21;
+          bottom: 20px;
+          z-index: 30;
           flex-direction: column;
           gap: 14px;
         }
         @media (min-width: 640px) {
           .feed-nav-arrows {
             display: flex;
-          }
-        }
-        @media (min-width: 1024px) {
-          .feed-nav-arrows {
-            left: 28px;
           }
         }
         /* Comments-beside-video panel — far right, only where there's room (xl+). */
@@ -1342,18 +1340,20 @@ export function HomeContent({ isActive }: HomeContentProps) {
           theme-aware. Hover only SHADES the circle (no size change). */}
       <div className="feed-nav-arrows">
         <button
+          type="button"
           onClick={goToPrev}
           aria-label="Previous video"
-          className="w-12 h-12 rounded-full bg-white dark:bg-[#1e1e1e] border border-black/10 dark:border-white/15 shadow-lg flex items-center justify-center transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10"
+          className="p-0 w-12 h-12 rounded-full bg-white dark:bg-[#1e1e1e] border border-black/10 dark:border-white/15 shadow-lg flex items-center justify-center transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10"
         >
           <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 15l7-7 7 7" />
           </svg>
         </button>
         <button
+          type="button"
           onClick={goToNext}
           aria-label="Next video"
-          className="w-12 h-12 rounded-full bg-white dark:bg-[#1e1e1e] border border-black/10 dark:border-white/15 shadow-lg flex items-center justify-center transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10"
+          className="p-0 w-12 h-12 rounded-full bg-white dark:bg-[#1e1e1e] border border-black/10 dark:border-white/15 shadow-lg flex items-center justify-center transition-colors duration-150 hover:bg-black/5 dark:hover:bg-white/10"
         >
           <svg className="w-6 h-6 text-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
