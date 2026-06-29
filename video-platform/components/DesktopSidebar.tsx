@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * DesktopSidebar — the left-hand navigation rail shown on large screens (lg+).
+ * Purpose: Desktop counterpart to AppBottomNav. It lists the main destinations with live badges
+ *   (unread chats, cart count, pending business orders), shows a shortcut list of accounts the user
+ *   follows, and adapts to account type (Orders only for businesses). Hidden on auth screens.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
@@ -17,6 +25,7 @@ interface FollowingAccount {
   profile_picture_url: string | null;
 }
 
+// Renders the persistent desktop sidebar and keeps its badges/following-list in sync with app state.
 export function DesktopSidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -29,6 +38,7 @@ export function DesktopSidebar() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [pendingOrders, setPendingOrders] = useState(0);
 
+  // Determine whether the user is a business account (controls whether the Orders link appears).
   useEffect(() => {
     if (!user) { setIsBusiness(false); setFollowing([]); return; }
     const check = async () => {
@@ -38,7 +48,7 @@ export function DesktopSidebar() {
     check();
   }, [user]);
 
-  // Fetch unread messages count
+  // Fetch unread message count and keep it live via realtime subscriptions on messages + read markers.
   useEffect(() => {
     if (!user) { setUnreadMessages(0); return; }
     const fetchUnread = async () => {
@@ -66,7 +76,7 @@ export function DesktopSidebar() {
     return () => { supabase.removeChannel(msgChannel); supabase.removeChannel(readChannel); };
   }, [user]);
 
-  // Fetch pending orders count (business only)
+  // Fetch the count of unfulfilled orders for business accounts, kept live so new orders show instantly.
   useEffect(() => {
     if (!user || !isBusiness) { setPendingOrders(0); return; }
     const fetchPending = async () => {
@@ -82,6 +92,7 @@ export function DesktopSidebar() {
     return () => { supabase.removeChannel(channel); };
   }, [user, isBusiness]);
 
+  // Load up to 5 accounts the user follows to show as quick shortcuts at the bottom of the sidebar.
   useEffect(() => {
     if (!user) { setFollowing([]); return; }
     const loadFollowing = async () => {
@@ -100,8 +111,10 @@ export function DesktopSidebar() {
     loadFollowing();
   }, [user]);
 
+  // Auth screens use their own layout, so the sidebar renders nothing there.
   if (pathname === '/login' || pathname === '/signup' || pathname === '/reset-password') return null;
 
+  // Highlight the current tab: Home matches exactly; others match by prefix so sub-pages stay active.
   const isActive = (href: string) => {
     if (href === '/feed') return pathname === '/feed';
     return pathname?.startsWith(href);
@@ -142,7 +155,7 @@ export function DesktopSidebar() {
                 </svg>
                 <span>{item.label}</span>
                 {unreadCount > 0 && (
-                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F5A623] text-xs font-bold text-[#1A1A18] px-1">
+                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#f97316] text-xs font-bold text-[#1A1A18] px-1">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
@@ -156,7 +169,7 @@ export function DesktopSidebar() {
               href={item.href}
               className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium transition-all duration-200 hover-lift ${
                 active
-                  ? 'bg-[#F5A623]/10 text-[#F5A623] border-l-4 border-[#F5A623]'
+                  ? 'bg-[#f97316]/10 text-[#f97316] border-l-4 border-[#f97316]'
                   : 'text-[#9E9A90] hover:text-[#F5F0E8] hover:bg-[#242420]'
               }`}
             >
@@ -165,12 +178,12 @@ export function DesktopSidebar() {
               </svg>
               <span>{item.label}</span>
               {'cart' in item && cartCount > 0 && (
-                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#F5A623] text-[10px] font-bold text-[#1A1A18]">
+                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#f97316] text-[10px] font-bold text-[#1A1A18]">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
               {'badge' in item && typeof item.badge === 'number' && item.badge > 0 && (
-                <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#F5A623] text-[10px] font-bold text-[#1A1A18] px-1">
+                <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#f97316] text-[10px] font-bold text-[#1A1A18] px-1">
                   {item.badge > 9 ? '9+' : item.badge}
                 </span>
               )}
@@ -190,7 +203,7 @@ export function DesktopSidebar() {
                 key={account.id}
                 href="#"
                 onClick={(e) => { e.preventDefault(); router.push(`/profile/${account.id}`); }}
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 transition-all duration-150 hover:bg-[#242420] hover:border-l-2 hover:border-[#F5A623] border-l-2 border-transparent"
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 transition-all duration-150 hover:bg-[#242420] hover:border-l-2 hover:border-[#f97316] border-l-2 border-transparent"
               >
                 {account.profile_picture_url ? (
                   <Image
@@ -228,9 +241,9 @@ export function DesktopSidebar() {
       <div className="px-3">
         <div className="border-t border-[#3A3A34] my-2" />
         <div className="px-3 py-4 space-y-1.5">
-          <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Company</a>
-          <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Program</a>
-          <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#F5A623] transition-colors">Terms &amp; Policies</a>
+          <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#f97316] transition-colors">Company</a>
+          <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#f97316] transition-colors">Program</a>
+          <a href="#" className="block text-[11px] text-[#9E9A90] hover:text-[#f97316] transition-colors">Terms &amp; Policies</a>
           <p className="text-[11px] text-[#9E9A90] pt-2">&copy; 2026 Localy</p>
         </div>
       </div>

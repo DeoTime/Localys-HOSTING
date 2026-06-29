@@ -1,3 +1,11 @@
+/**
+ * AuthSplitLayout — the two-pane layout for auth screens (login/signup): form on one side, a
+ *   scrolling photo collage on the other.
+ * Purpose: Gives the auth pages a polished, branded split-screen look while keeping the actual form
+ *   markup in the page components. The photo columns are decorative (aria-hidden).
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { Logo } from '@/components/Logo';
 
 // Two vertically-scrolling columns of local-business / community photos.
@@ -47,7 +55,7 @@ export default function AuthSplitLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* RIGHT — form */}
-      <div className="flex w-full items-center justify-center overflow-y-auto bg-white px-6 py-12 lg:w-1/2">
+      <div className="flex w-full items-center justify-center overflow-y-auto bg-background px-6 py-12 lg:w-1/2">
         <div className="w-full max-w-md">{children}</div>
       </div>
     </div>

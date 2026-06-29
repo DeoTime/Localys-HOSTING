@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * DealsHero — the large auto-rotating "Featured near you" hero block at the top of the home page.
+ * Purpose: Spotlights local businesses: one big slide auto-advances every ~5s (pauses on hover),
+ *   flanked by smaller business tiles with quick-add buttons. Uses the shared feed's reserved hero
+ *   set so its photos are unique and never repeat in rows below.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -17,7 +25,7 @@ const CAROUSEL_INTERVAL_MS = 5000;
  * Duration of the "Featured near you" slide/intro animation (seconds). Lower =
  * faster & snappier on load. Single source of truth — tune here.
  */
-const FEATURED_ANIM_DURATION_S = 0.45;
+const FEATURED_ANIM_DURATION_S = 0.28;
 
 /**
  * (A) Walmart-style top block: ONE large featured business that auto-shifts
@@ -41,6 +49,7 @@ export function DealsHero() {
   const featuredLenRef = useRef(featured.length);
   featuredLenRef.current = featured.length;
 
+  // Quick-add a business's cheapest item to the cart from a hero tile, with brief "Added" feedback.
   const handleAdd = (e: React.MouseEvent, biz: LocalBusiness) => {
     e.preventDefault();
     const cheapest = biz.products.length
@@ -93,7 +102,8 @@ export function DealsHero() {
           onMouseLeave={() => setPaused(false)}
         >
           <div className="relative aspect-[16/9] w-full lg:aspect-[2/1]">
-            <AnimatePresence mode="sync" initial={false}>
+            {/* initial (default true) lets the first slide animate in immediately on load. */}
+            <AnimatePresence mode="sync">
               <motion.div
                 key={current.id}
                 initial={{ x: '100%' }}

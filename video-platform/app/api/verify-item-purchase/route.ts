@@ -1,3 +1,11 @@
+/**
+ * API route: POST /api/verify-item-purchase — confirm a completed item order and record it.
+ * Purpose: Called after the Stripe success redirect for an item order: verifies the session paid, then
+ *   records the purchase and generates its pickup verification token (idempotently). The item-order
+ *   counterpart to verify-purchase, and a safety net beside the webhook.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
@@ -8,6 +16,16 @@ import { getAuthenticatedUser } from '@/lib/server-auth';
 import storeMenus from '@/data/store-menus.json';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+interface OrderResult {
+  orderId: string;
+  token: string;
+  itemName: string;
+  price: number;
+  quantity: number;
+  scheduledAt: string | null;
+  specialRequests: string | null;
+}
 
 /** Trusted prices for built-in demo-store items (ids like "jays-burger-0"). */
 const MANIFEST_PRICES: Map<string, { name: string; price: number }> = (() => {
@@ -31,6 +49,48 @@ function getSupabaseAdminClient() {
 function generateConfirmationNumber(): string {
   const random = Math.random().toString(36).substring(2, 10).toUpperCase();
   return `${random}${new Date().getTime().toString(36).toUpperCase()}`;
+}
+
+/** Real item names / quantities / amounts from the expanded Stripe line items. */
+interface StripeLine { name: string; qty: number; unit: number }
+function extractLines(session: Stripe.Checkout.Session): StripeLine[] {
+  const data = session.line_items?.data ?? [];
+  return data.map((li) => {
+    const product = li.price && typeof li.price.product !== 'string'
+      ? (li.price.product as Stripe.Product)
+      : null;
+    const qty = li.quantity ?? 1;
+    const lineTotal = (li.amount_total ?? 0) / 100; // dollars (post-discount, incl. qty)
+    return {
+      name: li.description || product?.name || 'Item',
+      qty,
+      unit: qty > 0 ? lineTotal / qty : lineTotal,
+    };
+  });
+}
+
+/**
+ * Demo-safe fallback: read any order rows already saved for this Stripe session
+ * (e.g. inserted by the webhook) so the confirmation still shows real data when
+ * the live Stripe lookup fails.
+ */
+async function ordersFromDb(sessionId: string, userId: string): Promise<OrderResult[]> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from('item_purchases')
+    .select('id, item_name, price, quantity, verification_token, scheduled_at, special_requests')
+    .eq('stripe_session_id', sessionId)
+    .eq('buyer_id', userId);
+  return (data ?? []).map((r) => ({
+    orderId: r.id,
+    token: r.verification_token || generateToken(r.id),
+    itemName: r.item_name || 'Item',
+    price: typeof r.price === 'number' ? r.price : 0,
+    quantity: r.quantity ?? 1,
+    scheduledAt: r.scheduled_at ?? null,
+    specialRequests: r.special_requests ?? null,
+  }));
 }
 
 export async function POST(request: NextRequest) {
@@ -61,84 +121,122 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return parsed.response;
   const { sessionId } = parsed.data;
 
-  const stripe = new Stripe(stripeKey);
-
-  let session: Stripe.Checkout.Session;
+  // Everything below is wrapped so a thrown error is always logged (message +
+  // stack) and returned as clean JSON — never a bare unhandled 500.
   try {
-    session = await stripe.checkout.sessions.retrieve(sessionId);
-  } catch (error) {
-    console.error('[verify-item-purchase] Stripe session retrieval failed:', error);
-    return NextResponse.json({ error: 'Payment session not found' }, { status: 404 });
-  }
+    const stripe = new Stripe(stripeKey);
 
-  if (!session.metadata) {
-    return NextResponse.json({ error: 'Payment session not found' }, { status: 404 });
-  }
-
-  // Verify this session belongs to the authenticated user
-  if (session.metadata.buyerId !== userId) {
-    console.warn(`[verify-item-purchase] User ${userId} attempted to claim session owned by ${session.metadata.buyerId}`);
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
-  const confirmationNumber = generateConfirmationNumber();
-  const metadata = session.metadata;
-  const couponCode = metadata.couponCode || null;
-  const discountPercentage = parseInt(metadata.discountPercentage || '0');
-
-  try {
-    // Multi-item format
-    if (metadata.items && metadata.buyerId) {
-      let rawItems: { id: string; name?: string; sid?: string; price?: number; qty?: number }[];
-      try {
-        rawItems = JSON.parse(metadata.items);
-      } catch {
-        return NextResponse.json({ error: 'Invalid session data' }, { status: 400 });
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['line_items', 'line_items.data.price.product'],
+      });
+    } catch (error) {
+      // Stripe lookup failed (demo/local session id, network, etc.). Fall back to
+      // any saved order rows so the confirmation still shows real data.
+      console.error(
+        '[verify-item-purchase] Stripe session retrieval failed:',
+        error instanceof Error ? `${error.message}\n${error.stack}` : error,
+      );
+      const fallback = await ordersFromDb(sessionId, userId);
+      if (fallback.length > 0) {
+        const total = fallback.reduce((s, o) => s + o.price * o.quantity, 0);
+        return NextResponse.json({
+          success: true,
+          confirmationNumber: generateConfirmationNumber(),
+          orders: fallback,
+          total,
+          fallback: true,
+        });
       }
+      return NextResponse.json({ error: 'Payment session not found' }, { status: 404 });
+    }
 
-      const orders = [];
-      for (const item of rawItems) {
-        // Resolve name + price: prefer metadata fields (written by checkout-item),
-        // fall back to the manifest so old Stripe sessions still work.
-        const manifest = MANIFEST_PRICES.get(item.id);
-        const resolvedName = item.name || manifest?.name || item.id;
-        const resolvedPrice = typeof item.price === 'number' && item.price > 0
-          ? item.price
-          : (manifest?.price ?? 0);
-        // sid may be missing on old sessions — use top-level sellerId from metadata
-        const resolvedSellerId = item.sid || metadata.sellerId || item.id;
+    if (!session.metadata) {
+      return NextResponse.json({ error: 'Payment session not found' }, { status: 404 });
+    }
+
+    // Verify this session belongs to the authenticated user
+    if (session.metadata.buyerId !== userId) {
+      console.warn(`[verify-item-purchase] User ${userId} attempted to claim session owned by ${session.metadata.buyerId}`);
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const confirmationNumber = generateConfirmationNumber();
+    const metadata = session.metadata;
+    const couponCode = metadata.couponCode || null;
+    const discountPercentage = parseInt(metadata.discountPercentage || '0');
+    const scheduledAt = metadata.scheduledAt || null; // buyer-chosen pickup/delivery time
+    const stripeLines = extractLines(session);
+    // Authoritative total straight from Stripe (cents → dollars).
+    const sessionTotal = typeof session.amount_total === 'number' ? session.amount_total / 100 : null;
+
+    // Per-item details now ride on each line item's product metadata (set by
+    // checkout-item) instead of one oversized session-metadata blob, so we read
+    // them back from the expanded line items.
+    const productMetas = (session.line_items?.data ?? []).map((li) => {
+      const product = li.price && typeof li.price.product !== 'string'
+        ? (li.price.product as Stripe.Product)
+        : null;
+      return (product?.metadata ?? {}) as Record<string, string>;
+    });
+
+    // Multi-item format
+    if (productMetas.length > 0 && metadata.buyerId) {
+      const orders: OrderResult[] = [];
+      for (let i = 0; i < productMetas.length; i++) {
+        const meta = productMetas[i];
+        const line = stripeLines[i];
+        const itemId = meta.id || `line-${i}`;
+        // Resolve name/price/qty: product metadata first (written by checkout-item),
+        // then the real Stripe line item, then the manifest — never 0 / "Unknown".
+        const manifest = MANIFEST_PRICES.get(itemId);
+        const metaPrice = meta.price ? parseFloat(meta.price) : NaN;
+        const metaQty = meta.qty ? parseInt(meta.qty, 10) : NaN;
+        const resolvedName = meta.name || line?.name || manifest?.name || itemId;
+        const resolvedPrice = (Number.isFinite(metaPrice) && metaPrice > 0)
+          ? metaPrice
+          : (line && line.unit > 0 ? line.unit : (manifest?.price ?? 0));
+        const resolvedQty = (Number.isFinite(metaQty) && metaQty > 0) ? metaQty : (line?.qty ?? 1);
+        const resolvedSellerId = meta.sid || metadata.sellerId || itemId;
 
         const result = await processPurchase(
-          item.id, resolvedSellerId, userId, resolvedName, resolvedPrice,
-          sessionId, couponCode, discountPercentage
+          itemId, resolvedSellerId, userId, resolvedName, resolvedPrice, resolvedQty,
+          sessionId, couponCode, discountPercentage, scheduledAt, meta.sr || null,
         );
         if (result) orders.push(result);
       }
 
-      return NextResponse.json({ success: true, confirmationNumber, orders });
+      const total = sessionTotal ?? orders.reduce((s, o) => s + o.price * o.quantity, 0);
+      return NextResponse.json({ success: true, confirmationNumber, orders, total });
     }
 
     // Legacy single-item format
     const { itemId, sellerId, itemName, itemPrice } = metadata;
     if (itemId && sellerId && itemName && itemPrice) {
+      const line = stripeLines[0];
       const manifest = MANIFEST_PRICES.get(itemId);
-      const resolvedName = itemName || manifest?.name || itemId;
-      const resolvedPrice = parseFloat(itemPrice) || manifest?.price || 0;
+      const resolvedName = itemName || line?.name || manifest?.name || itemId;
+      const resolvedPrice = parseFloat(itemPrice) || (line?.unit ?? 0) || manifest?.price || 0;
+      const resolvedQty = line?.qty ?? 1;
       const result = await processPurchase(
-        itemId, sellerId, userId, resolvedName, resolvedPrice,
-        sessionId, couponCode, discountPercentage
+        itemId, sellerId, userId, resolvedName, resolvedPrice, resolvedQty,
+        sessionId, couponCode, discountPercentage, scheduledAt, metadata.specialRequests || null,
       );
+      const total = sessionTotal ?? (result ? result.price * result.quantity : 0);
       return NextResponse.json({
         success: true,
         confirmationNumber,
         orders: result ? [result] : [],
+        total,
       });
     }
 
-    return NextResponse.json({ success: true, confirmationNumber, orders: [] });
+    return NextResponse.json({ success: true, confirmationNumber, orders: [], total: sessionTotal ?? 0 });
   } catch (error) {
-    console.error('[verify-item-purchase] Processing error:', error);
-    return NextResponse.json({ error: 'Failed to process purchase' }, { status: 500 });
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('[verify-item-purchase] Processing error:', msg, error instanceof Error ? error.stack : '');
+    return NextResponse.json({ error: 'Failed to process purchase', detail: msg }, { status: 500 });
   }
 }
 
@@ -148,10 +246,13 @@ async function processPurchase(
   buyerId: string,
   itemName: string,
   itemPrice: number,
+  quantity: number,
   sessionId: string,
   couponCode: string | null,
-  discountPercentage: number
-): Promise<{ orderId: string; token: string; itemName: string; price: number } | null> {
+  discountPercentage: number,
+  scheduledAt: string | null,
+  specialRequests: string | null,
+): Promise<OrderResult | null> {
   // Demo/built-in store items have non-UUID ids (e.g. "jays-burger-0").
   // Inserting a non-UUID into a Supabase uuid column throws — return a synthetic
   // result instead so the confirmation page always has order details.
@@ -162,7 +263,7 @@ async function processPurchase(
       ? Math.max(0, itemPrice - itemPrice * (discountPercentage / 100))
       : itemPrice;
     console.log(`[verify-item-purchase] Demo item "${itemId}" — synthetic order ${orderId}`);
-    return { orderId, token, itemName, price: paidPrice };
+    return { orderId, token, itemName, price: paidPrice, quantity, scheduledAt, specialRequests };
   }
 
   const supabase = getSupabaseAdminClient();
@@ -173,7 +274,7 @@ async function processPurchase(
   // Idempotency check — webhook may have already processed this
   const { data: existing } = await supabase
     .from('item_purchases')
-    .select('id, verification_token')
+    .select('id, verification_token, quantity, scheduled_at, special_requests')
     .eq('stripe_session_id', sessionId)
     .eq('item_id', itemId)
     .limit(1);
@@ -185,6 +286,9 @@ async function processPurchase(
       token: existing[0].verification_token || generateToken(existing[0].id),
       itemName,
       price: itemPrice,
+      quantity: existing[0].quantity ?? quantity,
+      scheduledAt: existing[0].scheduled_at ?? scheduledAt,
+      specialRequests: existing[0].special_requests ?? specialRequests,
     };
   }
 
@@ -201,11 +305,14 @@ async function processPurchase(
       buyer_id: buyerId,
       item_name: itemName,
       price: paidPrice,
+      quantity,
       ...(couponCode && {
         original_price: originalPrice,
         coupon_code: couponCode,
         discount_percentage: discountPercentage,
       }),
+      ...(scheduledAt && { scheduled_at: scheduledAt }),
+      ...(specialRequests && { special_requests: specialRequests }),
       stripe_session_id: sessionId,
       status: 'paid',
       purchased_at: new Date().toISOString(),
@@ -224,5 +331,5 @@ async function processPurchase(
     .update({ verification_token: token })
     .eq('id', inserted.id);
 
-  return { orderId: inserted.id, token, itemName, price: paidPrice };
+  return { orderId: inserted.id, token, itemName, price: paidPrice, quantity, scheduledAt, specialRequests };
 }

@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * Chats page (/chats) — the messaging hub (conversation list + open conversation).
+ * Purpose: Shows the user's conversations (via useChats) alongside the active thread (via useMessages),
+ *   with search and starting new chats. Handles both real and demo chats. Gated behind ProtectedRoute.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Plus, Search, Send } from 'lucide-react';
@@ -37,15 +44,26 @@ function ChatsLayout() {
   const [query, setQuery] = useState('');
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const lastScrolledChatRef = useRef<string | null>(null);
 
   const { messages, loading: msgLoading, sending, send } = useMessages(
     activeChatId ?? undefined,
     user?.id
   );
 
+  // Auto-scroll to the newest message after it paints (requestAnimationFrame so we
+  // land on the true bottom). Instant jump when opening/switching a conversation;
+  // smooth for messages sent/received within the open conversation.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const el = messagesEndRef.current;
+    if (!el || messages.length === 0) return;
+    const isNewChat = lastScrolledChatRef.current !== activeChatId;
+    const raf = requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: isNewChat ? 'auto' : 'smooth', block: 'end' });
+      lastScrolledChatRef.current = activeChatId ?? null;
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [messages, activeChatId]);
 
   const filteredChats = useMemo(() => {
     const s = query.trim().toLowerCase();

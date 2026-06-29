@@ -12,6 +12,10 @@
  * - Reply system with threaded comments
  * - Pagination support
  * - Optimistic updates for better UX
+ *
+ * Demo/local videos (no DB row) fall back to client-side stored comments/ratings so the thread works
+ * for built-in content too.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -228,10 +232,10 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
   }
 
   return (
-    <div className={`bg-white text-black ${className}`}>
+    <div className={`bg-white text-black dark:bg-[#121212] dark:text-white ${className}`}>
       {/* Average Rating Display */}
       {(averageRating || totalRatedComments > 0) && (
-        <div className="p-4 bg-gray-50 border-b border-gray-200">
+        <div className="p-4 bg-gray-50 dark:bg-[#1e1e1e] border-b border-gray-200 dark:border-white/10">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -248,9 +252,9 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
                 </svg>
               ))}
             </div>
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-gray-700 dark:text-gray-200">
               {averageRating ? `${averageRating.toFixed(1)}/5 ` : 'No ratings'}
-              <span className="text-gray-500">({totalRatedComments} {totalRatedComments === 1 ? 'rating' : 'ratings'})</span>
+              <span className="text-gray-500 dark:text-gray-400">({totalRatedComments} {totalRatedComments === 1 ? 'rating' : 'ratings'})</span>
             </span>
           </div>
         </div>
@@ -258,7 +262,7 @@ export default function CommentSection({ videoId, className = '' }: CommentSecti
 
       {/* Comment Form */}
       {user && (
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200 dark:border-white/10">
           <CommentForm
             onSubmit={handleCreateComment}
             loading={posting}

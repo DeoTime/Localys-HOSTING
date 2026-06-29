@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * Toast — transient, auto-dismissing notification banner.
+ * Purpose: Shows brief status messages (e.g. "Added to cart", "Copied link") near the
+ *   bottom of the screen and removes itself after a timeout so the user never has to dismiss it.
+ *   Used app-wide for lightweight, non-blocking feedback.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useEffect } from 'react';
 
 interface ToastProps {
@@ -9,9 +17,13 @@ interface ToastProps {
 }
 
 /**
- * Simple toast notification component
+ * Renders a floating toast and self-dismisses after `duration` ms.
+ * Exists so callers can fire-and-forget a message: the component owns its own timer
+ * and calls `onClose` when it expires, keeping notification state out of the parent.
  */
 export function Toast({ message, onClose, duration = 3000 }: ToastProps) {
+  // Start a one-shot timer when shown; clearing on unmount prevents calling
+  // onClose after the toast (or its parent) has already gone away.
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -27,7 +39,7 @@ export function Toast({ message, onClose, duration = 3000 }: ToastProps) {
       aria-live="polite"
     >
       <div className="flex items-center gap-2">
-        <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-[#f97316]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
         <span>{message}</span>

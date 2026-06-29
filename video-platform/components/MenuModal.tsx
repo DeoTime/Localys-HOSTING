@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * MenuModal — dialog for creating a menu and adding/editing its items (the owner's editing surface).
+ * Purpose: Backs the management actions in MenuList. Depending on props it creates a new menu, or
+ *   adds/edits a menu item (name, price, category, description, optional photo). Handles image upload
+ *   to storage, validation, and the modal UX (Escape to close, scroll lock).
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Menu, MenuItem, createMenu, updateMenu, addMenuItemToMenu, updateMenuItem } from '@/lib/supabase/profiles';
@@ -17,6 +25,8 @@ interface MenuModalProps {
   onItemSaved?: (message: string) => void;
 }
 
+// The create-menu / add-item / edit-item modal. Its mode is inferred from props: `editItem` ⇒ edit
+// an item, `menu` present ⇒ add items to that menu, neither ⇒ create a brand-new menu.
 export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose, onSave, onItemSaved }: MenuModalProps) {
   const { t } = useTranslation();
   const [menuName, setMenuName] = useState('');
@@ -68,6 +78,8 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   }, [isOpen, menu, editItem]);
 
+  // Clears every item-form field (and the file input) back to empty — used after a save or when
+  // switching out of edit mode so stale values don't leak into the next item.
   const resetItemForm = () => {
     setItemName('');
     setItemPrice('');
@@ -108,6 +120,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     };
   }, [isOpen]);
 
+  // Saves the menu itself (not items): updates the existing menu or creates a new one.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -155,6 +168,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   };
 
+  // Validates a chosen item photo (size + type) and shows a local data-URL preview before upload.
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -190,6 +204,8 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   };
 
+  // Uploads the selected item photo to storage and returns its public URL (or null on failure).
+  // Re-checks the extension server-side-style before upload as a second guard against bad files.
   const uploadItemImage = async (): Promise<string | null> => {
     if (!selectedImage) return null;
 
@@ -230,6 +246,9 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   };
 
+  // Validates and saves a menu item: uploads any new photo first, then either updates the existing
+  // item or adds a new one to the menu. Bails out if the photo upload fails so we never save a
+  // half-saved item pointing at a missing image.
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!menu) return;
@@ -329,7 +348,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-[#2E2E28] rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+            className="p-2 hover:bg-[#2E2E28] rounded-full transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316]"
             aria-label="Close modal"
           >
             <svg className="w-6 h-6 text-[#9E9A90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,7 +380,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                     value={menuName}
                     onChange={(e) => setMenuName(e.target.value)}
                     placeholder={t('menu.menu_name_placeholder') || 'e.g., Appetizers, Main Courses'}
-                    className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
+                    className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all"
                   />
                 </div>
 
@@ -375,7 +394,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder={t('menu.description_placeholder') || 'Add a description for this menu section...'}
                     rows={3}
-                    className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all resize-none"
+                    className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all resize-none"
                   />
                 </div>
 
@@ -387,7 +406,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
+                    className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all"
                   >
                     <option value="General">General</option>
                     <option value="Appetizers">Appetizers</option>
@@ -417,7 +436,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                       onChange={(e) => { setItemName(e.target.value); if (itemErrors.name) setItemErrors((p) => ({ ...p, name: null })); }}
                       placeholder="e.g., Caesar Salad"
                       aria-invalid={!!itemErrors.name}
-                      className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
+                      className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all"
                     />
                     {itemErrors.name && <p role="alert" className="mt-1 text-xs font-medium text-red-400">{itemErrors.name}</p>}
                   </div>
@@ -433,7 +452,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                         onChange={(e) => { setItemPrice(e.target.value); if (itemErrors.price) setItemErrors((p) => ({ ...p, price: null })); }}
                         placeholder="0.00"
                         aria-invalid={!!itemErrors.price}
-                        className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
+                        className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all"
                       />
                       {itemErrors.price && <p role="alert" className="mt-1 text-xs font-medium text-red-400">{itemErrors.price}</p>}
                     </div>
@@ -444,7 +463,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                         value={itemCategory}
                         onChange={(e) => setItemCategory(e.target.value)}
                         placeholder="e.g., Vegetarian"
-                        className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all"
+                        className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all"
                       />
                     </div>
                   </div>
@@ -456,7 +475,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                       onChange={(e) => setItemDescription(e.target.value)}
                       placeholder="Describe the item..."
                       rows={2}
-                      className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#F5A623] focus:border-transparent transition-all resize-none"
+                      className="w-full bg-[#242420] border border-[#3A3A34] rounded-xl px-4 py-2 text-[#F5F0E8] placeholder:text-[#9E9A90]/50 focus:outline-none focus:ring-2 focus:ring-[#f97316] focus:border-transparent transition-all resize-none"
                     />
                   </div>
 
@@ -479,7 +498,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                         type="button"
                         onClick={removeImage}
                         disabled={uploading}
-                        className="absolute top-2 right-2 bg-[#E05C3A]/80 hover:bg-[#E05C3A] disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623]"
+                        className="absolute top-2 right-2 bg-[#E05C3A]/80 hover:bg-[#E05C3A] disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f97316]"
                         aria-label="Remove image"
                       >
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -513,7 +532,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
                   <button
                     type="submit"
                     disabled={addingItem || uploading || !itemName.trim() || !itemPrice}
-                    className="w-full px-4 py-2 bg-[#6BAF7A] hover:bg-[#6BAF7A]/90 disabled:bg-[#6BAF7A]/40 disabled:cursor-not-allowed text-black rounded-xl transition-colors font-medium text-sm min-h-[44px]"
+                    className="w-full px-4 py-2 bg-[#f97316] hover:bg-[#f97316]/90 disabled:bg-[#f97316]/40 disabled:cursor-not-allowed text-black rounded-xl transition-colors font-medium text-sm min-h-[44px]"
                   >
                     {addingItem || uploading ? (uploading ? 'Uploading...' : (editItem ? 'Saving...' : 'Adding...')) : (editItem ? 'Save Changes' : 'Add Item')}
                   </button>
@@ -536,7 +555,7 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
               <button
                 onClick={handleSubmit}
                 disabled={loading || !menuName.trim()}
-                className="px-6 py-2 bg-[#F5A623] hover:bg-[#F5A623]/90 disabled:bg-[#F5A623]/40 disabled:cursor-not-allowed text-black rounded-xl transition-colors font-medium min-h-[44px]"
+                className="px-6 py-2 bg-[#f97316] hover:bg-[#f97316]/90 disabled:bg-[#f97316]/40 disabled:cursor-not-allowed text-black rounded-xl transition-colors font-medium min-h-[44px]"
               >
                 {loading ? (
                   <span className="flex items-center gap-2">

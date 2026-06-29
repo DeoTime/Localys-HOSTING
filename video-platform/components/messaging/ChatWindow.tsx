@@ -12,6 +12,9 @@
  * - Mark messages as read when viewing
  * - Message input with send button
  * - Displays sender info and timestamps
+ *
+ * Note: legacy messaging implementation; the active chats UI lives in components/chats/.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
  */
 
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -385,7 +388,7 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
                         <div className="flex gap-2 mt-2">
                           <button
                             onClick={() => handleEditSave(message.id)}
-                            className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                            className="text-xs px-2 py-1 bg-[#f97316] text-white rounded hover:bg-[#ea6a0c]"
                           >
                             Save
                           </button>
@@ -441,7 +444,7 @@ export default function ChatWindow({ conversationId, onBack }: ChatWindowProps) 
                                 handleEditStart(message);
                                 setMenuOpenId(null);
                               }}
-                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/20 flex items-center gap-2 hover:text-blue-400 transition-colors"
+                              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/20 flex items-center gap-2 hover:text-[#f97316] transition-colors"
                             >
                               Edit
                             </button>

@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * VideoPerformanceTable — per-video promotion breakdown (spend, views, efficiency, boost).
+ * Purpose: Ranks a creator's videos by how many views each coin bought (views/coin), so they can
+ *   see which content gave the best return. Renders nothing when there are no videos.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import type { VideoPerformance } from '@/models/Analytics';
 
 interface VideoPerformanceTableProps {
@@ -11,6 +18,7 @@ export function VideoPerformanceTable({ videos }: VideoPerformanceTableProps) {
     return null;
   }
 
+  // Most efficient first: highest views-per-coin at the top (and gets the "best" marker).
   const sorted = [...videos].sort((a, b) => b.viewsPerCoin - a.viewsPerCoin);
 
   return (
@@ -40,12 +48,12 @@ export function VideoPerformanceTable({ videos }: VideoPerformanceTableProps) {
               <div className="flex-1 min-w-0">
                 <h4 className="text-sm font-semibold text-white truncate">{video.title}</h4>
                 <div className="flex gap-3 mt-2 text-xs flex-wrap">
-                  <span className="text-yellow-400">{video.totalCoinsSpent} spent</span>
-                  <span className="text-blue-400">{video.totalViews.toLocaleString()} views</span>
-                  <span className="text-green-400">{video.viewsPerCoin} views/coin</span>
+                  <span className="text-[#f97316]">{video.totalCoinsSpent} spent</span>
+                  <span className="text-white">{video.totalViews.toLocaleString()} views</span>
+                  <span className="text-white/50">{video.viewsPerCoin} views/coin</span>
                 </div>
-                <div className="mt-2 inline-flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/50 rounded px-2 py-0.5">
-                  <span className="text-xs text-yellow-300">Boost: {video.boostValue.toFixed(1)}</span>
+                <div className="mt-2 inline-flex items-center gap-1 bg-[#f97316]/20 border border-[#f97316]/50 rounded px-2 py-0.5">
+                  <span className="text-xs text-[#f97316]">Boost: {video.boostValue.toFixed(1)}</span>
                 </div>
               </div>
             </div>

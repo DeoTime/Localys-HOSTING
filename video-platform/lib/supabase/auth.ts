@@ -1,3 +1,11 @@
+/**
+ * supabase/auth.ts — authentication data-access layer (sign up, sign in, profile bootstrap).
+ * Purpose: Wraps Supabase auth calls and ensures a matching profile row exists for each user (creating
+ *   a sanitised fallback username and a welcome coupon on first sign-up). Keeps auth side-effects in one
+ *   place so the AuthContext/UI stay simple.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { supabase } from './client';
 import type { SignUpData, SignInData } from '../../models/Auth';
 import { createWelcomeCoupon } from './coupons';
@@ -207,6 +215,27 @@ export async function ensureProfileForCurrentUser() {
     name: (metadata.full_name as string | undefined) ?? (metadata.name as string | undefined) ?? null,
     username: (metadata.username as string | undefined) ?? null,
   });
+}
+
+/**
+ * Apply a session that was held server-side during the login email-code step.
+ * Called only AFTER a valid verification code (emailed code or 77777 backup) so
+ * the browser becomes logged in at this point and not before. Also syncs the
+ * user's profile row, mirroring the behavior of the direct password sign-in.
+ */
+export async function applyVerifiedSession(accessToken: string, refreshToken: string) {
+  const { data, error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
+  if (!error && data.user) {
+    try {
+      await ensureProfileForCurrentUser();
+    } catch (profileError) {
+      console.warn('Profile sync after code verification failed:', profileError);
+    }
+  }
+  return { data, error };
 }
 
 /**
