@@ -1,13 +1,5 @@
 'use client';
 
-/**
- * BusinessReports — the Reports tab of the Business Manager (sales/items/customers + PDF/CSV export).
- * Purpose: Gives a business interactive, filterable reports (by date range, category, item) with charts
- *   and tables, and exports a polished branded PDF or CSV. Falls back to realistic demo data when the
- *   business has fewer than 5 real orders so the reports are never empty.
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
- */
-
 import { useMemo, useRef, useState } from 'react';
 import {
   BarChart, Bar, LineChart, Line, ComposedChart, PieChart, Pie, Cell, Legend,
@@ -63,6 +55,49 @@ function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace('#', '');
   const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/**
+ * Rasterize a rendered recharts node to a PNG by serializing its inner <svg>
+ * directly (NOT html2canvas — that throws on Tailwind v4's `oklch()` colors,
+ * which was making every chart export as "(chart unavailable)"). Recharts emits
+ * plain hex fills/strokes, so the serialized SVG draws cleanly onto a canvas.
+ */
+async function nodeToImage(node: HTMLElement | null): Promise<CapturedImage | null> {
+  if (!node) return null;
+  const svg = node.querySelector('svg');
+  if (!svg) return null;
+  try {
+    const rect = svg.getBoundingClientRect();
+    const w = Math.max(1, Math.round(rect.width || Number(svg.getAttribute('width')) || 744));
+    const h = Math.max(1, Math.round(rect.height || Number(svg.getAttribute('height')) || 284));
+    const clone = svg.cloneNode(true) as SVGSVGElement;
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width', String(w));
+    clone.setAttribute('height', String(h));
+    const xml = new XMLSerializer().serializeToString(clone);
+    const src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+
+    const scale = 2;
+    const canvas = document.createElement('canvas');
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); resolve(); };
+      img.onerror = () => reject(new Error('SVG image load failed'));
+      img.src = src;
+    });
+    return { dataUrl: canvas.toDataURL('image/png'), w: canvas.width, h: canvas.height };
+  } catch (e) {
+    console.error('Chart capture failed:', e instanceof Error ? e.message : e);
+    return null;
+  }
 }
 
 /**

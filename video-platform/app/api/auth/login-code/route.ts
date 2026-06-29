@@ -15,7 +15,6 @@
  *
  * Demo-safe: '77777' is ALWAYS accepted (even if the email never arrived or the
  * code expired), so no one can be locked out.
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
  */
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
