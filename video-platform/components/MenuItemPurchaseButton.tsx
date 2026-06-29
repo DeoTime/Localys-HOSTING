@@ -1,12 +1,5 @@
 'use client';
 
-/**
- * MenuItemPurchaseButton — the "Buy Now" + "Add to Cart" controls for a single menu item.
- * Purpose: Lets a customer either jump straight to checkout for one item, or add it to the cart and
- *   keep browsing. It hides itself on the merchant's own business (you can't buy from yourself).
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
- */
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
@@ -34,13 +27,10 @@ export function MenuItemPurchaseButton({
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
 
-  // Owners can't purchase from their own business, so render nothing in that case.
   if (isOwnBusiness) {
     return null;
   }
 
-  // Skips the cart and goes straight to checkout, passing this item's details via the URL so the
-  // checkout page can build the order without a separate lookup.
   const handleBuyNow = () => {
     const params = new URLSearchParams({
       itemId,
@@ -55,7 +45,6 @@ export function MenuItemPurchaseButton({
     router.push(`/checkout?${params.toString()}`);
   };
 
-  // Adds one of this item to the cart and briefly flips the button to "Added!" for visual confirmation.
   const handleAddToCart = () => {
     addToCart({ itemId, itemName, itemPrice, itemImage, sellerId, buyerId, quantity: 1 });
     setAdded(true);

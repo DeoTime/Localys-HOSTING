@@ -1,9 +1,5 @@
 /**
- * share.ts — share a post/video link with graceful fallbacks.
- * Purpose: Uses the native Web Share sheet on supported (mostly mobile) devices, and otherwise copies
- *   the link to the clipboard — with a hidden-textarea fallback for older browsers. Returns a result so
- *   callers can show the right feedback (e.g. "Link copied").
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ * Share utility for posts with Web Share API and clipboard fallback
  */
 
 export interface ShareData {
@@ -40,8 +36,6 @@ export async function sharePost(data: ShareData): Promise<ShareResult> {
       await navigator.clipboard.writeText(data.url);
       return { success: true, usedWebShare: false };
     } else {
-      // Legacy fallback for browsers without the async Clipboard API: copy via a hidden, off-screen
-      // textarea and execCommand('copy').
       const textArea = document.createElement('textarea');
       textArea.value = data.url;
       textArea.style.position = 'fixed';

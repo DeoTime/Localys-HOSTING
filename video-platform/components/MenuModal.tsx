@@ -1,13 +1,5 @@
 'use client';
 
-/**
- * MenuModal — dialog for creating a menu and adding/editing its items (the owner's editing surface).
- * Purpose: Backs the management actions in MenuList. Depending on props it creates a new menu, or
- *   adds/edits a menu item (name, price, category, description, optional photo). Handles image upload
- *   to storage, validation, and the modal UX (Escape to close, scroll lock).
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
- */
-
 import { useEffect, useState, useRef } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Menu, MenuItem, createMenu, updateMenu, addMenuItemToMenu, updateMenuItem } from '@/lib/supabase/profiles';
@@ -25,8 +17,6 @@ interface MenuModalProps {
   onItemSaved?: (message: string) => void;
 }
 
-// The create-menu / add-item / edit-item modal. Its mode is inferred from props: `editItem` ⇒ edit
-// an item, `menu` present ⇒ add items to that menu, neither ⇒ create a brand-new menu.
 export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose, onSave, onItemSaved }: MenuModalProps) {
   const { t } = useTranslation();
   const [menuName, setMenuName] = useState('');
@@ -78,8 +68,6 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   }, [isOpen, menu, editItem]);
 
-  // Clears every item-form field (and the file input) back to empty — used after a save or when
-  // switching out of edit mode so stale values don't leak into the next item.
   const resetItemForm = () => {
     setItemName('');
     setItemPrice('');
@@ -120,7 +108,6 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     };
   }, [isOpen]);
 
-  // Saves the menu itself (not items): updates the existing menu or creates a new one.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -168,7 +155,6 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   };
 
-  // Validates a chosen item photo (size + type) and shows a local data-URL preview before upload.
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -204,8 +190,6 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   };
 
-  // Uploads the selected item photo to storage and returns its public URL (or null on failure).
-  // Re-checks the extension server-side-style before upload as a second guard against bad files.
   const uploadItemImage = async (): Promise<string | null> => {
     if (!selectedImage) return null;
 
@@ -246,9 +230,6 @@ export function MenuModal({ userId, businessId, menu, editItem, isOpen, onClose,
     }
   };
 
-  // Validates and saves a menu item: uploads any new photo first, then either updates the existing
-  // item or adds a new one to the menu. Bails out if the photo upload fails so we never save a
-  // half-saved item pointing at a missing image.
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!menu) return;

@@ -2537,14 +2537,14 @@
     "type": "service",
     "category": "Grooming",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/barber.jpg",
+    "heroImage": "/Menu/Services%20photos/Barber.jpg",
     "items": [
       {
         "name": "Mens Haircut & Beard Trim",
         "description": "Sharp fades and a clean beard line-up.",
         "price": 35,
         "category": "Grooming",
-        "imageUrl": "/menu/services-photos/barber.jpg"
+        "imageUrl": "/Menu/Services%20photos/Barber.jpg"
       }
     ]
   },
@@ -2553,14 +2553,14 @@
     "type": "service",
     "category": "Beauty",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/nails.jpg",
+    "heroImage": "/Menu/Services%20photos/nails.jpg",
     "items": [
       {
         "name": "Manicure & Pedicure",
         "description": "Relaxing mani-pedi with gel finish.",
         "price": 55,
         "category": "Beauty",
-        "imageUrl": "/menu/services-photos/nails.jpg"
+        "imageUrl": "/Menu/Services%20photos/nails.jpg"
       }
     ]
   },
@@ -2569,14 +2569,14 @@
     "type": "service",
     "category": "Wellness",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/massage.jpg",
+    "heroImage": "/Menu/Services%20photos/Massage.jpg",
     "items": [
       {
         "name": "60-Minute Relaxation Massage",
         "description": "Full-body relaxation massage.",
         "price": 95,
         "category": "Wellness",
-        "imageUrl": "/menu/services-photos/massage.jpg"
+        "imageUrl": "/Menu/Services%20photos/Massage.jpg"
       }
     ]
   },
@@ -2585,14 +2585,14 @@
     "type": "service",
     "category": "Fitness",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/personal-fitnes-instructor.jpg",
+    "heroImage": "/Menu/Services%20photos/personal%20fitnes%20instructor.jpg",
     "items": [
       {
         "name": "1-on-1 Personal Training Session",
         "description": "Coached session tailored to your goals.",
         "price": 70,
         "category": "Fitness",
-        "imageUrl": "/menu/services-photos/personal-fitnes-instructor.jpg"
+        "imageUrl": "/Menu/Services%20photos/personal%20fitnes%20instructor.jpg"
       }
     ]
   },
@@ -2601,14 +2601,14 @@
     "type": "service",
     "category": "Cleaning",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/home-cleaning-services-richmond-hill.jpg",
+    "heroImage": "/Menu/Services%20photos/Home-Cleaning-Services-Richmond-Hill.jpg",
     "items": [
       {
         "name": "Standard Home Cleaning",
         "description": "Top-to-bottom clean of your home.",
         "price": 120,
         "category": "Cleaning",
-        "imageUrl": "/menu/services-photos/home-cleaning-services-richmond-hill.jpg"
+        "imageUrl": "/Menu/Services%20photos/Home-Cleaning-Services-Richmond-Hill.jpg"
       }
     ]
   },
@@ -2617,14 +2617,14 @@
     "type": "service",
     "category": "Home Services",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/pressure-washing.jpg",
+    "heroImage": "/Menu/Services%20photos/Pressure%20washing.jpg",
     "items": [
       {
         "name": "Driveway & Exterior Pressure Wash",
         "description": "Restore driveways, decks and siding.",
         "price": 150,
         "category": "Home Services",
-        "imageUrl": "/menu/services-photos/pressure-washing.jpg"
+        "imageUrl": "/Menu/Services%20photos/Pressure%20washing.jpg"
       }
     ]
   },
@@ -2633,14 +2633,14 @@
     "type": "service",
     "category": "Home Services",
     "sourceUrl": null,
-    "heroImage": "/menu/services-photos/home-painting-service-main-thumbnail.webp",
+    "heroImage": "/Menu/Services%20photos/home-painting-service-main-thumbnail.webp",
     "items": [
       {
         "name": "Interior Room Painting",
         "description": "Premium interior painting, per room.",
         "price": 300,
         "category": "Home Services",
-        "imageUrl": "/menu/services-photos/home-painting-service-main-thumbnail.webp"
+        "imageUrl": "/Menu/Services%20photos/home-painting-service-main-thumbnail.webp"
       }
     ]
   }

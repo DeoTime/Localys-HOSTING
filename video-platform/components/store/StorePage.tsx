@@ -12,7 +12,6 @@
  *   - StoreItemCards   → useAddToCart, FeaturedItemCard, MenuItemRow
  *   - InfoModal        → the store info / map pop-up
  *   - types            → StoreMenu, StoreItem, StoreDeal (re-exported below)
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';

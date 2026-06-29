@@ -1,10 +1,9 @@
 /**
- * Local video files (public/videos) linked to their businesses.
+ * Local video files (public/Videos) linked to their businesses.
  *
  * Matched by filename to a store in data/store-menus.json. These power BOTH the
  * "Featured in Videos" home section (hover-play cards) and the Discover feed
  * (buildFeedVideos prepends them so they're watchable full-screen). No Supabase.
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
  */
 import storeMenus from '@/data/store-menus.json';
 import { getAliasItems, type AliasItem } from '@/lib/businessAliases';
@@ -12,7 +11,7 @@ import { getAliasItems, type AliasItem } from '@/lib/businessAliases';
 export interface DemoVideo {
   /** Stable id, always prefixed `local:` so the feed can tell it from a DB video. */
   id: string;
-  /** Encoded /videos path. */
+  /** Encoded /Videos path. */
   src: string;
   businessName: string;
   /** Slug → /profile/<slug> (resolved via lib/demoStores). */
@@ -25,7 +24,7 @@ export interface DemoVideo {
 }
 
 /**
- * One entry per file in public/videos. Holy Smoke Barbecue has TWO distinct clips
+ * One entry per file in public/Videos. Holy Smoke Barbecue has TWO distinct clips
  * (Holy Smoke.mp4 + Hoy Smoke.mp4) — both are kept as separate videos, both tied to
  * the Holy Smoke store, and both appear as their own card + feed entry. Pho Xe Lua's
  * card uses the local Pho Ngan clip (same restaurant; its real clip lives in Supabase).
@@ -33,7 +32,7 @@ export interface DemoVideo {
 export const DEMO_VIDEOS: DemoVideo[] = [
   {
     id: 'local:jays-burger',
-    src: '/videos/jays-burger-video.mp4',
+    src: '/Videos/Jay%27sburgervideo.mp4',
     businessName: "Jay's Burger",
     businessSlug: 'jays-burger',
     manifestKey: "Jay's Burger",
@@ -42,7 +41,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
   },
   {
     id: 'local:sharp-fade-barbershop',
-    src: '/videos/sharp-fade-barbershop.mp4',
+    src: '/Videos/Sharp%20Fade%20Barbershop.mp4',
     businessName: 'Sharp Fade Barbershop',
     businessSlug: 'sharp-fade-barbershop',
     manifestKey: 'Sharp Fade Barbershop',
@@ -51,7 +50,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
   },
   {
     id: 'local:k1-floral-studio',
-    src: '/videos/florist.mp4',
+    src: '/Videos/Florist.mp4',
     businessName: 'K1 Floral Studio',
     businessSlug: 'k1-floral-studio',
     manifestKey: 'K1 Floral Studio',
@@ -60,7 +59,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
   },
   {
     id: 'local:holy-smoke-barbecue',
-    src: '/videos/holy-smoke.mp4',
+    src: '/Videos/Holy%20Smoke.mp4',
     businessName: 'Holy Smoke Barbecue',
     businessSlug: 'holy-smoke-barbecue',
     manifestKey: 'Holy Smoke Barbecue',
@@ -69,7 +68,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
   },
   {
     id: 'local:holy-smoke-barbecue-2',
-    src: '/videos/hoy-smoke.mp4',
+    src: '/Videos/Hoy%20Smoke.mp4',
     businessName: 'Holy Smoke Barbecue',
     businessSlug: 'holy-smoke-barbecue',
     manifestKey: 'Holy Smoke Barbecue',
@@ -78,7 +77,7 @@ export const DEMO_VIDEOS: DemoVideo[] = [
   },
   {
     id: 'local:pho-xe-lua',
-    src: '/videos/pho-ngan.mp4',
+    src: '/Videos/Pho%20Ngan.mp4',
     businessName: 'Pho Xe Lua Vietnamese Cuisine',
     businessSlug: 'pho-nga-son',
     manifestKey: 'Pho Nga Son',
