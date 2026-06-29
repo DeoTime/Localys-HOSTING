@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * AnalyticsDashboard — collapsible "Promotion Analytics" panel for creators.
+ * Purpose: Shows how a creator's coin-funded promotions are performing (spend, views, coin
+ *   distribution, per-video stats, history). Data is only fetched when the panel is expanded
+ *   (lazy), and the charts are code-split so they don't weigh down the page until needed.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -29,6 +37,7 @@ interface AnalyticsDashboardProps {
 
 export function AnalyticsDashboard({ userId }: AnalyticsDashboardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  // Pass userId to the hook only once expanded so analytics aren't queried until the user opens it.
   const { data, loading } = useAnalytics(isExpanded ? userId : undefined);
 
   return (
@@ -52,7 +61,7 @@ export function AnalyticsDashboard({ userId }: AnalyticsDashboardProps) {
         <div className="bg-white/5 border border-white/10 rounded-lg p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f97316]" />
             </div>
           ) : !data || data.summary.totalPromotions === 0 ? (
             <EmptyAnalytics />

@@ -1,5 +1,13 @@
 'use client';
 
+/**
+ * FinancialOverview — collapsible business financial dashboard (revenue, orders, top items, etc.).
+ * Purpose: The business counterpart to the promotion AnalyticsDashboard. It lazily fetches financial
+ *   analytics only when expanded, animates its height open/closed, and lays out the KPI cards plus
+ *   code-split charts (revenue, orders breakdown, top items, video conversions).
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useFinancialAnalytics } from '@/hooks/useFinancialAnalytics';
@@ -9,17 +17,17 @@ import { QuickStatsRow } from './QuickStatsRow';
 
 const RevenueChart = dynamic(
   () => import('./RevenueChart').then(m => ({ default: m.RevenueChart })),
-  { ssr: false, loading: () => <div className="h-[250px] bg-[#F5A623]/5 rounded-lg animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-[250px] bg-[#f97316]/5 rounded-lg animate-pulse" /> }
 );
 
 const OrdersBreakdownChart = dynamic(
   () => import('./OrdersBreakdownChart').then(m => ({ default: m.OrdersBreakdownChart })),
-  { ssr: false, loading: () => <div className="h-[260px] bg-[#F5A623]/5 rounded-lg animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-[260px] bg-[#f97316]/5 rounded-lg animate-pulse" /> }
 );
 
 const VideoConversionChart = dynamic(
   () => import('./VideoConversionChart').then(m => ({ default: m.VideoConversionChart })),
-  { ssr: false, loading: () => <div className="h-[250px] bg-[#F5A623]/5 rounded-lg animate-pulse" /> }
+  { ssr: false, loading: () => <div className="h-[250px] bg-[#f97316]/5 rounded-lg animate-pulse" /> }
 );
 
 interface FinancialOverviewProps {
@@ -32,6 +40,8 @@ export function FinancialOverview({ userId }: FinancialOverviewProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
 
+  // Measure the inner content's height with a ResizeObserver so the max-height open/close animation
+  // can transition to the exact rendered height (which changes as charts load in).
   useEffect(() => {
     if (isExpanded && contentRef.current) {
       const observer = new ResizeObserver((entries) => {
@@ -54,7 +64,7 @@ export function FinancialOverview({ userId }: FinancialOverviewProps) {
       >
         <span className="text-[18px] font-semibold text-[#F5F0E8]">Financial Overview</span>
         <svg
-          className={`w-5 h-5 text-[#F5A623] transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-[#f97316] transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -72,11 +82,11 @@ export function FinancialOverview({ userId }: FinancialOverviewProps) {
             <div className="space-y-4">
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="h-20 bg-[#F5A623]/5 rounded-xl animate-pulse" />
+                  <div key={i} className="h-20 bg-[#f97316]/5 rounded-xl animate-pulse" />
                 ))}
               </div>
-              <div className="h-[250px] bg-[#F5A623]/5 rounded-lg animate-pulse" />
-              <div className="h-[260px] bg-[#F5A623]/5 rounded-lg animate-pulse" />
+              <div className="h-[250px] bg-[#f97316]/5 rounded-lg animate-pulse" />
+              <div className="h-[260px] bg-[#f97316]/5 rounded-lg animate-pulse" />
             </div>
           ) : !data || data.summary.totalOrders === 0 ? (
             <div className="text-center py-12">

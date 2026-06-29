@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * PromotionActivityFeed — chronological log of a creator's recent promotions.
+ * Purpose: Shows each promotion (coins spent, video, boost before→after, when) so creators have a
+ *   history of their spending. Shows the latest 5 with a "show all" toggle to expand the rest.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useState } from 'react';
 import type { PromotionEntry } from '@/models/Analytics';
 
@@ -7,6 +14,8 @@ interface PromotionActivityFeedProps {
   history: PromotionEntry[];
 }
 
+// Formats a timestamp as a compact relative label (Just now / 5m / 3h / 2d / 1w), falling back to a
+// full date once it's older than a month.
 function relativeTime(dateStr: string): string {
   const now = Date.now();
   const then = new Date(dateStr).getTime();
@@ -46,13 +55,13 @@ export function PromotionActivityFeed({ history }: PromotionActivityFeedProps) {
             key={entry.id}
             className="flex gap-3 items-start py-3 border-b border-white/5 last:border-b-0"
           >
-            <div className="w-8 h-8 bg-yellow-500/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div className="w-8 h-8 bg-[#f97316]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
               <span className="text-sm"></span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-white">
-                Spent <span className="text-yellow-400 font-semibold">{entry.coinsSpent} coins</span> on{' '}
-                <span className="text-blue-400">&quot;{entry.videoTitle}&quot;</span>
+                Spent <span className="text-[#f97316] font-semibold">{entry.coinsSpent} coins</span> on{' '}
+                <span className="text-white">&quot;{entry.videoTitle}&quot;</span>
               </p>
               <p className="text-xs text-white/40 mt-1">
                 Boost: {entry.previousBoost.toFixed(1)} → {entry.newBoost.toFixed(1)}
@@ -65,7 +74,7 @@ export function PromotionActivityFeed({ history }: PromotionActivityFeedProps) {
       {history.length > 5 && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="w-full text-center text-blue-400 text-sm mt-3 py-2 hover:text-blue-300 transition-colors"
+          className="w-full text-center text-[#f97316] text-sm mt-3 py-2 hover:text-[#ea6a0c] transition-colors"
         >
           {showAll ? 'Show less' : `Show all (${history.length})`}
         </button>

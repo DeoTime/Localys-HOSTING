@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * TopSellingItemsChart — horizontal bar list of a business's best-selling menu items.
+ * Purpose: Ranks items by units sold using simple proportional bars (each bar relative to the top
+ *   seller). Lightweight custom bars rather than a chart library. Renders nothing without data.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import type { TopSellingItem } from '@/models/Analytics';
 
 interface TopSellingItemsChartProps {
@@ -27,12 +34,12 @@ export function TopSellingItemsChart({ data }: TopSellingItemsChartProps) {
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${pct}%`,
-                    background: 'linear-gradient(90deg, #F5A623, #F5A623cc)',
+                    background: 'linear-gradient(90deg, #f97316, #f97316cc)',
                     animationDelay: `${i * 0.1}s`,
                   }}
                 />
               </div>
-              <span className="text-[#F5A623] text-sm font-semibold w-8 text-right flex-shrink-0">
+              <span className="text-[#f97316] text-sm font-semibold w-8 text-right flex-shrink-0">
                 {item.unitsSold}
               </span>
             </div>

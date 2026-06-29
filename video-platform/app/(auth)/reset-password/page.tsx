@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * Reset-password page (/reset-password) — set a new password from a recovery link.
+ * Purpose: The landing page for Supabase password-recovery links. It lets the user enter and confirm a
+ *   new password (validated) and saves it, then routes them onward.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -75,7 +82,7 @@ export default function ResetPasswordPage() {
 
         {success ? (
           <div className="space-y-6">
-            <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg">
+            <div className="bg-[#f97316]/20 border border-[#f97316] text-[#f97316] px-4 py-3 rounded-lg">
               Password updated successfully. Redirecting to sign in...
             </div>
           </div>

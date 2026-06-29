@@ -1,5 +1,12 @@
 'use client';
 
+/**
+ * CoinDistributionChart — pie chart of how a creator's promotion coins are split across videos.
+ * Purpose: Shows which videos a creator has invested the most promotion coins in. Renders nothing
+ *   when there's no data. Uses an on-brand orange/grey palette only.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import {
   ResponsiveContainer,
   PieChart,
@@ -15,9 +22,10 @@ interface CoinDistributionChartProps {
   data: CoinDistribution[];
 }
 
+// Orange-family + grays only — on-brand, no blue/green/yellow/purple.
 const PIE_COLORS = [
-  '#eab308', '#3b82f6', '#22c55e', '#a855f7', '#ef4444', '#f97316',
-  '#14b8a6', '#f43f5e', '#8b5cf6', '#06b6d4',
+  '#f97316', '#111111', '#fdba74', '#9ca3af', '#fb923c', '#d1d5db',
+  '#c2410c', '#6b7280', '#ffb380', '#4b5563',
 ];
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payload: CoinDistribution }[] }) {
@@ -26,11 +34,13 @@ function CustomTooltip({ active, payload }: { active?: boolean; payload?: { payl
   return (
     <div className="bg-[#1A1A18]/90 border border-white/20 rounded-lg p-3 shadow-lg">
       <p className="text-white text-sm font-semibold mb-1">{entry.title}</p>
-      <p className="text-yellow-400 text-xs">{entry.coinsSpent} coins ({entry.percentage}%)</p>
+      <p className="text-[#f97316] text-xs">{entry.coinsSpent} coins ({entry.percentage}%)</p>
     </div>
   );
 }
 
+// Draws the percentage label centred inside each pie slice; hides labels for tiny (<5%) slices
+// to avoid cluttered, overlapping text.
 function CustomLabel(props: PieLabelRenderProps) {
   const cx = Number(props.cx);
   const cy = Number(props.cy);

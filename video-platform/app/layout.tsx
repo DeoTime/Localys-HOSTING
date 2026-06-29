@@ -1,3 +1,11 @@
+/**
+ * layout.tsx — the root layout that wraps every page in the app.
+ * Purpose: Loads fonts and global CSS, sets metadata, mounts all the global context providers (theme,
+ *   auth, language, cart, activity, delivery location) and the AppChrome shell. Also runs a tiny inline
+ *   script before hydration to apply the saved theme class, preventing a flash of the wrong theme.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import type { Metadata, Viewport } from "next";
 import { Anton, Inter, Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -54,10 +62,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${jetbrainsMono.variable} ${anton.variable} ${inter.variable} antialiased h-full bg-[#1A1A18] text-[#F5F0E8]`}
+        className={`${outfit.variable} ${jetbrainsMono.variable} ${anton.variable} ${inter.variable} antialiased h-full bg-background text-foreground`}
       >
+        {/* Inline script prevents flash of wrong theme before React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('localy-theme');var r=t==='light'?'light':t==='dark'?'dark':(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.classList.add(r);}catch(e){document.documentElement.classList.add('dark');}})();` }} />
         <ThemeProvider>
           <AuthProvider>
             <LanguageProvider>

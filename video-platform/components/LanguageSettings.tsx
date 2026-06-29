@@ -1,15 +1,25 @@
 'use client';
 
+/**
+ * LanguageSettings — dropdown that lets the user pick the app's display language.
+ * Purpose: Shows the current language and a menu of all supported languages (native + English name).
+ *   Selecting one updates LanguageContext, which re-renders translated text app-wide and persists the
+ *   choice so it sticks across visits.
+ * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
+ */
+
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LANGUAGES, Language } from '@/lib/translations';
 import { useTranslation } from '@/hooks/useTranslation';
 
+// Language picker dropdown. Reads/writes the active language through LanguageContext.
 export function LanguageSettings() {
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
+  // Apply the chosen language (await so persistence completes) and close the dropdown.
   const handleLanguageChange = async (newLanguage: Language) => {
     await setLanguage(newLanguage);
     setIsOpen(false);
@@ -45,7 +55,7 @@ export function LanguageSettings() {
                 onClick={() => handleLanguageChange(code)}
                 className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
                   language === code
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-[#f97316] text-white'
                     : 'text-white/80 hover:bg-white/10'
                 }`}
               >
