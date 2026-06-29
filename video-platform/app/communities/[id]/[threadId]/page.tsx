@@ -1,12 +1,5 @@
 'use client';
 
-/**
- * Community thread page (/communities/[id]/[threadId]) — a single discussion thread + replies.
- * Purpose: Shows one thread's post (with media) and its replies, with voting and replying. Uses
- *   CommunitiesContext; gated behind ProtectedRoute.
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
- */
-
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -88,7 +81,7 @@ function ThreadContent() {
             <button
               onClick={() => vote(thread.id, 1)}
               aria-label="Upvote"
-              className={`flex h-8 w-8 items-center justify-center rounded-lg p-0 transition-colors ${
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 thread.userVote === 1
                   ? 'text-[#f97316]'
                   : 'text-black dark:text-white hover:text-[#f97316]'
@@ -110,7 +103,7 @@ function ThreadContent() {
             <button
               onClick={() => vote(thread.id, -1)}
               aria-label="Downvote"
-              className={`flex h-8 w-8 items-center justify-center rounded-lg p-0 transition-colors ${
+              className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
                 thread.userVote === -1
                   ? 'text-[#f97316]'
                   : 'text-black dark:text-white hover:text-[#f97316]'
@@ -200,7 +193,7 @@ function ThreadContent() {
                     <button
                       onClick={() => voteComment(c.id, 1)}
                       aria-label="Upvote comment"
-                      className={`h-5 w-5 flex items-center justify-center rounded p-0 text-xs transition-colors ${
+                      className={`h-5 w-5 flex items-center justify-center rounded text-xs transition-colors ${
                         c.userVote === 1 ? 'text-[#f97316]' : 'text-black dark:text-white hover:text-[#f97316]'
                       }`}
                     >
@@ -212,7 +205,7 @@ function ThreadContent() {
                     <button
                       onClick={() => voteComment(c.id, -1)}
                       aria-label="Downvote comment"
-                      className={`h-5 w-5 flex items-center justify-center rounded p-0 text-xs transition-colors ${
+                      className={`h-5 w-5 flex items-center justify-center rounded text-xs transition-colors ${
                         c.userVote === -1 ? 'text-[#f97316]' : 'text-black dark:text-white hover:text-[#f97316]'
                       }`}
                     >
