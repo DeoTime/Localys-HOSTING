@@ -26,15 +26,15 @@ export interface Allergen {
 
 /** Mirrors the `allergens` reference table (same order). */
 export const COMMON_ALLERGENS: Allergen[] = [
-  { key: 'milk',      label: 'Milk / Dairy',   icon: '🥛' },
-  { key: 'eggs',      label: 'Eggs',           icon: '🥚' },
-  { key: 'peanuts',   label: 'Peanuts',        icon: '🥜' },
-  { key: 'tree_nuts', label: 'Tree Nuts',      icon: '🌰' },
-  { key: 'soy',       label: 'Soy',            icon: '🫘' },
-  { key: 'gluten',    label: 'Gluten / Wheat', icon: '🌾' },
-  { key: 'fish',      label: 'Fish',           icon: '🐟' },
-  { key: 'shellfish', label: 'Shellfish',      icon: '🦐' },
-  { key: 'sesame',    label: 'Sesame',         icon: '🌱' },
+  { key: 'milk',      label: 'Milk / Dairy',   icon: '' },
+  { key: 'eggs',      label: 'Eggs',           icon: '' },
+  { key: 'peanuts',   label: 'Peanuts',        icon: '' },
+  { key: 'tree_nuts', label: 'Tree Nuts',      icon: '' },
+  { key: 'soy',       label: 'Soy',            icon: '' },
+  { key: 'gluten',    label: 'Gluten / Wheat', icon: '' },
+  { key: 'fish',      label: 'Fish',           icon: '' },
+  { key: 'shellfish', label: 'Shellfish',      icon: '' },
+  { key: 'sesame',    label: 'Sesame',         icon: '' },
 ];
 
 const BY_KEY = new Map(COMMON_ALLERGENS.map((a) => [a.key, a]));
