@@ -1,13 +1,5 @@
 'use client';
 
-/**
- * Dashboard page (/dashboard) — the Business Manager for business accounts.
- * Purpose: One-stop management for a business: Dashboard overview, Orders (with QR scan to fulfil),
- *   Reports, Reviews, Promos, Videos and Business info/hours. Tab-based; loads the business's data and
- *   live-updates orders via realtime. Gated behind ProtectedRoute. Fully theme-aware.
- * Part of: Localy (FBLA Coding & Programming — Byte-Sized Business Boost)
- */
-
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -370,7 +362,7 @@ function DashboardContent() {
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  <img src="/menu/jays-burger/classic-burger.jpg" alt="Classic Burger" className="w-14 h-14 rounded-xl object-cover shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
+                  <img src="/Menu/Jays%20Burger/Classic%20Burger.jpg" alt="Classic Burger" className="w-14 h-14 rounded-xl object-cover shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display='none'; }} />
                   <div>
                     <p className="font-semibold text-foreground">Classic Burger</p>
                     <p className="text-xs text-gray-400">47 orders &middot; $11.99 avg</p>
