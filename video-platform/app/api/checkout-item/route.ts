@@ -224,6 +224,21 @@ export async function POST(request: NextRequest) {
     };
   });
 
+  // Save resolved (server-trusted) name/price alongside id so verify-item-purchase
+  // can reconstruct order details from the Stripe session without a second DB query.
+  const itemsMetadata = items.map((item) => {
+    const resolved = menuMap.get(item.itemId);
+    return {
+      id: item.itemId,
+      name: resolved?.name ?? item.itemName,
+      sid: item.sellerId,
+      price: resolved?.price ?? 0,
+      qty: item.quantity,
+      // Carry the buyer's special concerns/notes so verify-item-purchase can save
+      // them with the order (previously dropped here, so they never persisted).
+      ...(item.specialRequests ? { sr: item.specialRequests } : {}),
+    };
+  });
   const firstSellerId = items[0].sellerId;
 
   try {

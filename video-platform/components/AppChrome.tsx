@@ -22,6 +22,12 @@ import { Footer } from "@/components/layout/Footer";
 // - /chats/[id]: message thread is a full-height panel; footer doesn't belong there.
 const NO_FOOTER_ROUTES = ['/feed', '/chats/'];
 
+// Routes where the footer should not render:
+// - /feed: full-screen fixed video player — footer is invisible behind it anyway,
+//   but we skip it to avoid it appearing briefly during navigation.
+// - /chats/[id]: message thread is a full-height panel; footer doesn't belong there.
+const NO_FOOTER_ROUTES = ['/feed', '/chats/'];
+
 // Chooses the layout for the current route and renders the appropriate shell around `children`.
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
