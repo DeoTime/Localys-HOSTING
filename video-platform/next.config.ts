@@ -7,9 +7,12 @@ const nextConfig: NextConfig = {
     // Dev needs 'unsafe-eval' for React/Next.js hot-reload; strip it in prod.
     // Google Maps JS API + its web-workers also require 'unsafe-eval', so allow it
     // in prod too (scoped to maps.googleapis.com loading the SDK).
+    // challenges.cloudflare.com serves the Turnstile api.js used on login/signup
+    // (frame-src + connect-src already allow it; script-src must too or the widget
+    // never loads and login is blocked).
     const scriptSrc = isDev
-      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com maps.googleapis.com"
-      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com maps.googleapis.com";
+      ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com maps.googleapis.com challenges.cloudflare.com"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com maps.googleapis.com challenges.cloudflare.com";
 
     const csp = [
       "default-src 'self'",
