@@ -754,7 +754,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
       }
     }
 
-    setTimeout(() => setIsScrolling(false), 500);
+    setTimeout(() => setIsScrolling(false), 700);
   };
 
   const [touchStart, setTouchStart] = useState(0);
@@ -1205,7 +1205,7 @@ export function HomeContent({ isActive }: HomeContentProps) {
         {videos.map((video, index) => (
           <div
             key={video.id}
-            className={`absolute inset-0 transition-transform duration-500 ${
+            className={`absolute inset-0 transition-transform duration-700 ${
               index === currentIndex ? 'translate-y-0 animate-scale-in' :
               index < currentIndex ? '-translate-y-full' : 'translate-y-full'
             }`}
