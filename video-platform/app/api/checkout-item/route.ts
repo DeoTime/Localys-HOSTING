@@ -247,7 +247,7 @@ export async function POST(request: NextRequest) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-    const origin = process.env.NEXT_PUBLIC_BASE_URL ?? new URL(request.url).origin;
+    const origin = process.env.NEXT_PUBLIC_BASE_URL || 'https://localys.xyz';
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
