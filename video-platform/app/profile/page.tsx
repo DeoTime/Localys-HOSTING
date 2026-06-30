@@ -596,7 +596,12 @@ function ProfileView({ profile, user, onEditClick, onSignOut, onProfileUpdated }
 
       {/* Rank / tier */}
       {!statsLoading && (
-        <RankSection moneySpent={moneySpent} points={points} bizCount={bizCount} />
+        <RankSection
+          moneySpent={moneySpent}
+          points={points}
+          bizCount={bizCount}
+          userName={profile?.full_name || profile?.username || 'You'}
+        />
       )}
 
       {/* Community leaderboard — your rank within 5 km + rank rewards */}
