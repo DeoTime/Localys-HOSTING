@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { MessageSquare, Plus, Share2, ChevronUp, ChevronDown } from 'lucide-react';
+import { MessageSquare, Plus, Share2 } from 'lucide-react';
+import { VoteArrowUp, VoteArrowDown } from '@/components/VoteArrow';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useCommunities } from '@/contexts/CommunitiesContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -123,12 +124,12 @@ function CommunitiesContent() {
                 <Link
                   key={c.id}
                   href={`/communities/${c.id}`}
-                  className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="flex items-center gap-2.5 rounded-lg px-2 py-1 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <CommunityAvatar src={COMMUNITY_IMAGES[c.id]} name={c.name} className="h-8 w-8 shrink-0 text-xs" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">r/{c.name}</p>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400">{c.memberCount.toLocaleString()} members</p>
+                  <div className="min-w-0 flex-1 leading-none">
+                    <p className="truncate text-sm font-semibold leading-tight text-gray-900 dark:text-white">r/{c.name}</p>
+                    <p className="text-[11px] leading-tight text-gray-500 dark:text-gray-400">{c.memberCount.toLocaleString()} members</p>
                   </div>
                 </Link>
               ))}
@@ -263,7 +264,7 @@ function CommunitiesContent() {
                       t.userVote === 1 ? 'text-[#f97316]' : 'text-black dark:text-white hover:text-[#f97316]'
                     }`}
                   >
-                    <ChevronUp className="h-4 w-4" strokeWidth={2.5} />
+                    <VoteArrowUp className="h-4 w-4" />
                   </button>
                   <span className={`min-w-[20px] text-center text-xs font-bold tabular-nums ${
                     t.userVote !== 0 ? 'text-[#f97316]' : 'text-black dark:text-white'
@@ -275,7 +276,7 @@ function CommunitiesContent() {
                       t.userVote === -1 ? 'text-[#f97316]' : 'text-black dark:text-white hover:text-[#f97316]'
                     }`}
                   >
-                    <ChevronDown className="h-4 w-4" strokeWidth={2.5} />
+                    <VoteArrowDown className="h-4 w-4" />
                   </button>
                 </div>
 
